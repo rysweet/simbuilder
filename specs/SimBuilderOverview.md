@@ -31,7 +31,7 @@ flowchart TD
 
 ### 1.2 Key Functional Capabilities
 - **CLI, API, Simple GUI app, and MCP service**, all runnable locally in dev env, can be easily run after a simple checkout. Entire project can run on a developer's laptop, creating simulation resource in the cloud. 
-- Starts with basic input of a file containing the attack description
+- Starts with basic input of a file containing the attack description or the environment.
 - **Interactive requirements capture** through incremental clarifying questions. Once enough information is captured, an overview markdown document is produced holding all the details.  As needed, additional markdown specifications can be created for each element of the simulation. The set of specifications thus generated end up being stored in a simulation library in this git repo. 
 - **AI-driven resource planning** of tenants, identities, networks, workloads, and datasets.  
 - **Generation of IaC artifacts** such as Bicep, Terraform, or ARM templates with built-in rollback.  
