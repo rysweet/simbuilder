@@ -2,7 +2,7 @@
 
 ## 1  Purpose & Scope
 
-SimBuilder automates the planning, provisioning, and clean-up of **enterprise-grade cloud simulation environments** purpose-built to **replay sophisticated cyber-attacks at scale**. Security researchers, red teams, and product engineers can obtain an isolated Azure tenant, populated identities, realistic data, and the telemetry wiring needed to measure detection quality – all with a single prompt.
+SimBuilder automates the planning, provisioning, and clean-up of **enterprise-grade cloud simulation environments** purpose-built to **replay sophisticated cyber-attacks at scale**. Security researchers, red teams, and product engineers can obtain an isolated Azure tenant, populated identities, realistic data, and the telemetry wiring needed to measure detection quality – all with a single prompt. Alternately to submitting an attack, the user may also start with a description of an environment.
 
 ### 1.1 End-to-End Flow
 
