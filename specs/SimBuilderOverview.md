@@ -11,7 +11,7 @@ flowchart TD
   A[User Attack Description]
   B[Clarifier Agent<br/>collects missing details]
   C[Resource Planner<br/>drafts tenant/infra plan]
-  D[User Review & Adjustments<br/>(optional)]
+  D[User Review &amp; Adjustments<br/>(optional)]
   E[IaC Generator<br/>emits Bicep / Terraform]
   F[Orchestrator<br/>deploys to Azure]
   G[Data Seeder<br/>populates datasets & links]
