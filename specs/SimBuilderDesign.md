@@ -6,6 +6,7 @@ SimBuilder employs a distributed multi-agent architecture that separates concern
 
 ### Design Elements
 
+* Project scaffolding - setup of the project with a top level README, uv and poe configuration, github actions configuration, .gitignore, and any other cross-project setup required by all modules.  
 * API service implements all functionality, CLI, GUI, MCP all talk to the API
 * MVP Emphasis on ease of use for the developer building and trying the system locally
 * Autogen Core (@https://microsoft.github.io/autogen/stable/ ) for agents framework
