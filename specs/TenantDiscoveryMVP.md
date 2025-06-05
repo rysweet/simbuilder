@@ -46,6 +46,9 @@ The implementation order satisfies the dependency graph by ensuring foundational
 7. **Integration Testing** validates the complete system functionality
 8. **Deployment** packages everything for easy local development setup
 
+## Dependencies
+
+- CLI Interface (basic implementation) – used to initiate tenant discovery.
 No circular dependencies exist in this design, enabling parallel development of infrastructure components (Phases 2-4) after Phase 1 completion.
 
 ## Estimated Timeline
