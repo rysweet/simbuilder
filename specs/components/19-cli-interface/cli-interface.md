@@ -60,6 +60,8 @@ simbuilder export <simulation-id> [--format yaml|json] [--include-secrets]
 
 ## Dependencies
 
+- **Configuration Service**: For centralized configuration management and environment settings
+- **LLM Foundry Integration**: For intelligent interactive guidance and assistance
 - **Core API Service**: Primary backend for all CLI operations
 - **Rich Python Library**: Terminal formatting, progress bars, and interactive elements
 - **Click Framework**: Command-line argument parsing and subcommand structure

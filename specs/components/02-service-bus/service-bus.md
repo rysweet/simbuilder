@@ -67,6 +67,7 @@ GET /servicebus/metrics - Queue depths, throughput, and latency metrics
 
 ## Dependencies
 
+- **Configuration Service**: For centralized configuration management and environment settings
 - **Azure Service Bus**: Primary messaging infrastructure (production)
 - **NATS JetStream**: Local development messaging broker
 - **Core API Service**: Authentication and service registration

@@ -45,6 +45,8 @@ POST /finops/forecasts - Generate cost forecasting models
 
 ## Dependencies
 
+- **Configuration Service**: For centralized configuration management and environment settings
+
 - **Azure Cost Management APIs**: For real-time cost data and billing information
 - **Azure Monitor**: For resource utilization metrics and performance data
 - **Core API Service**: For authentication and orchestration integration

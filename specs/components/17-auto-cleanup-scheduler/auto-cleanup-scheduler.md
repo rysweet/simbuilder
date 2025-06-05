@@ -45,6 +45,8 @@ GET /cleanup/audit/{timeframe} - Retrieve cleanup audit logs
 
 ## Dependencies
 
+- **Configuration Service**: For centralized configuration management and environment settings
+
 - **Orchestrator Agent**: For coordinated cleanup workflows and dependency management
 - **FinOps Alerting**: For cost-based cleanup triggers and budget enforcement
 - **Graph Database Service**: For dependency tracking and cleanup relationship management

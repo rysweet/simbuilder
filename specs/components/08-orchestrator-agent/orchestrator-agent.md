@@ -10,6 +10,8 @@ Coordinates the entire simulation deployment workflow, manages resource provisio
 - Manage resource cleanup and rollback procedures
 
 ## Dependencies
+- **Configuration Service**: For centralized configuration management and environment settings
+- **LLM Foundry Integration**: For intelligent deployment orchestration and status updates
 - InfraSynthesis Agent (deployment manifests)
 - Terraform Runner and ARM/Bicep Runner
 - Service Bus (workflow coordination)

@@ -10,6 +10,8 @@ Provides Model Context Protocol (MCP) integration for SimBuilder, enabling AI as
 - As an **LLM Application**, I need structured tools for simulation management and reporting
 
 ## Dependencies
+- **Configuration Service**: For centralized configuration management and environment settings
+- **LLM Foundry Integration**: For orchestrating LLM interactions and natural language processing
 - Core API Service (primary backend)
 - MCP Protocol Implementation
 - Authentication and authorization services

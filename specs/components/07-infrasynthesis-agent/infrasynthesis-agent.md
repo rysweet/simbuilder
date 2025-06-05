@@ -10,6 +10,7 @@ Transforms resource plans into Infrastructure-as-Code (IaC) templates including 
 - Optimize templates for cost and performance
 
 ## Dependencies
+- **Configuration Service**: For centralized configuration management and environment settings
 - Planner Agent (resource plans)
 - Spec Library (template storage)
 - Azure Resource Manager APIs

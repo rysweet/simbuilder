@@ -45,6 +45,8 @@ GET /autoscaler/costs/{cluster_id} - Retrieve cluster cost attribution data
 
 ## Dependencies
 
+- **Configuration Service**: For centralized configuration management and environment settings
+
 - **Azure Kubernetes Service**: Core container orchestration platform
 - **Azure Monitor**: For metrics collection and performance monitoring
 - **Azure Container Insights**: For container-level performance and scaling metrics

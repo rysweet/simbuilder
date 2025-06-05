@@ -10,6 +10,8 @@ Generates synthetic identities, data relationships, and realistic content to pop
 - Establish attack preconditions and target relationships
 
 ## Dependencies
+- **Configuration Service**: For centralized configuration management and environment settings
+- **LLM Foundry Integration**: For intelligent synthetic data generation and content creation
 - Microsoft Graph/Entra Integration
 - Microsoft 365 Integration
 - Graph Database Service

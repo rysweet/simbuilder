@@ -45,6 +45,8 @@ GET /m365/telemetry/{simulation_id} - Retrieve M365 activity logs
 
 ## Dependencies
 
+- **Configuration Service**: For centralized configuration management and environment settings
+
 - **Microsoft Graph API**: For M365 content creation and management
 - **Exchange Online**: For email and calendar functionality
 - **SharePoint Online**: For document libraries and collaboration sites

@@ -45,6 +45,8 @@ GET /sentinel/health - Sentinel integration health status
 
 ## Dependencies
 
+- **Configuration Service**: For centralized configuration management and environment settings
+
 - **Azure Sentinel**: Core SIEM platform for security analytics and incident management
 - **Azure Log Analytics**: Data ingestion, storage, and query engine
 - **Azure Monitor**: System metrics and performance monitoring

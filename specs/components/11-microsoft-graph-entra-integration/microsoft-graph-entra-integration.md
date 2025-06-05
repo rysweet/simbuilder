@@ -44,6 +44,8 @@ GET /identity/audit/{simulation_id} - Retrieve identity audit logs
 
 ## Dependencies
 
+- **Configuration Service**: For centralized configuration management and environment settings
+
 - **Microsoft Graph API**: For identity management operations
 - **Azure Active Directory**: Core identity and directory services
 - **Core API Service**: For authentication and request coordination

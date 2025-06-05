@@ -45,6 +45,8 @@ GET /terraform/audit/{simulation_id} - Retrieve deployment audit logs
 
 ## Dependencies
 
+- **Configuration Service**: For centralized configuration management and environment settings
+
 - **Terraform CLI**: Core Terraform execution engine (v1.5+)
 - **Azure Provider**: Terraform Azure Resource Manager provider
 - **Azure Storage**: For Terraform state backend and file storage

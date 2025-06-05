@@ -45,6 +45,8 @@ GET /arm/audit/{simulation_id} - Retrieve deployment audit logs
 
 ## Dependencies
 
+- **Configuration Service**: For centralized configuration management and environment settings
+
 - **Azure CLI**: For ARM template deployment and management operations
 - **Bicep CLI**: For Bicep template compilation and validation
 - **Azure Resource Manager APIs**: For direct deployment and resource management

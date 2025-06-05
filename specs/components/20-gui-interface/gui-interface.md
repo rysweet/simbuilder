@@ -53,6 +53,8 @@ WebSocketService.connect(simulationId: string): WebSocket
 
 ## Dependencies
 
+- **Configuration Service**: For centralized configuration management and environment settings
+- **LLM Foundry Integration**: For chat interfaces and intelligent user assistance
 - **Core API Service**: Primary backend for all GUI operations
 - **React 18+**: Modern React with hooks and concurrent features
 - **TypeScript**: Type safety and development experience

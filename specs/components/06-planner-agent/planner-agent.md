@@ -41,7 +41,8 @@ POST /planner/plans/{id}/validate - Validate plan against constraints and polici
 
 ## Dependencies
 
-- **Azure OpenAI**: GPT-4 for architectural reasoning and resource optimization
+- **Configuration Service**: For centralized configuration management and environment settings
+- **LLM Foundry Integration**: GPT-4 for architectural reasoning and resource optimization
 - **Clarifier Agent**: Attack specifications as primary input
 - **Graph Database Service**: Storing resource plans and dependency relationships
 - **Service Bus**: Publishing planning progress and completion events

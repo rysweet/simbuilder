@@ -46,6 +46,8 @@ POST /tenant-discovery/validate-credentials - Validate Azure credentials and per
 
 ## Dependencies
 
+- **Configuration Service**: For centralized configuration management and environment settings
+- **LLM Foundry Integration**: For intelligent narrative generation and enumeration analysis
 - **Azure Resource Manager (ARM) APIs**: Complete resource enumeration and configuration retrieval
 - **Azure Resource Graph**: Cross-subscription resource queries and relationship discovery
 - **Microsoft Graph API**: Azure AD, identity, and permission enumeration

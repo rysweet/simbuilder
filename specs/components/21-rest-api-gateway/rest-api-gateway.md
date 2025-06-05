@@ -58,6 +58,8 @@ GET /api/v1/audit - Retrieve API access audit logs
 
 ## Dependencies
 
+- **Configuration Service**: For centralized configuration management and environment settings
+- **LLM Foundry Integration**: For proxying LLM requests from external clients
 - **Core API Service**: Backend SimBuilder functionality and business logic
 - **Azure API Management**: Enterprise API gateway features and security
 - **Azure Active Directory**: Authentication provider and identity management

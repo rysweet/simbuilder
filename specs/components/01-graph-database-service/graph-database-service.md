@@ -415,6 +415,7 @@ Cypher Schema Conventions:
 ## Dependencies
 
 ### Internal Dependencies
+- **Configuration Service**: For centralized configuration management and environment settings
 - **Azure Service Bus**: For receiving state update messages from agents and event-driven updates
 - **Core API Service**: Authentication and authorization validation
 - **Spec Library**: For schema validation and entity definitions

@@ -45,6 +45,7 @@ GET /specs/audit/{simulation_id} - Get specification change history
 
 ## Dependencies
 
+- **Configuration Service**: For centralized configuration management and environment settings
 - **Git Repository**: Primary version control system (Azure DevOps, GitHub, or GitLab)
 - **Core API Service**: Authentication and access control integration
 - **Graph Database Service**: Specification metadata and relationship storage

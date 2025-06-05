@@ -42,7 +42,8 @@ GET /clarifier/sessions/{id}/specification - Retrieve completed specification
 
 ## Dependencies
 
-- **Azure OpenAI**: GPT-4 for natural language processing and question generation
+- **Configuration Service**: For centralized configuration management and environment settings
+- **LLM Foundry Integration**: GPT-4 for natural language processing and question generation
 - **Core API Service**: Session management and user authentication
 - **Graph Database Service**: Storing partial specifications and relationship modeling
 - **Service Bus**: Publishing clarification progress and completion events

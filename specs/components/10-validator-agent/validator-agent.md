@@ -42,6 +42,8 @@ GET /validate/health - Agent health and capability status
 
 ## Dependencies
 
+- **Configuration Service**: For centralized configuration management and environment settings
+- **LLM Foundry Integration**: For intelligent validation analysis and reporting
 - **DataSeeder Agent**: Requires completion of data population before validation
 - **Sentinel Analytics Integration**: For telemetry verification and log analysis
 - **Graph Database Service**: For storing validation results and environment state

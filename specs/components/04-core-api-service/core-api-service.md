@@ -64,6 +64,7 @@ GET /api/v1/agents - List registered agents and status
 
 ## Dependencies
 
+- **Configuration Service**: For centralized configuration management and environment settings
 - **FastAPI**: Primary web framework for REST API implementation
 - **Graph Database Service**: Simulation metadata and state storage
 - **Service Bus**: Agent communication and workflow coordination
