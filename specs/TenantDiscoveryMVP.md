@@ -16,22 +16,21 @@ A focused MVP implementation prioritizing the Tenant Discovery Agent with essent
 ### Components Out of Scope
 All other SimBuilder agents (Clarifier, Planner, InfraSynthesis, Orchestrator, DataSeeder, Validator), integration services (Microsoft Graph/Entra, Microsoft 365, Terraform/ARM runners, Sentinel, FinOps), user interfaces (CLI, GUI, MCP), and deployment orchestration beyond local development environment.
 
-## Phased Implementation Plan
+## Ordered Workstream Steps
 
-| Phase | Goal | Duration | Key Tasks | Inputs | Outputs | Acceptance Criteria |
-|-------|------|----------|-----------|---------|---------|-------------------|
-| **Phase 0** | **Repo Bootstrap** | 2 days | • Create monorepo structure<br/>• Setup CI/CD pipeline<br/>• Configure development tooling<br/>• Create .env.template | Project requirements, tooling preferences | Monorepo structure, GitHub Actions, .env.template, README | CI pipeline passes, local development setup documented |
-| **Phase 1** | **Configuration Service** | 3 days | • Implement config loading/validation<br/>• Environment variable management<br/>• Service registration patterns<br/>• Unit/integration tests | Configuration schemas, environment requirements | Configuration service library, tests, documentation | All config scenarios tested, environment validation works |
-| **Phase 2** | **Graph Database Service** | 4 days | • Docker Compose Neo4j setup<br/>• Connection management library<br/>• Schema definitions for Azure resources<br/>• Graph operations (CRUD, queries) | Neo4j requirements, Azure resource schemas | Neo4j Docker setup, connector library, resource schema | Local Neo4j running, connection library functional, schema validated |
-| **Phase 3** | **Service Bus** | 3 days | • Azure Service Bus local emulator<br/>• Message publishing/consuming<br/>• Topic/subscription management<br/>• Error handling and retries | Service Bus requirements, message schemas | Service Bus connector, Docker setup, messaging patterns | Message flow working, error handling tested |
-| **Phase 4** | **Spec Library** | 2 days | • Git repository integration<br/>• Specification loading/parsing<br/>• Version management<br/>• Baseline spec population | Specification formats, Git integration requirements | Spec library service, baseline specifications loaded | Specs loadable, version management functional |
-| **Phase 5** | **Core API Service** | 5 days | • FastAPI application setup<br/>• Session management endpoints<br/>• Health/status monitoring<br/>• Database integration<br/>• Authentication framework | API requirements, database schemas, auth patterns | FastAPI service, core endpoints, session management | All endpoints functional, session lifecycle working |
-| **Phase 6** | **LLM Foundry Integration** | 4 days | • Azure OpenAI client setup<br/>• Authentication management<br/>• Basic text generation<br/>• Rate limiting and retries<br/>• Liquid template loading | Azure OpenAI credentials, LLM requirements, template schemas | LLM service library, template engine, auth patterns | Text generation working, templates loading from external files |
-| **Phase 7** | **Tenant Discovery Agent** | 8 days | • Azure ARM/Resource Graph clients<br/>• Resource enumeration logic<br/>• Graph database population<br/>• LLM narrative generation<br/>• Rate limiting and error handling | Azure API documentation, discovery requirements, prompt templates | Complete Tenant Discovery Agent, Liquid templates | Full tenant discovery functional, graph populated, narrative generated |
-| **Phase 8** | **Integration & E2E Tests** | 3 days | • End-to-end discovery scenarios<br/>• Performance testing<br/>• Error condition validation<br/>• Data consistency verification | Test scenarios, performance requirements | Test suite, performance benchmarks, validation reports | All integration tests pass, performance meets targets |
-| **Phase 9** | **Deployment** | 2 days | • Docker Compose orchestration<br/>• Local environment scripts<br/>• Documentation updates<br/>• Deployment validation | Deployment requirements, documentation standards | Docker Compose files, bootstrap scripts, updated README | Local environment deployable with single command |
-
-**Total Estimated Duration: 30 days**
+| Phase | Goal | Key Tasks | Inputs | Outputs | Acceptance Criteria |
+|-------|------|-----------|---------|---------|-------------------|
+| **Phase 0** | **Repo Bootstrap** | • Create monorepo structure<br/>• Setup CI/CD pipeline<br/>• Configure development tooling<br/>• Create .env.template | Project requirements, tooling preferences | Monorepo structure, GitHub Actions, .env.template, README | CI pipeline passes, local development setup documented |
+| **Phase 1** | **Configuration Service** | • Implement config loading/validation<br/>• Environment variable management<br/>• Service registration patterns<br/>• Unit/integration tests | Configuration schemas, environment requirements | Configuration service library, tests, documentation | All config scenarios tested, environment validation works |
+| **Phase 2** | **Graph Database Service** | • Docker Compose Neo4j setup<br/>• Connection management library<br/>• Schema definitions for Azure resources<br/>• Graph operations (CRUD, queries) | Neo4j requirements, Azure resource schemas | Neo4j Docker setup, connector library, resource schema | Local Neo4j running, connection library functional, schema validated |
+| **Phase 3** | **Service Bus** | • Azure Service Bus local emulator<br/>• Message publishing/consuming<br/>• Topic/subscription management<br/>• Error handling and retries | Service Bus requirements, message schemas | Service Bus connector, Docker setup, messaging patterns | Message flow working, error handling tested |
+| **Phase 4** | **Spec Library** | • Git repository integration<br/>• Specification loading/parsing<br/>• Version management<br/>• Baseline spec population | Specification formats, Git integration requirements | Spec library service, baseline specifications loaded | Specs loadable, version management functional |
+| **Phase 5** | **Core API Service** | • FastAPI application setup<br/>• Session management endpoints<br/>• Health/status monitoring<br/>• Database integration<br/>• Authentication framework | API requirements, database schemas, auth patterns | FastAPI service, core endpoints, session management | All endpoints functional, session lifecycle working |
+| **Phase 6** | **LLM Foundry Integration** | • Azure OpenAI client setup<br/>• Authentication management<br/>• Basic text generation<br/>• Rate limiting and retries<br/>• Liquid template loading | Azure OpenAI credentials, LLM requirements, template schemas | LLM service library, template engine, auth patterns | Text generation working, templates loading from external files |
+| **Phase 7** | **Tenant Discovery Agent** | • Azure ARM/Resource Graph clients<br/>• Resource enumeration logic<br/>• Graph database population<br/>• LLM narrative generation<br/>• Rate limiting and error handling | Azure API documentation, discovery requirements, prompt templates | Complete Tenant Discovery Agent, Liquid templates | Full tenant discovery functional, graph populated, narrative generated |
+| **Phase 8** | **Integration & E2E Tests** | • End-to-end discovery scenarios<br/>• Performance testing<br/>• Error condition validation<br/>• Data consistency verification | Test scenarios, performance requirements | Test suite, performance benchmarks, validation reports | All integration tests pass, performance meets targets |
+| **Phase 9** | **Deployment** | • Docker Compose orchestration<br/>• Local environment scripts<br/>• Documentation updates<br/>• Deployment validation | Deployment requirements, documentation standards | Docker Compose files, bootstrap scripts, updated README | Local environment deployable with single command |
+| **Phase 10** | **Production Readiness** | • Security hardening and threat modeling<br/>• Secret management and credential rotation<br/>• Monitoring and observability setup<br/>• Disaster recovery and backup procedures<br/>• Performance tuning and optimization<br/>• Compliance and audit requirements | Security requirements, operational standards | Security runbooks, monitoring dashboards, DR procedures | Security baseline established, production deployment ready |
 
 ## Dependencies / Order Rationale
 
@@ -50,20 +49,6 @@ The implementation order satisfies the dependency graph by ensuring foundational
 
 - CLI Interface (basic implementation) – used to initiate tenant discovery.
 No circular dependencies exist in this design, enabling parallel development of infrastructure components (Phases 2-4) after Phase 1 completion.
-
-## Estimated Timeline
-
-**Team Size**: 2-3 developers
-**Total Duration**: 4 weeks (30 business days)
-
-| Week | Focus Areas | Parallel Workstreams |
-|------|-------------|---------------------|
-| **Week 1** | Bootstrap + Infrastructure | Phase 0 → Phases 1-3 (parallel after Day 2) |
-| **Week 2** | Core Services | Phases 4-5 (can overlap with Phase 3 completion) |
-| **Week 3** | LLM Integration + Agent Development | Phase 6 → Phase 7 (main development effort) |
-| **Week 4** | Testing + Deployment | Phases 8-9 + documentation finalization |
-
-**Risk Buffer**: Additional 1 week recommended for unforeseen integration challenges and performance optimization.
 
 ## Deliverables
 
@@ -114,8 +99,4 @@ No circular dependencies exist in this design, enabling parallel development of 
 
 ---
 
-**Success Metrics**: 
-- Complete tenant discovery within 30 minutes for typical enterprise environments
-- 99%+ resource discovery accuracy with proper relationship mapping
-- Single-command local environment deployment
-- Comprehensive narrative documentation enabling 90%+ reproduction accuracy
+**Success Criteria**: MVP success is defined as end-to-end tenant discovery completing without errors.
