@@ -414,7 +414,47 @@ Based on your attack scenario: "{{ attack_description }}"
 I need to gather additional details to create a comprehensive simulation...
 ```
 
-## 7 Testing & Governance
+## 7 Implementation Order
+
+Based on component dependencies analysis, the following implementation order ensures that all dependencies are satisfied before dependent components are built:
+
+| Order | Component | Depends On |
+|------:|-----------|------------|
+| 1 | Configuration Service | – |
+| 2 | LLM Foundry Integration | Configuration Service |
+| 3 | Graph Database Service | Configuration Service |
+| 4 | Service Bus | Configuration Service |
+| 5 | Spec Library | Configuration Service |
+| 6 | Core API Service | Configuration Service, Graph Database Service, Service Bus, Spec Library |
+| 7 | Clarifier Agent | Configuration Service, LLM Foundry Integration, Core API Service, Graph Database Service, Service Bus, Spec Library |
+| 8 | Planner Agent | Configuration Service, LLM Foundry Integration, Core API Service, Graph Database Service, Service Bus, Spec Library |
+| 9 | InfraSynthesis Agent | Configuration Service, LLM Foundry Integration, Core API Service, Graph Database Service, Service Bus, Spec Library |
+| 10 | Orchestrator Agent | Configuration Service, LLM Foundry Integration, Core API Service, Graph Database Service, Service Bus, Spec Library |
+| 11 | DataSeeder Agent | Configuration Service, LLM Foundry Integration, Core API Service, Graph Database Service, Service Bus, Spec Library |
+| 12 | Validator Agent | Configuration Service, LLM Foundry Integration, Core API Service, Graph Database Service, Service Bus, Spec Library |
+| 13 | Tenant Discovery Agent | Configuration Service, LLM Foundry Integration, Core API Service, Graph Database Service, Service Bus, Spec Library |
+| 14 | Microsoft Graph Entra Integration | Configuration Service, Core API Service, Graph Database Service, Service Bus |
+| 15 | Microsoft 365 Integration | Configuration Service, Core API Service, Graph Database Service, Service Bus |
+| 16 | Terraform Runner | Configuration Service, Core API Service, Graph Database Service, Service Bus |
+| 17 | ARM Bicep Runner | Configuration Service, Core API Service, Graph Database Service, Service Bus |
+| 18 | Sentinel Analytics Integration | Configuration Service, Core API Service, Graph Database Service, Service Bus |
+| 19 | FinOps Alerting | Configuration Service, Core API Service, Graph Database Service, Service Bus |
+| 20 | Auto Cleanup Scheduler | Configuration Service, Core API Service, Graph Database Service, Service Bus |
+| 21 | AKS Autoscaler Manager | Configuration Service, Core API Service, Graph Database Service, Service Bus |
+| 22 | REST API Gateway | Configuration Service, Core API Service, Graph Database Service, Service Bus |
+| 23 | CLI Interface | Configuration Service, Core API Service |
+| 24 | GUI Interface | Configuration Service, Core API Service |
+| 25 | MCP Service | Configuration Service, Core API Service |
+| 26 | Project Scaffolding | All component repositories |
+
+**Notes:**
+- No circular dependencies detected in the component dependency graph
+- Components 7-13 (AI Agents) can be implemented in parallel after their dependencies are complete
+- Components 14-22 (Integration Services) can be implemented in parallel after their dependencies are complete
+- Components 23-25 (User Interfaces) can be implemented in parallel after Core API Service is complete
+- Project Scaffolding should be implemented last as it depends on all other component repositories being established
+
+## 8 Testing & Governance
 
 - **Unit & contract tests** executed per micro-service in isolated sandbox.
 - **Canary environments** validated nightly with representative attack library.
