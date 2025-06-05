@@ -21,14 +21,14 @@ All other SimBuilder agents (Clarifier, Planner, InfraSynthesis, Orchestrator, D
 | Phase | Goal | Key Tasks | Inputs | Outputs | Acceptance Criteria |
 |-------|------|-----------|---------|---------|-------------------|
 | **Phase 0** | **Repo Bootstrap** | • Create monorepo structure<br/>• Setup CI/CD pipeline<br/>• Configure development tooling<br/>• Create .env.template | Project requirements, tooling preferences | Monorepo structure, GitHub Actions, .env.template, README | CI pipeline passes, local development setup documented |
-| **Phase 1** | **Configuration Service** | • Implement config loading/validation<br/>• Environment variable management<br/>• Service registration patterns<br/>• Unit/integration tests | Configuration schemas, environment requirements | Configuration service library, tests, documentation | All config scenarios tested, environment validation works |
-| **Phase 2** | **Graph Database Service** | • Docker Compose Neo4j setup<br/>• Connection management library<br/>• Schema definitions for Azure resources<br/>• Graph operations (CRUD, queries) | Neo4j requirements, Azure resource schemas | Neo4j Docker setup, connector library, resource schema | Local Neo4j running, connection library functional, schema validated |
-| **Phase 3** | **Service Bus** | • Azure Service Bus local emulator<br/>• Message publishing/consuming<br/>• Topic/subscription management<br/>• Error handling and retries | Service Bus requirements, message schemas | Service Bus connector, Docker setup, messaging patterns | Message flow working, error handling tested |
-| **Phase 4** | **Spec Library** | • Git repository integration<br/>• Specification loading/parsing<br/>• Version management<br/>• Baseline spec population | Specification formats, Git integration requirements | Spec library service, baseline specifications loaded | Specs loadable, version management functional |
-| **Phase 5** | **Core API Service** | • FastAPI application setup<br/>• Session management endpoints<br/>• Health/status monitoring<br/>• Database integration<br/>• Authentication framework | API requirements, database schemas, auth patterns | FastAPI service, core endpoints, session management | All endpoints functional, session lifecycle working |
-| **Phase 6** | **LLM Foundry Integration** | • Azure OpenAI client setup<br/>• Authentication management<br/>• Basic text generation<br/>• Rate limiting and retries<br/>• Liquid template loading | Azure OpenAI credentials, LLM requirements, template schemas | LLM service library, template engine, auth patterns | Text generation working, templates loading from external files |
-| **Phase 7** | **Tenant Discovery Agent** | • Azure ARM/Resource Graph clients<br/>• Resource enumeration logic<br/>• Graph database population<br/>• LLM narrative generation<br/>• Rate limiting and error handling | Azure API documentation, discovery requirements, prompt templates | Complete Tenant Discovery Agent, Liquid templates | Full tenant discovery functional, graph populated, narrative generated |
-| **Phase 8** | **Integration & E2E Tests** | • End-to-end discovery scenarios<br/>• Performance testing<br/>• Error condition validation<br/>• Data consistency verification | Test scenarios, performance requirements | Test suite, performance benchmarks, validation reports | All integration tests pass, performance meets targets |
+| **Phase 1** | **Configuration Service** | • Implement config loading/validation<br/>• Environment variable management<br/>• Service registration patterns<br/>• Unit tests (using `uv run`)<br/>• Self-contained integration tests | Configuration schemas, environment requirements | Configuration service library, tests, documentation | All unit tests pass, integration tests self-contained and passing, no test failures |
+| **Phase 2** | **Graph Database Service** | • Docker Compose Neo4j setup<br/>• Connection management library<br/>• Schema definitions for Azure resources<br/>• Graph operations (CRUD, queries)<br/>• Unit tests before integration tests<br/>• Live Neo4j integration tests (no mocks) | Neo4j requirements, Azure resource schemas | Neo4j Docker setup, connector library, resource schema | Local Neo4j running, all tests passing with `uv run`, no disabled tests |
+| **Phase 3** | **Service Bus** | • Azure Service Bus local emulator<br/>• Message publishing/consuming<br/>• Topic/subscription management<br/>• Error handling and retries<br/>• Self-contained integration tests<br/>• Live service bus testing (no mocks) | Service Bus requirements, message schemas | Service Bus connector, Docker setup, messaging patterns | Message flow working, all tests self-contained and passing |
+| **Phase 4** | **Spec Library** | • Git repository integration<br/>• Specification loading/parsing<br/>• Version management<br/>• Baseline spec population<br/>• Unit and integration test suites | Specification formats, Git integration requirements | Spec library service, baseline specifications loaded | Specs loadable, version management functional, comprehensive test coverage |
+| **Phase 5** | **Core API Service** | • FastAPI application setup<br/>• Session management endpoints<br/>• Health/status monitoring<br/>• Database integration<br/>• Authentication framework<br/>• API integration tests with live dependencies | API requirements, database schemas, auth patterns | FastAPI service, core endpoints, session management | All endpoints functional, session lifecycle working, API tests using real services |
+| **Phase 6** | **LLM Foundry Integration** | • Azure OpenAI client setup<br/>• Authentication management<br/>• Basic text generation<br/>• Rate limiting and retries<br/>• Liquid template loading<br/>• Live Azure OpenAI integration tests | Azure OpenAI credentials, LLM requirements, template schemas | LLM service library, template engine, auth patterns | Text generation working, templates loading, live API integration verified |
+| **Phase 7** | **Tenant Discovery Agent** | • Azure ARM/Resource Graph clients<br/>• Resource enumeration logic<br/>• Graph database population<br/>• LLM narrative generation<br/>• Rate limiting and error handling<br/>• End-to-end integration tests with live Azure APIs | Azure API documentation, discovery requirements, prompt templates | Complete Tenant Discovery Agent, Liquid templates | Full tenant discovery functional, comprehensive test coverage with live services |
+| **Phase 8** | **Integration & E2E Tests** | • End-to-end discovery scenarios<br/>• Self-contained test environments<br/>• Live service integration validation<br/>• Error condition testing<br/>• Data consistency verification<br/>• Stop-on-first-failure testing workflow | Test scenarios, live service requirements | Test suite, validation reports, documented test procedures | All integration tests self-contained, pass independently, use live services |
 | **Phase 9** | **Deployment** | • Docker Compose orchestration<br/>• Local environment scripts<br/>• Documentation updates<br/>• Deployment validation | Deployment requirements, documentation standards | Docker Compose files, bootstrap scripts, updated README | Local environment deployable with single command |
 | **Phase 10** | **Production Readiness** | • Security hardening and threat modeling<br/>• Secret management and credential rotation<br/>• Monitoring and observability setup<br/>• Disaster recovery and backup procedures<br/>• Performance tuning and optimization<br/>• Compliance and audit requirements | Security requirements, operational standards | Security runbooks, monitoring dashboards, DR procedures | Security baseline established, production deployment ready |
 
@@ -62,9 +62,26 @@ No circular dependencies exist in this design, enabling parallel development of 
 - Monorepo structure with clear module separation
 - Docker Compose orchestration for all services (Neo4j, Service Bus emulator, FastAPI, etc.)
 - External Liquid template system for all LLM prompts (no hard-coded prompts)
-- Comprehensive test suite (unit, integration, end-to-end)
+- Comprehensive test suite (unit, integration, end-to-end) following strict testing requirements
 - Configuration management supporting multiple environments
 - Session-based discovery with progress tracking and error handling
+
+## Testing & Validation Requirements
+
+All implementation phases must adhere to strict testing and validation standards:
+
+### Pre-Commit Standards
+- All code must pass linting, formatting, unit tests, and integration tests before commit
+- Always use `uv run` for test execution to ensure correct virtual environment
+- Never skip, disable, or artificially pass tests
+
+### Test Execution Workflow
+- Run unit tests before integration tests in every phase
+- Stop immediately on first test failure and fix before continuing
+- Integration tests must be self-contained with their own setup/cleanup
+- Integration tests must use live services (no mocks for components being tested)
+
+For complete testing guidelines, see [.roo/rules-code/04-testing-requirements.md](../.roo/rules-code/04-testing-requirements.md).
 
 ## Risks & Mitigations
 

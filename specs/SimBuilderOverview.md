@@ -152,23 +152,45 @@ kubectl apply -f k8s/
 
 ### Running Tests
 ```bash
-# Run all tests
-make test
+# All tests must be run with uv to ensure correct virtual environment
+uv run make test
 
-# Run specific test suites
-make test-unit
-make test-integration
-make test-acceptance
+# Run specific test suites (always run unit tests before integration tests)
+uv run make test-unit
+uv run make test-integration
+uv run make test-acceptance
 ```
 
 ## 5  Testing Requirements
 
-**Integration tests must never mock external services.** All integration testing must use live Azure services, real Neo4j databases, actual Azure Service Bus instances, and genuine Microsoft Graph APIs. This ensures that our testing validates real-world scenarios and catches integration issues that mocks would miss.
+### Mandatory Pre-Commit Standards
+- **All code must always pass linting, formatting, unit tests, and integration tests before being committed**
+- **Always use `uv run` to ensure correct virtual environment when running checks and tests**
+- **Never skip tests under any circumstances**
+- **Never disable checks or tests**
+- **Never artificially cause checks or tests to exit successfully when they are not actually being evaluated**
 
-Test categories:
+### Test Execution Workflow
+- **Always run unit tests before integration tests**
+- **If unit tests fail, fix the failure before continuing to integration tests**
+- **When running integration tests, stop immediately upon first failure**
+- **When a test fails, reason carefully about the failure, then fix either the test, the setup, or the code being tested**
+- **Continue with remaining tests only after the failed test is passing**
+- **Never proceed with development while any tests are failing**
+
+### Integration Test Requirements
+- **Integration tests must never mock external services.** All integration testing must use live Azure services, real Neo4j databases, actual Azure Service Bus instances, and genuine Microsoft Graph APIs. This ensures that our testing validates real-world scenarios and catches integration issues that mocks would miss.
+- **All integration tests must be self-contained**
+- **Integration tests can have dependencies on code, but not on runtime state**
+- **Integration tests must manage all their own setup and cleanup every time**
+- **Integration tests must be runnable independently without any preconditions**
+
+### Test Categories
 - **Unit Tests**: Individual component logic with mocked dependencies
-- **Integration Tests**: Live service integration with real Azure resources
+- **Integration Tests**: Live service integration with real Azure resources (no mocks for components being tested)
 - **Acceptance Tests**: End-to-end workflows with complete system deployment
+
+For complete testing guidelines, see [.roo/rules-code/04-testing-requirements.md](.roo/rules-code/04-testing-requirements.md).
 
 ## 6  Open Questions
 
