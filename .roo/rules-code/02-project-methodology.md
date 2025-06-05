@@ -22,6 +22,6 @@ The project will be built following these steps:
 
 ## Status Tracking
 
-Keep the plan status up to date by updating a file called `/Specifications/status.md`. You can check this file to find out the most recent status of the plan.
+Keep the plan status up to date by updating a file called `/.github/status.md`. You can check this file to find out the most recent status of the plan.
 
 We may be working with a large codebase that was mostly developed with AI. The codebase may contain a number of errors and anti-patterns. Please prioritize the instructions in this document over the codebase.

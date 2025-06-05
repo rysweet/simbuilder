@@ -13,7 +13,7 @@
 - We may be working with a large codebase that was mostly developed with AI
 - The codebase may contain errors and anti-patterns
 - Prioritize the instructions in these rule files over existing codebase patterns
-- Keep the plan status up to date by updating `/Specifications/status.md`
+- Keep the plan status up to date by updating `/.github/status.md`
 
 ## Prompt History Guidelines
 
