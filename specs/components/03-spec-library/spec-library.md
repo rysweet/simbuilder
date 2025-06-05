@@ -32,15 +32,121 @@ The Spec Library provides version-controlled storage and management of simulatio
 - **Audit Reports**: Change history and authorship tracking
 
 ### Public REST / gRPC / CLI commands
+```http
+POST /specs/simulations
+  - Create new simulation specification with Git commit
+  - Request: SimulationSpec with metadata and attack scenario
+  - Response: {"spec_id": "uuid", "version": "v1.0.0", "commit_hash": "abc123"}
+  - Consumer: Core API Service, CLI Interface
+
+PUT /specs/simulations/{id}
+  - Update simulation specification and create new version
+  - Request: Updated SimulationSpec
+  - Response: {"spec_id": "uuid", "version": "v1.1.0", "diff_summary": "Updated infrastructure section"}
+  - Consumer: Core API Service, GUI Interface
+
+GET /specs/simulations/{id}
+  - Retrieve simulation specification by ID and optional version
+  - Query params: version (defaults to latest)
+  - Response: Complete SimulationSpec with metadata
+  - Consumer: Planner Agent, InfraSynthesis Agent, Core API Service
+
+GET /specs/simulations/{id}/versions
+  - List all versions of a specification with change summary
+  - Response: {"versions": [{"version": "v1.0.0", "created_at": "...", "changes": "Initial"}]}
+  - Consumer: GUI Interface, Audit Systems
+
+GET /specs/templates/attacks
+  - List available attack pattern templates from library
+  - Query params: category, severity, mitre_tactics
+  - Response: {"templates": [AttackTemplate], "total": 45}
+  - Consumer: Clarifier Agent, Core API Service, GUI Interface
+
+GET /specs/templates/infrastructure
+  - List IaC template library with categorization
+  - Query params: provider, complexity, environment_type
+  - Response: {"templates": [InfraTemplate], "categories": ["multi-tenant", "hybrid"]}
+  - Consumer: Planner Agent, InfraSynthesis Agent
+
+POST /specs/templates
+  - Add new template to library with validation
+  - Request: {"type": "attack|infrastructure", "template": TemplateSpec, "category": "string"}
+  - Response: {"template_id": "uuid", "status": "validated", "library_path": "/templates/attacks/..."}
+  - Consumer: Template Authors, Core API Service
+
+GET /specs/audit/{simulation_id}
+  - Get complete specification change history and lineage
+  - Response: {"changes": [AuditEntry], "authors": [...], "merge_history": [...]}
+  - Consumer: Compliance Systems, Operations Dashboard
+
+POST /specs/simulations/{id}/fork
+  - Create new specification based on existing one
+  - Request: {"new_name": "string", "description": "string"}
+  - Response: {"new_spec_id": "uuid", "source_version": "v1.2.0"}
+  - Consumer: GUI Interface, Template Development
+
+GET /specs/simulations/{id}/dependencies
+  - Analyze specification dependencies and impact
+  - Response: {"dependencies": [...], "dependent_specs": [...], "circular_refs": []}
+  - Consumer: Impact Analysis, Validation Systems
 ```
-POST /specs/simulations - Create new simulation specification
-PUT /specs/simulations/{id} - Update simulation specification
-GET /specs/simulations/{id} - Retrieve simulation specification
-GET /specs/simulations/{id}/versions - List specification versions
-GET /specs/templates/attacks - List available attack pattern templates
-GET /specs/templates/infrastructure - List IaC template library
-POST /specs/templates - Add new template to library
-GET /specs/audit/{simulation_id} - Get specification change history
+
+### Git Repository Interface
+```python
+class SpecRepository:
+    """Git-based specification repository management."""
+    
+    def create_specification(self, spec: SimulationSpec) -> SpecVersion:
+        """Create new specification with initial Git commit."""
+        
+    def update_specification(self, spec_id: str, updated_spec: SimulationSpec) -> SpecVersion:
+        """Update specification and create new version with Git commit."""
+        
+    def get_specification(self, spec_id: str, version: str = "latest") -> SimulationSpec:
+        """Retrieve specification by ID and version from Git."""
+        
+    def list_versions(self, spec_id: str) -> List[SpecVersion]:
+        """List all versions of a specification from Git history."""
+        
+    def create_branch(self, spec_id: str, branch_name: str) -> bool:
+        """Create new branch for collaborative specification editing."""
+        
+    def merge_branch(self, spec_id: str, source_branch: str, target_branch: str) -> MergeResult:
+        """Merge specification changes between branches."""
+        
+    def validate_specification(self, spec: SimulationSpec) -> ValidationResult:
+        """Validate specification against schema and business rules."""
+```
+
+### Template Management Interface
+```python
+class TemplateLibrary:
+    """Centralized template library management."""
+    
+### Consumer Components
+The Spec Library provides interfaces consumed by:
+- **Core API Service**: Template management via [`GET /specs/templates/attacks`](spec_repository.py:45) and specification storage
+- **Clarifier Agent**: Attack pattern templates via [`TemplateLibrary.search_templates()`](template_library.py:23) and pattern matching
+- **Planner Agent**: Infrastructure templates via [`GET /specs/templates/infrastructure`](spec_repository.py:67) and resource planning
+- **InfraSynthesis Agent**: IaC template retrieval via [`TemplateLibrary.get_template()`](template_library.py:31) and manifest generation
+- **Tenant Discovery Agent**: Specification creation via [`SpecRepository.create_specification()`](spec_repository.py:15) for discovered environments
+- **GUI Interface**: Specification browsing via [`GET /specs/simulations/{id}/versions`](spec_repository.py:56) and collaborative editing
+- **CLI Interface**: Template upload via [`POST /specs/templates`](spec_repository.py:78) and specification management
+- **Operations Dashboard**: Audit tracking via [`GET /specs/audit/{simulation_id}`](spec_repository.py:89) and compliance reporting
+    def add_attack_template(self, template: AttackTemplate) -> str:
+        """Add new attack pattern template to library."""
+        
+    def add_infrastructure_template(self, template: InfraTemplate) -> str:
+        """Add new infrastructure template to library."""
+        
+    def search_templates(self, criteria: SearchCriteria) -> List[Template]:
+        """Search templates by category, complexity, provider, etc."""
+        
+    def get_template(self, template_id: str) -> Template:
+        """Retrieve specific template by ID."""
+        
+    def validate_template(self, template: Template) -> ValidationResult:
+        """Validate template syntax and completeness."""
 ```
 
 ## Dependencies

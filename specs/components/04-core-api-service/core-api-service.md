@@ -31,35 +31,115 @@ The Core API Service serves as the central orchestration and coordination layer 
 - **Audit Logs**: Structured logging for all API operations and access patterns
 
 ### Public REST / gRPC / CLI commands
-```
+```http
 # Simulation Management
-POST /api/v1/simulations - Create new simulation from attack scenario
-GET /api/v1/simulations - List all simulations with filtering and pagination
-GET /api/v1/simulations/{id} - Get detailed simulation information
-PUT /api/v1/simulations/{id} - Update simulation configuration
-DELETE /api/v1/simulations/{id} - Delete and cleanup simulation resources
+POST /api/v1/simulations
+  - Create new simulation from attack scenario
+  - Request: SimulationRequest
+  - Response: SimulationResponse
+  - Consumer: CLI Interface, GUI Interface, MCP Service
+
+GET /api/v1/simulations
+  - List all simulations with filtering and pagination
+  - Query params: status, created_after, created_before, limit, offset
+  - Response: {"simulations": [SimulationResponse], "total": 150, "offset": 0}
+  - Consumer: GUI Interface, Operations Dashboard
+
+GET /api/v1/simulations/{id}
+  - Get detailed simulation information
+  - Response: SimulationResponse with full details
+  - Consumer: CLI Interface, GUI Interface, Agents
+
+PUT /api/v1/simulations/{id}
+  - Update simulation configuration
+  - Request: Partial SimulationRequest
+  - Response: SimulationResponse
+  - Consumer: GUI Interface, Operations Dashboard
+
+DELETE /api/v1/simulations/{id}
+  - Delete and cleanup simulation resources
+  - Response: {"status": "deleted", "cleanup_jobs": ["job1", "job2"]}
+  - Consumer: CLI Interface, GUI Interface, Auto-cleanup
 
 # Workflow Management
-POST /api/v1/simulations/{id}/start - Start simulation deployment
-POST /api/v1/simulations/{id}/stop - Stop and cleanup simulation
-GET /api/v1/simulations/{id}/status - Get current simulation status and progress
-GET /api/v1/simulations/{id}/logs - Stream simulation logs and events
+POST /api/v1/simulations/{id}/start
+  - Start simulation deployment
+  - Request: {"force_restart": false}
+  - Response: {"status": "started", "workflow_id": "uuid"}
+  - Consumer: CLI Interface, GUI Interface, Orchestrator Agent
+
+POST /api/v1/simulations/{id}/stop
+  - Stop and cleanup simulation
+  - Request: {"immediate": false, "preserve_data": true}
+  - Response: {"status": "stopping", "estimated_completion": "2023-12-01T15:30:00Z"}
+  - Consumer: CLI Interface, GUI Interface, Emergency Controls
+
+GET /api/v1/simulations/{id}/status
+  - Get current simulation status and progress
+  - Response: {"status": "deploying", "progress": 65, "current_step": "infrasynthesis", "eta": "2023-12-01T14:00:00Z"}
+  - Consumer: CLI Interface, GUI Interface, Monitoring
+
+GET /api/v1/simulations/{id}/logs
+  - Stream simulation logs and events via WebSocket
+  - Response: Stream of {"timestamp": "...", "level": "info", "message": "...", "component": "clarifier"}
+  - Consumer: CLI Interface, GUI Interface, Operations Dashboard
 
 # Graph and Visualization
-GET /api/v1/simulations/{id}/graph - Get graph visualization data
-GET /api/v1/simulations/{id}/resources - List all deployed resources
-GET /api/v1/simulations/{id}/costs - Get cost breakdown and projections
+GET /api/v1/simulations/{id}/graph
+  - Get graph visualization data for force-directed layouts
+  - Response: {"nodes": [...], "edges": [...], "layout": "force-directed"}
+  - Consumer: GUI Interface
+
+GET /api/v1/simulations/{id}/resources
+  - List all deployed resources with current status
+  - Response: {"resources": [ResourceSummary], "cost_estimate": "$45.20/hour"}
+  - Consumer: GUI Interface, Operations Dashboard, Cost Management
+
+GET /api/v1/simulations/{id}/costs
+  - Get detailed cost breakdown and projections
+  - Response: CostBreakdown with hourly/daily/monthly projections
+  - Consumer: GUI Interface, Operations Dashboard, FinOps
 
 # Template and Library Management
-GET /api/v1/templates/attacks - List attack pattern templates
-GET /api/v1/templates/infrastructure - List infrastructure templates
-POST /api/v1/templates - Upload new template to library
+GET /api/v1/templates/attacks
+  - List available attack pattern templates
+  - Query params: category, severity, mitre_technique
+  - Response: {"templates": [AttackTemplate], "categories": ["lateral-movement"]}
+  - Consumer: CLI Interface, GUI Interface, Clarifier Agent
+
+GET /api/v1/templates/infrastructure
+  - List IaC templates in spec library
+  - Query params: provider, category, complexity
+  - Response: {"templates": [InfraTemplate], "providers": ["terraform", "bicep"]}
+  - Consumer: Planner Agent, InfraSynthesis Agent
+
+POST /api/v1/templates
+  - Upload new template to library
+  - Request: {"type": "attack|infrastructure", "template": TemplateSpec}
+  - Response: {"template_id": "uuid", "status": "validated"}
+  - Consumer: Template Authors, GUI Interface
 
 # System Management
-GET /api/v1/health - System health check and service status
-GET /api/v1/metrics - System metrics and performance data
-POST /api/v1/agents/register - Register new agent with capabilities
-GET /api/v1/agents - List registered agents and status
+GET /api/v1/health
+  - System health check and service status
+  - Response: {"status": "healthy", "services": {"graph_db": "healthy", "service_bus": "healthy"}}
+  - Consumer: Load Balancers, Monitoring Systems
+
+GET /api/v1/metrics
+  - System metrics and performance data
+  - Response: {"active_simulations": 12, "avg_response_time_ms": 145, "error_rate": 0.01}
+  - Consumer: Operations Dashboard, Monitoring Systems
+
+POST /api/v1/agents/register
+  - Register new agent with capabilities
+  - Request: AgentRegistration
+  - Response: {"agent_id": "uuid", "status": "registered", "assigned_capabilities": [...]}
+  - Consumer: Agent Services, Orchestrator
+
+GET /api/v1/agents
+  - List registered agents and their current status
+  - Response: {"agents": [AgentStatus], "total_healthy": 6, "total_registered": 7}
+  - Consumer: Operations Dashboard, Health Monitoring
 ```
 
 ## Dependencies

@@ -61,6 +61,16 @@ The Configuration Service provides centralized configuration management for all 
 ### Development Dependencies
 - **Python**: python-dotenv for environment file parsing, watchdog for file monitoring
 - **Node.js**: dotenv package, chokidar for file watching
+### Dependent Components (Consumers)
+The Configuration Service is consumed by all SimBuilder components:
+- **Core API Service**: Service endpoint configuration and authentication settings
+- **Graph Database Service**: Database connection parameters and Neo4j configuration
+- **Service Bus**: Message broker configuration and connection strings
+- **Spec Library**: Git repository configuration and storage settings
+- **LLM Foundry Integration**: Azure OpenAI credentials and model configuration
+- **Tenant Discovery Agent**: Azure authentication and discovery scope settings
+- **CLI Interface**: Default settings and interactive configuration prompts
+- **All Other Components**: Environment-specific settings and operational parameters
 - **File System**: Native file system APIs for configuration file operations
 
 ## Acceptance Criteria
@@ -88,6 +98,101 @@ The Configuration Service provides centralized configuration management for all 
 - [ ] Complete `.env.template` with all required and optional parameters
 - [ ] Clear documentation for configuration parameter purposes and formats
 - [ ] Developer guide for adding new configuration parameters
+## Interfaces / API Signatures
+
+### Configuration Loading Interface
+```python
+class ConfigManager:
+    """Singleton configuration manager providing centralized access to all configuration values."""
+    
+    @classmethod
+    def get_instance() -> 'ConfigManager':
+        """Get singleton instance of ConfigManager."""
+        
+    def get(self, key: str, default: Any = None) -> Any:
+        """Retrieve configuration value by key with optional default."""
+        
+    def get_required(self, key: str) -> Any:
+        """Retrieve required configuration value, raise ConfigurationError if missing."""
+        
+    def get_section(self, section_prefix: str) -> Dict[str, Any]:
+        """Get all configuration keys with specified prefix as dictionary."""
+        
+    def reload() -> bool:
+        """Hot-reload configuration from file, return True if successful."""
+        
+    def validate() -> List[ValidationError]:
+        """Validate all configuration values, return list of errors."""
+        
+    def is_development() -> bool:
+        """Check if running in development environment."""
+        
+    def mask_sensitive(self, value: str, key: str) -> str:
+        """Mask sensitive configuration values for logging."""
+```
+
+### Configuration Validation Interface
+```python
+class ConfigValidator:
+    """Configuration validation engine with extensible rules."""
+    
+    def validate_azure_credentials() -> ValidationResult:
+        """Validate Azure authentication configuration."""
+        
+    def validate_database_connection() -> ValidationResult:
+        """Validate database connection parameters."""
+        
+    def validate_service_endpoints() -> ValidationResult:
+        """Validate all service endpoint configurations."""
+        
+    def validate_security_settings() -> ValidationResult:
+        """Validate security-related configuration parameters."""
+```
+
+### Interactive Configuration Interface
+```python
+class ConfigurationPrompt:
+    """Interactive configuration completion for missing parameters."""
+    
+    def prompt_missing_config() -> Dict[str, str]:
+        """Prompt user for missing critical configuration values."""
+        
+    def validate_user_input(key: str, value: str) -> bool:
+        """Validate user-provided configuration value."""
+        
+    def save_configuration(config_updates: Dict[str, str]) -> bool:
+        """Save updated configuration to .env file."""
+```
+
+### REST API Endpoints
+```http
+GET /config/health
+  - Check configuration service health and validation status
+  - Response: {"status": "healthy", "validation_errors": []}
+
+GET /config/template
+  - Retrieve current .env.template content
+  - Response: Plain text .env.template file
+
+POST /config/validate
+  - Validate current configuration
+  - Request: {"section": "optional_section_filter"}
+  - Response: {"valid": true, "errors": [], "warnings": []}
+
+GET /config/environment
+  - Get current environment context (development/staging/production)
+  - Response: {"environment": "development", "debug_mode": true}
+```
+
+### Consumer Components
+The Configuration Service provides interfaces consumed by:
+- **All SimBuilder Components**: Core configuration loading via [`ConfigManager.get()`](config_manager.py:15)
+- **Core API Service**: Environment validation via [`ConfigValidator.validate_service_endpoints()`](config_validator.py:23)
+- **Graph Database Service**: Database connection parameters via [`ConfigManager.get_section("GRAPH_DB")`](config_manager.py:31)
+- **Service Bus**: Message broker configuration via [`ConfigManager.get_section("SERVICE_BUS")`](config_manager.py:31)
+- **LLM Foundry Integration**: Azure OpenAI credentials via [`ConfigManager.get_section("AZURE_OPENAI")`](config_manager.py:31)
+- **Tenant Discovery Agent**: Azure authentication via [`ConfigManager.get_section("AZURE")`](config_manager.py:31)
+- **CLI Interface**: Interactive configuration prompts via [`ConfigurationPrompt.prompt_missing_config()`](config_prompt.py:12)
 
 ## Environment Template
 

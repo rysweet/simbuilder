@@ -83,6 +83,174 @@ interface GenerationOptions {
 1. Configuration Service provides auth method and credentials
 2. LLMClient auto-detects authentication mode
 3. Adapter configures Azure SDK client with appropriate auth
+### Middleware Pipeline
+1. **Request Validation** - Schema validation and parameter sanitization
+2. **Authentication** - Token management and credential validation  
+3. **Rate Limiting** - Request throttling and quota enforcement
+4. **Retry Logic** - Exponential backoff for transient failures
+5. **Usage Tracking** - Token counting and cost calculation
+6. **Response Processing** - Format standardization and error handling
+
+## Interfaces / API Signatures
+
+### Core LLM Client Interface
+```python
+class LLMClient:
+    """Unified interface for Azure AI Foundry and OpenAI models."""
+    
+    @classmethod
+    def get_instance() -> 'LLMClient':
+        """Get singleton instance with configured authentication."""
+        
+    async def generate_text(self, prompt: str, options: GenerationOptions = None) -> TextResponse:
+        """Generate text completion using reasoning models."""
+        
+    async def generate_chat(self, messages: List[ChatMessage], options: GenerationOptions = None) -> ChatResponse:
+        """Generate chat completion using chat models."""
+        
+    async def generate_text_stream(self, prompt: str, options: GenerationOptions = None) -> AsyncIterator[TextChunk]:
+        """Stream text completion with real-time token delivery."""
+        
+    async def generate_chat_stream(self, messages: List[ChatMessage], options: GenerationOptions = None) -> AsyncIterator[ChatChunk]:
+        """Stream chat completion with real-time message delivery."""
+        
+    def get_usage_stats(self, timeframe: str = "24h") -> UsageStatistics:
+        """Retrieve token usage and cost statistics."""
+        
+    async def health_check() -> HealthStatus:
+        """Check service connectivity and model availability."""
+```
+
+### Request/Response Data Contracts
+```python
+class GenerationOptions(BaseModel):
+    model: Optional[str] = None  # Auto-selected if not specified
+    max_tokens: Optional[int] = 1000
+    temperature: Optional[float] = 0.7
+    top_p: Optional[float] = 0.9
+    frequency_penalty: Optional[float] = 0.0
+    presence_penalty: Optional[float] = 0.0
+    timeout_seconds: Optional[int] = 30
+    retry_policy: Optional[RetryPolicy] = None
+
+class ChatMessage(BaseModel):
+    role: Literal["system", "user", "assistant"]
+    content: str
+    name: Optional[str] = None
+
+class TextResponse(BaseModel):
+    text: str
+    model_used: str
+    tokens_used: int
+    finish_reason: str
+    response_id: str
+    created_at: datetime
+
+class ChatResponse(BaseModel):
+    message: ChatMessage
+    model_used: str
+    tokens_used: int
+    finish_reason: str
+    response_id: str
+    created_at: datetime
+
+class UsageStatistics(BaseModel):
+    total_requests: int
+    total_tokens: int
+    estimated_cost: float
+    average_latency_ms: float
+    error_rate: float
+    by_model: Dict[str, ModelUsage]
+```
+
+### Authentication Interface
+```python
+class LLMAuthenticator:
+    """Handles multi-authentication for Azure services."""
+    
+    def configure_api_key_auth(self, endpoint: str, api_key: str) -> bool:
+        """Configure API key authentication."""
+        
+    def configure_bearer_token_auth(self, endpoint: str, token: str) -> bool:
+        """Configure Azure AD bearer token authentication."""
+        
+    async def refresh_token_if_needed() -> bool:
+        """Automatically refresh authentication tokens."""
+        
+    def get_auth_headers() -> Dict[str, str]:
+        """Get current authentication headers for requests."""
+```
+
+### Model Router Interface
+```python
+class ModelRouter:
+    """Policy-based routing to appropriate models."""
+    
+    def select_reasoning_model(self, context: RequestContext) -> str:
+        """Select best reasoning model based on request characteristics."""
+        
+    def select_chat_model(self, context: RequestContext) -> str:
+        """Select best chat model based on conversation context."""
+        
+    def update_routing_policy(self, policy: RoutingPolicy) -> bool:
+        """Update model selection policies."""
+        
+    def get_model_capabilities(self, model_name: str) -> ModelCapabilities:
+        """Get model-specific capabilities and limits."""
+```
+
+### REST API Endpoints
+```http
+POST /llm/generate/text
+  - Generate text completion
+  - Request: {"prompt": "string", "options": GenerationOptions}
+  - Response: TextResponse
+  - Consumer: Tenant Discovery Agent, Core API Service
+
+POST /llm/generate/chat
+  - Generate chat completion  
+  - Request: {"messages": [ChatMessage], "options": GenerationOptions}
+  - Response: ChatResponse
+  - Consumer: Core API Service, CLI Interface
+
+GET /llm/generate/text/stream
+  - Stream text completion via Server-Sent Events
+  - Query params: prompt, model, max_tokens, temperature
+  - Response: Stream of TextChunk events
+  - Consumer: GUI Interface, CLI Interface
+
+GET /llm/generate/chat/stream
+  - Stream chat completion via Server-Sent Events
+  - Query params: messages (JSON), model, max_tokens, temperature
+  - Response: Stream of ChatChunk events
+  - Consumer: GUI Interface
+
+GET /llm/usage/statistics
+  - Get usage statistics and costs
+  - Query params: timeframe (1h, 24h, 7d, 30d)
+  - Response: UsageStatistics
+  - Consumer: Core API Service, Operations Dashboard
+
+GET /llm/health
+  - Service health and model availability
+  - Response: {"status": "healthy", "models": ["gpt-4o"], "latency_ms": 150}
+  - Consumer: Core API Service, Monitoring Systems
+
+POST /llm/models/test
+  - Test model connectivity and performance
+  - Request: {"model": "gpt-4o", "test_prompt": "string"}
+  - Response: {"success": true, "latency_ms": 200, "tokens": 50}
+  - Consumer: System Administration, DevOps
+```
+
+### Consumer Components
+The LLM Foundry Integration provides interfaces consumed by:
+- **Tenant Discovery Agent**: Narrative generation via [`LLMClient.generate_text()`](llm_client.py:15)
+- **Core API Service**: General text processing via [`LLMClient.generate_chat()`](llm_client.py:23)
+- **CLI Interface**: Interactive assistance via [`LLMClient.generate_chat_stream()`](llm_client.py:31)
+- **GUI Interface**: Real-time responses via [`LLMClient.generate_text_stream()`](llm_client.py:27)
+- **Operations Dashboard**: Usage monitoring via [`LLMClient.get_usage_stats()`](llm_client.py:35)
+- **System Health Checks**: Service monitoring via [`LLMClient.health_check()`](llm_client.py:39)
 4. Middleware handles token refresh and error recovery
 
 ## Dependencies

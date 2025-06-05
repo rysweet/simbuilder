@@ -48,6 +48,32 @@ The implementation order satisfies the dependency graph by ensuring foundational
 ## Dependencies
 
 - CLI Interface (basic implementation) – used to initiate tenant discovery.
+## Interface Overview
+
+The following table summarizes the key interfaces between TenantDiscoveryMVP components:
+
+| Provider Component | Consumer Component | Interface | Key Endpoints/Methods |
+|-------------------|-------------------|-----------|----------------------|
+| **Configuration Service** | All Components | Configuration API | `ConfigManager.get()`, `ConfigManager.get_section()` |
+| **Graph Database Service** | Core API Service | REST API | `POST /graph/nodes`, `GET /graph/query` |
+| **Graph Database Service** | Tenant Discovery Agent | Neo4j Connector | `Neo4jConnector.execute_query()`, `POST /tenant-discovery/import` |
+| **Service Bus** | All Agents | CloudEvents Messaging | `ServiceBusClient.publish_message()`, `ServiceBusClient.subscribe_to_topic()` |
+| **Core API Service** | CLI Interface | REST API | `POST /api/v1/simulations`, `GET /api/v1/simulations/{id}/status` |
+| **Core API Service** | Tenant Discovery Agent | Session Management | `POST /api/v1/agents/register`, Agent coordination |
+| **Spec Library** | Clarifier Agent | Template API | `GET /specs/templates/attacks`, `TemplateLibrary.search_templates()` |
+| **Spec Library** | Planner Agent | Infrastructure Templates | `GET /specs/templates/infrastructure` |
+| **LLM Foundry Integration** | Tenant Discovery Agent | LLM Client | `LLMClient.generate_text()`, Narrative generation |
+| **LLM Foundry Integration** | CLI Interface | Interactive Assistance | `LLMClient.generate_chat_stream()` |
+| **Tenant Discovery Agent** | Graph Database Service | Resource Import | `POST /tenant-discovery/import`, Azure resource graphs |
+| **CLI Interface** | Configuration Service | Interactive Config | `ConfigurationPrompt.prompt_missing_config()` |
+
+### Message Flow Patterns
+
+1. **Discovery Workflow**: CLI → Core API → Tenant Discovery Agent → Graph Database Service
+2. **Progress Updates**: Tenant Discovery Agent → Service Bus → Core API → CLI (real-time)
+3. **Configuration Loading**: All Components → Configuration Service (startup)
+4. **Template Access**: Agents → Spec Library → Git Repository (on-demand)
+5. **Narrative Generation**: Tenant Discovery Agent → LLM Foundry Integration → Azure OpenAI
 No circular dependencies exist in this design, enabling parallel development of infrastructure components (Phases 2-4) after Phase 1 completion.
 
 ## Deliverables

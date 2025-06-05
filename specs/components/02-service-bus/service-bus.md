@@ -57,12 +57,64 @@ CloudEvent Envelope:
 - **Audit Trail**: Message provenance and delivery confirmation
 
 ### Public REST / gRPC / CLI commands
+```http
+POST /servicebus/topics/{topic}/messages
+  - Send CloudEvents message to specified topic
+  - Request: CloudEvent with Protobuf payload
+  - Response: {"message_id": "uuid", "status": "queued"}
+  - Consumer: All Agents, Core API Service
+
+GET /servicebus/topics/{topic}/subscriptions/{subscription}/messages
+  - Receive messages from subscription with optional filtering
+  - Query params: max_messages, timeout_seconds, message_filter
+  - Response: Array of CloudEvent messages
+  - Consumer: Agent Subscribers, Core API Service
+
+POST /servicebus/subscriptions/{subscription}/deadletter
+  - Move failed message to dead letter queue for manual review
+  - Request: {"message_id": "uuid", "reason": "processing_failed"}
+  - Response: {"status": "moved", "deadletter_id": "uuid"}
+  - Consumer: Error Handling Services, Operations Team
+
+GET /servicebus/health
+  - Service health and broker connection status
+  - Response: {"status": "healthy", "broker_type": "nats|azure", "latency_ms": 50}
+  - Consumer: Core API Service, Monitoring Systems
+
+GET /servicebus/metrics
+  - Queue depths, throughput, and latency metrics
+  - Response: {"topics": {}, "throughput_per_minute": 1500, "avg_latency_ms": 25}
+  - Consumer: Operations Dashboard, Alerting Systems
+
+POST /servicebus/topics/{topic}/subscriptions
+  - Create new subscription with filtering rules
+  - Request: {"subscription_name": "string", "filter": "subject LIKE 'sim.workflow.%'"}
+  - Response: {"subscription_id": "uuid", "status": "created"}
+  - Consumer: Agent Registration, Core API Service
 ```
-POST /servicebus/topics/{topic}/messages - Send message to topic
-GET /servicebus/topics/{topic}/subscriptions/{subscription}/messages - Receive messages
-POST /servicebus/subscriptions/{subscription}/deadletter - Move message to dead letter queue
-GET /servicebus/health - Service health and connection status
-GET /servicebus/metrics - Queue depths, throughput, and latency metrics
+
+### Message Processing Interface
+```python
+class ServiceBusClient:
+    """Unified client for NATS JetStream and Azure Service Bus."""
+    
+    async def publish_message(self, topic: str, cloud_event: CloudEvent) -> PublishResult:
+        """Publish CloudEvents message to topic with delivery confirmation."""
+        
+    async def subscribe_to_topic(self, topic: str, subscription: str, handler: MessageHandler) -> Subscription:
+        """Subscribe to topic with message handler and automatic acknowledgment."""
+        
+    async def receive_messages(self, subscription: str, max_messages: int = 10) -> List[CloudEvent]:
+        """Receive batch of messages from subscription with manual acknowledgment."""
+        
+    async def acknowledge_message(self, message_id: str) -> bool:
+        """Acknowledge successful message processing."""
+        
+    async def reject_message(self, message_id: str, reason: str) -> bool:
+        """Reject message and move to dead letter queue."""
+        
+    def create_cloud_event(self, event_type: str, source: str, data: Any) -> CloudEvent:
+        """Create properly formatted CloudEvent with Protobuf serialization."""
 ```
 
 ## Dependencies
@@ -71,6 +123,17 @@ GET /servicebus/metrics - Queue depths, throughput, and latency metrics
 - **Azure Service Bus**: Primary messaging infrastructure (production)
 - **NATS JetStream**: Local development messaging broker
 - **Core API Service**: Authentication and service registration
+### Consumer Components
+The Service Bus provides messaging interfaces consumed by:
+- **Orchestrator Agent**: Workflow coordination via [`ServiceBusClient.publish_message("simulation-workflow")`](service_bus_client.py:15)
+- **Clarifier Agent**: Task completion notifications via [`ServiceBusClient.subscribe_to_topic("simulation-workflow", "clarifier-agent")`](service_bus_client.py:23)
+- **Planner Agent**: Planning workflow messages via [`ServiceBusClient.subscribe_to_topic("simulation-workflow", "planner-agent")`](service_bus_client.py:23)
+- **InfraSynthesis Agent**: Deployment messages via [`ServiceBusClient.subscribe_to_topic("simulation-workflow", "infrasynthesis-agent")`](service_bus_client.py:23)
+- **DataSeeder Agent**: Seeding coordination via [`ServiceBusClient.subscribe_to_topic("simulation-workflow", "dataseeder-agent")`](service_bus_client.py:23)
+- **Validator Agent**: Validation triggers via [`ServiceBusClient.subscribe_to_topic("simulation-workflow", "validator-agent")`](service_bus_client.py:23)
+- **Tenant Discovery Agent**: Discovery progress updates via [`ServiceBusClient.publish_message("agent-health")`](service_bus_client.py:15)
+- **Core API Service**: Health monitoring via [`ServiceBusClient.subscribe_to_topic("agent-health", "core-api-monitoring")`](service_bus_client.py:23)
+- **Graph Database Service**: State update notifications via [`ServiceBusClient.subscribe_to_topic("simulation-workflow", "graph-db-updates")`](service_bus_client.py:23)
 - **Graph Database Service**: Message state persistence and audit logging
 - **Azure Key Vault**: Connection string and secret management
 - **Azure Monitor**: Metrics collection and alerting

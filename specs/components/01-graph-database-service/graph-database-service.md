@@ -412,6 +412,19 @@ Cypher Schema Conventions:
   - Batch ingestion via LOAD CSV WITH HEADERS for large tenant exports (10,000+ resources)
 ```
 
+### Consumer Components
+The Graph Database Service provides interfaces consumed by:
+- **Core API Service**: Simulation metadata queries via [`POST /graph/query`](graph-service.py:45) and [`GET /graph/visualize/{simulation_id}`](graph-service.py:67)
+- **Tenant Discovery Agent**: Resource graph population via [`POST /tenant-discovery/import`](graph-service.py:89) and [`Neo4jConnector.execute_query()`](neo4j_connector.py:127)
+- **Clarifier Agent**: Attack specification storage via [`POST /graph/nodes`](graph-service.py:23) and relationship queries
+- **Planner Agent**: Resource plan storage and dependency analysis via [`POST /graph/relationships`](graph-service.py:34) and path analysis
+- **InfraSynthesis Agent**: Deployment manifest storage via [`POST /graph/nodes`](graph-service.py:23) and validation queries
+- **DataSeeder Agent**: Seeded data tracking via [`POST /graph/relationships`](graph-service.py:34) and identity mapping
+- **Validator Agent**: Telemetry validation via [`GET /graph/query`](graph-service.py:45) and state comparison
+- **GUI Interface**: Visualization data via [`GET /graph/visualize/{simulation_id}`](graph-service.py:67) and real-time updates
+- **Service Bus**: State change notifications via [`Neo4jConnector.execute_query()`](neo4j_connector.py:127) and event triggers
+```
+
 ## Dependencies
 
 ### Internal Dependencies

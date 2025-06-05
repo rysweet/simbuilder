@@ -33,15 +33,96 @@ The Tenant Discovery Agent performs comprehensive enumeration of Azure tenant re
 - **Error Reports**: Failed discoveries, permission issues, and API limitations encountered
 
 ### Public REST / gRPC / CLI commands
+```http
+POST /tenant-discovery/sessions
+  - Start new tenant discovery session with scope and credentials
+  - Request: {"tenant_id": "uuid", "scope": DiscoveryScope, "credentials": AzureCredentials}
+  - Response: {"session_id": "uuid", "status": "initializing", "estimated_duration": "PT30M"}
+  - Consumer: Core API Service, CLI Interface
+
+GET /tenant-discovery/sessions/{id}/status
+  - Get current discovery progress and metrics
+  - Response: {"status": "discovering_resources", "progress": 65, "resources_found": 1247, "eta": "PT15M"}
+  - Consumer: Core API Service, GUI Interface, Progress Monitoring
+
+POST /tenant-discovery/sessions/{id}/pause
+  - Pause ongoing discovery operation with state preservation
+  - Request: {"reason": "rate_limit_hit"}
+  - Response: {"status": "paused", "resume_token": "abc123", "resources_discovered": 892}
+  - Consumer: Rate Limiting Systems, Manual Controls
+
+POST /tenant-discovery/sessions/{id}/resume
+  - Resume paused discovery operation from saved state
+  - Request: {"resume_token": "abc123"}
+  - Response: {"status": "discovering_resources", "resumed_from": "subscription_enumeration"}
+  - Consumer: Rate Limiting Systems, Manual Controls
+
+DELETE /tenant-discovery/sessions/{id}
+  - Cancel discovery session and cleanup partial data
+  - Response: {"status": "cancelled", "partial_results_available": true, "cleanup_job_id": "uuid"}
+  - Consumer: Emergency Controls, Session Management
+
+GET /tenant-discovery/sessions/{id}/results
+  - Retrieve complete discovery results and export data
+  - Response: TenantDiscoveryExport with resources and relationships
+  - Consumer: Graph Database Service, Core API Service, Data Analysis
+
+GET /tenant-discovery/sessions/{id}/narrative
+  - Get generated narrative documentation in specified format
+  - Query params: format (markdown, json, html), detail_level (summary, detailed, comprehensive)
+  - Response: NarrativeDocumentation with architecture description
+  - Consumer: Documentation Systems, Reporting, Human Review
+
+POST /tenant-discovery/validate-credentials
+  - Validate Azure credentials and enumerate accessible permissions
+  - Request: AzureCredentials
+  - Response: {"valid": true, "permissions": [...], "accessible_subscriptions": [...]}
+  - Consumer: Credential Management, Pre-flight Validation
+
+GET /tenant-discovery/sessions/{id}/export
+  - Export discovery results in various formats
+  - Query params: format (json, csv, cypher), include_relationships (boolean)
+  - Response: Formatted export data for external consumption
+  - Consumer: Data Integration, External Systems, Backup
 ```
-POST /tenant-discovery/sessions - Start new tenant discovery session
-GET /tenant-discovery/sessions/{id}/status - Get current discovery progress
-POST /tenant-discovery/sessions/{id}/pause - Pause ongoing discovery operation
-POST /tenant-discovery/sessions/{id}/resume - Resume paused discovery operation
-DELETE /tenant-discovery/sessions/{id} - Cancel discovery session
-GET /tenant-discovery/sessions/{id}/results - Retrieve discovery results
-GET /tenant-discovery/sessions/{id}/narrative - Get generated narrative documentation
-POST /tenant-discovery/validate-credentials - Validate Azure credentials and permissions
+
+### Azure Integration Interface
+```python
+class AzureDiscoveryClient:
+    """Azure API integration for comprehensive tenant discovery."""
+    
+    def authenticate(self, credentials: AzureCredentials) -> bool:
+        """Authenticate with Azure using provided credentials."""
+        
+    def enumerate_subscriptions(self) -> List[AzureSubscription]:
+        """Discover all accessible subscriptions in tenant."""
+        
+    def discover_resources(self, subscription_id: str, resource_types: List[str] = None) -> List[AzureResource]:
+        """Enumerate resources within subscription using ARM and Resource Graph."""
+        
+    def analyze_relationships(self, resources: List[AzureResource]) -> List[ResourceRelationship]:
+        """Analyze and map relationships between discovered resources."""
+        
+    def validate_permissions(self, subscription_id: str) -> PermissionReport:
+        """Validate current permissions and identify access limitations."""
+```
+
+### Progress Notification Interface
+```python
+class DiscoveryProgressNotifier:
+    """Real-time progress updates via Service Bus."""
+    
+    def notify_session_started(self, session_id: str, scope: DiscoveryScope) -> None:
+        """Notify that discovery session has started."""
+        
+    def notify_progress_update(self, session_id: str, progress: DiscoveryProgress) -> None:
+        """Send progress update with current metrics."""
+        
+    def notify_session_completed(self, session_id: str, results: TenantDiscoveryExport) -> None:
+        """Notify that discovery has completed with results summary."""
+        
+    def notify_error(self, session_id: str, error: DiscoveryError) -> None:
+        """Report discovery errors and failures."""
 ```
 
 ## Dependencies

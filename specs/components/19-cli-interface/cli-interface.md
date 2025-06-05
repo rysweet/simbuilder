@@ -56,6 +56,59 @@ simbuilder config [--set KEY=VALUE] [--get KEY] [--list]
 simbuilder report costs [--period DAYS] [--format json|csv]
 simbuilder report usage [--by-user] [--by-simulation]
 simbuilder export <simulation-id> [--format yaml|json] [--include-secrets]
+### Core CLI Interface
+```python
+class SimBuilderCLI:
+    """Main CLI application class with command groups and context management."""
+    
+    def __init__(self, config: CLIConfig):
+        """Initialize CLI with configuration and API client."""
+        
+    def create_simulation(self, scenario_file: str = None, interactive: bool = False, **kwargs) -> str:
+        """Create new simulation via Core API Service."""
+        
+    def list_simulations(self, status: str = None, format: str = "table") -> None:
+        """List simulations with formatting options."""
+        
+    def show_simulation(self, simulation_id: str, graph: bool = False, costs: bool = False) -> None:
+        """Display detailed simulation information."""
+        
+    def deploy_simulation(self, simulation_id: str, wait: bool = False) -> bool:
+        """Start simulation deployment and optionally wait for completion."""
+        
+    def configure_system(self, key: str = None, value: str = None) -> None:
+        """Manage system configuration via Configuration Service."""
+```
+
+### API Client Interface
+```python
+class APIClient:
+    """HTTP client for Core API Service communication."""
+    
+    def authenticate(self) -> bool:
+        """Authenticate with Core API Service using configured method."""
+        
+    def create_simulation(self, request: SimulationRequest) -> SimulationResponse:
+        """Create simulation via POST /api/v1/simulations."""
+        
+    def get_simulations(self, filters: Dict[str, Any]) -> List[SimulationResponse]:
+        """List simulations via GET /api/v1/simulations."""
+        
+    def get_simulation_status(self, simulation_id: str) -> SimulationStatus:
+        """Get simulation status via GET /api/v1/simulations/{id}/status."""
+        
+    def stream_logs(self, simulation_id: str) -> Iterator[LogEntry]:
+        """Stream simulation logs via WebSocket connection."""
+```
+
+### Consumer Components
+The CLI Interface provides command-line access to:
+- **Core API Service**: All simulation operations via [`APIClient.create_simulation()`](api_client.py:23) and management endpoints
+- **Configuration Service**: System configuration via [`simbuilder config`](cli_commands.py:156) and [`ConfigurationPrompt.prompt_missing_config()`](config_prompt.py:12)
+- **LLM Foundry Integration**: Interactive assistance via [`simbuilder create --interactive`](cli_commands.py:45) and chat completions
+- **Spec Library**: Template management via [`simbuilder templates`](cli_commands.py:89) and specification operations
+- **Tenant Discovery Agent**: Discovery operations via [`simbuilder discover`](cli_commands.py:123) command group
+- **Graph Database Service**: Visualization via [`simbuilder show --graph`](cli_commands.py:67) and graph queries
 ```
 
 ## Dependencies
