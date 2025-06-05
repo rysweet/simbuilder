@@ -12,6 +12,7 @@ The Clarifier Agent transforms user-provided attack scenarios into structured, c
 - As a **Planner Agent**, I need complete, structured attack specifications with all dependencies clearly defined
 - As a **Core API Service**, I need real-time updates on clarification progress and completion status
 - As a **System Administrator**, I need visibility into common clarification patterns for template improvement
+- Ask only high-impact missing details; infer remaining fields with sensible defaults to minimize user prompt fatigue.
 
 ## Interfaces / APIs
 
@@ -47,6 +48,8 @@ GET /clarifier/sessions/{id}/specification - Retrieve completed specification
 - **Service Bus**: Publishing clarification progress and completion events
 - **Spec Library**: Access to template library and historical attack patterns
 - **Microsoft Learn Knowledge Base**: Azure service expertise and best practices
+- **Liquid Template Engine**: Runtime loading of prompts from `prompts/clarifier/*.liquid` files
+- **Prompt Templates**: External Liquid templates for question generation, follow-up queries, and specification creation (no hard-coded prompts allowed)
 
 ## Data Contracts / Schemas
 
@@ -108,7 +111,9 @@ class ClarifierConfig(BaseModel):
 - **Domain Knowledge Integration**: Leveraging Microsoft Learn and MITRE ATT&CK data
 - **Natural Language Processing**: Text analysis and intent recognition techniques
 - **Session Management Guide**: Handling partial sessions, timeouts, and recovery
-- **AI Prompt Engineering**: Optimization strategies for question quality and relevance
+- **Liquid Template Documentation**: Template variable definitions and usage patterns for `prompts/clarifier/*.liquid` files
+- **Prompt Template Guidelines**: Standards for creating, testing, and maintaining external Liquid prompt templates
+- **Template Variable Schema**: Complete specification of all variables used across clarifier prompt templates
 - **Knowledge Base Curation**: Maintaining and updating domain expertise sources
 
 ## Testing Strategy
@@ -119,7 +124,9 @@ class ClarifierConfig(BaseModel):
 - Specification completeness assessment
 - Domain knowledge integration and lookup
 - Session state management and persistence
-- AI prompt construction and response parsing
+- Liquid template loading and variable validation
+- Template rendering with various input scenarios
+- Prompt template syntax validation and error handling
 
 ### Integration Tests
 - **Live Azure OpenAI required** - no mocking of AI services
@@ -128,6 +135,8 @@ class ClarifierConfig(BaseModel):
 - Integration with Graph Database for specification storage
 - Service Bus messaging for workflow coordination
 - Knowledge base queries and domain expertise retrieval
+- External Liquid template loading from `prompts/clarifier/` directory
+- Template variable injection and rendering accuracy
 
 ### Acceptance Tests
 - Complete attack scenario clarification from vague descriptions
@@ -135,6 +144,8 @@ class ClarifierConfig(BaseModel):
 - Multi-user concurrent clarification sessions
 - Knowledge base accuracy and relevance testing
 - Performance benchmarks for question generation and response times
+- Prompt template lint validation in CI/CD pipeline
+- Template variable completeness and consistency across all clarifier prompts
 
 ## Acceptance Criteria
 
@@ -145,10 +156,12 @@ class ClarifierConfig(BaseModel):
 - **Performance**: Generate questions within 3 seconds and process responses within 2 seconds
 - **Knowledge**: Demonstrate expertise in Azure services, security concepts, and attack patterns
 - **Reliability**: Handle session interruptions and resume clarification effectively
+- **Template Compliance**: All prompts MUST be loaded from external Liquid templates in `prompts/clarifier/` directory
+- **Template Quality**: All Liquid templates MUST pass CI/CD linting with valid syntax and complete variable definitions
+- **Runtime Loading**: Template loading failures MUST cause graceful agent initialization failure with clear error messages
 
 ## Open Questions
 
-- How should we balance question comprehensiveness with user experience and session length?
 - What domain knowledge sources should we prioritize for continuous learning and updates?
 - Should we implement adaptive questioning based on user expertise level and role?
 - How do we handle conflicting or contradictory answers within a clarification session?

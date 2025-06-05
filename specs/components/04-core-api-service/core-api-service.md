@@ -71,6 +71,7 @@ GET /api/v1/agents - List registered agents and status
 - **Azure Active Directory**: User authentication and authorization
 - **Azure Key Vault**: API keys and service credential management
 - **Redis**: Session management and caching layer
+- **External Prompt Templates**: All AI agent prompts are externalized to Liquid template files under `prompts/` directory
 
 ## Data Contracts / Schemas
 

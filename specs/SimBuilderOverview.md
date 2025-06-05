@@ -68,6 +68,7 @@ The SimBuilder architecture is implemented through a modular component system wi
 
 | Component | Description | Spec Link |
 |-----------|-------------|-----------|
+| Project Scaffolding | Repo bootstrap: tooling, lint, CI, dev-container | [specs/components/00-scaffolding/scaffolding.md](components/00-scaffolding/scaffolding.md) |
 | Graph Database Service | Neo4j-based central data store for simulation metadata and relationships | [specs/components/01-graph-database-service/graph-database-service.md](components/01-graph-database-service/graph-database-service.md) |
 | Service Bus | Azure Service Bus for asynchronous agent communication and workflow coordination | [specs/components/02-service-bus/service-bus.md](components/02-service-bus/service-bus.md) |
 | Spec Library | Git-based version control for simulation specifications and templates | [specs/components/03-spec-library/spec-library.md](components/03-spec-library/spec-library.md) |
@@ -90,6 +91,7 @@ The SimBuilder architecture is implemented through a modular component system wi
 | GUI Interface | React-based web interface with graph visualization | [specs/components/20-gui-interface/gui-interface.md](components/20-gui-interface/gui-interface.md) |
 | REST API Gateway | External API gateway for third-party integrations | [specs/components/21-rest-api-gateway/rest-api-gateway.md](components/21-rest-api-gateway/rest-api-gateway.md) |
 | MCP Service | Model Context Protocol service for AI assistant integration | [specs/components/22-mcp-service/mcp-service.md](components/22-mcp-service/mcp-service.md) |
+| Tenant Discovery Agent | Azure tenant resource enumeration and Neo4j graph population with narrative generation | [specs/components/23-tenant-discovery-agent/tenant-discovery-agent.md](components/23-tenant-discovery-agent/tenant-discovery-agent.md) |
 
 ## 4  Project Build & Run Instructions
 
@@ -173,13 +175,13 @@ Test categories:
 The following open questions have been aggregated from component specifications and require architectural decisions:
 
 ### Architecture & Design
-- Should we implement graph partitioning strategies for multi-tenant isolation in the Graph Database?
-- What approach should we use for handling multi-cloud scenarios or hybrid Azure/on-premises deployments?
-- How should we balance question comprehensiveness with user experience in the Clarifier Agent?
-- Should we implement collaborative features for team-based simulation management in the GUI?
+- ~~Should we implement graph partitioning strategies for multi-tenant isolation in the Graph Database?~~ **ANSWERED**: No partitioning; single graph suffices because SimBuilder admins have access to all tenants
+- ~~What approach should we use for handling multi-cloud scenarios or hybrid Azure/on-premises deployments?~~ **DECISION**: Scope is Azure-only; hybrid/multi-cloud is out-of-scope for v1—documented accordingly.
+- ~~How should we balance question comprehensiveness with user experience in the Clarifier Agent?~~ **Decision**: Clarifier Agent will only ask high-impact missing details and infer the rest with sensible defaults.
+- ~~Should we implement collaborative features for team-based simulation management in the GUI?~~ **Decision**: MVP is single-user GUI. Any collaboration will rely on Git history and shared Neo4j data; real-time features deferred.
 
 ### Security & Compliance
-- What privacy and security considerations apply to storing partial attack specifications?
+- ~~What privacy and security considerations apply to storing partial attack specifications?~~ **Decision**: Attack specifications contain no sensitive data; no additional encryption or masking needed beyond standard repository access controls.
 - How do we handle schema evolution for messages without breaking existing agents in the Service Bus?
 - Should we implement specification locking for concurrent editing scenarios in the Spec Library?
 - What authentication method should we use for agent-to-API communication in the Core API Service?
@@ -202,4 +204,17 @@ The following open questions have been aggregated from component specifications 
 - What approach should we use for handling Azure service deprecations and regional limitations?
 - Should we implement marketplace/sharing capabilities for specifications across organizations?
 
-## 7  Acceptance Criteria
+## 7  Prompt Templating Strategy
+
+SimBuilder uses **Liquid templating** for all LLM prompts across AI agents. All prompts are externalized to `.liquid` template files under the `prompts/` directory, ensuring consistency, maintainability, and language-agnostic template management.
+
+**Key decisions:**
+- Liquid chosen over Prompty for cross-language compatibility and mature tooling
+- Hard-coded prompts in source code are forbidden
+- Template loading happens at runtime with graceful failure handling
+- CI/CD includes automated prompt linting and variable validation
+- **Cross-component messaging uses CloudEvents over Protobuf**. Local dev broker: NATS JetStream in dev-compose; production broker: Azure Service Bus.
+
+For detailed rationale, directory structure, and implementation guidelines, see [Section 6: Prompt Templating Strategy](SimBuilderDesign.md#6-prompt-templating-strategy).
+
+## 8  Acceptance Criteria

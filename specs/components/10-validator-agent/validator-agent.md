@@ -49,6 +49,8 @@ GET /validate/health - Agent health and capability status
 - **Azure Resource Manager**: For infrastructure state verification
 - **Microsoft Graph/Entra Integration**: For identity and permission validation
 - **Terraform/ARM Runners**: For deployment state confirmation
+- **Liquid Template Engine**: Runtime loading of prompts from `prompts/validator/*.liquid` files
+- **Prompt Templates**: External Liquid templates for environment validation, prerequisite checks, and telemetry verification (no hard-coded prompts allowed)
 
 ## Data Contracts / Schemas
 
@@ -108,6 +110,9 @@ EnvironmentState:
 - **Telemetry Verification Guide**: Monitoring setup validation procedures
 - **Integration Testing Guide**: End-to-end validation testing approaches
 - **Performance Benchmarks**: Expected validation times and resource usage
+- **Liquid Template Documentation**: Template variable definitions and usage patterns for `prompts/validator/*.liquid` files
+- **Prompt Template Guidelines**: Standards for creating, testing, and maintaining external Liquid prompt templates
+- **Template Variable Schema**: Complete specification of all variables used across validator prompt templates
 
 ## Testing Strategy
 
@@ -118,6 +123,9 @@ EnvironmentState:
 - Error handling for failed validation checks
 - Configuration parsing and validation rule processing
 - Integration with external service APIs
+- Liquid template loading and variable validation
+- Template rendering with various validation scenarios
+- Prompt template syntax validation and error handling
 
 ### Integration Tests
 - **Live Azure environment validation** - no mocking of Azure services
@@ -126,6 +134,8 @@ EnvironmentState:
 - Identity validation with real Entra ID and Microsoft Graph
 - Performance testing with large-scale simulation environments
 - Error scenario testing with intentionally misconfigured environments
+- External Liquid template loading from `prompts/validator/` directory
+- Template variable injection and rendering accuracy
 
 ### End-to-End Acceptance Tests
 - Full simulation lifecycle validation including deployment and validation
@@ -133,6 +143,8 @@ EnvironmentState:
 - Attack precondition validation for sophisticated attack patterns
 - Validation report accuracy and completeness verification
 - Integration with GUI visualization of validation results
+- Prompt template lint validation in CI/CD pipeline
+- Template variable completeness and consistency across all validator prompts
 
 ## Acceptance Criteria
 
@@ -145,6 +157,9 @@ EnvironmentState:
 - **Integration**: Seamless integration with all deployment and monitoring components
 - **Security**: Secure validation processes with minimal privilege escalation
 - **Auditability**: Complete audit trail of all validation activities and results
+- **Template Compliance**: All prompts MUST be loaded from external Liquid templates in `prompts/validator/` directory
+- **Template Quality**: All Liquid templates MUST pass CI/CD linting with valid syntax and complete variable definitions
+- **Runtime Loading**: Template loading failures MUST cause graceful agent initialization failure with clear error messages
 
 ## Open Questions
 

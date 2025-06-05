@@ -13,6 +13,10 @@ The GUI Interface provides a modern web-based dashboard for SimBuilder, enabling
 - As a **New User**, I need guided workflows that walk me through simulation creation step-by-step
 - As a **Compliance Officer**, I need audit trail views and reporting interfaces for governance
 
+## Design Decisions
+
+- **MVP targets single-user workflow**: No real-time multi-user collaboration. Future ADR may add team collaboration.
+
 ## Interfaces / APIs
 
 ### Inputs
@@ -57,6 +61,7 @@ WebSocketService.connect(simulationId: string): WebSocket
 - **React Query**: Data fetching and caching management
 - **React Router**: Single-page application routing
 - **WebSocket Client**: Real-time update connections
+- **External Prompt Templates**: All AI agent prompts are externalized to Liquid template files under `prompts/` directory
 
 ## Data Contracts / Schemas
 
@@ -166,7 +171,6 @@ interface CostData {
 - Should we implement offline functionality using service workers and local storage?
 - What level of customization should we provide for dashboard layouts and widgets?
 - How should we handle large graph visualizations (1000+ nodes) for performance?
-- Should we implement collaborative features for team-based simulation management?
 - What mobile-specific features should we prioritize for field research scenarios?
 - How do we handle theme customization and branding for different organizations?
 - Should we implement guided tours or onboarding flows for new users?

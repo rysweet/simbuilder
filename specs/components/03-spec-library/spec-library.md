@@ -50,6 +50,7 @@ GET /specs/audit/{simulation_id} - Get specification change history
 - **Graph Database Service**: Specification metadata and relationship storage
 - **Azure Storage**: Large artifact storage and backup
 - **CI/CD Pipeline**: Automated validation and template testing
+- **Attack spec artifacts are not sensitive**: They are stored in plain text within the repository; standard Git access control applies.
 
 ## Data Contracts / Schemas
 

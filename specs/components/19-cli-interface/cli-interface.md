@@ -67,6 +67,7 @@ simbuilder export <simulation-id> [--format yaml|json] [--include-secrets]
 - **Requests**: HTTP client for API communication
 - **JWT Libraries**: Authentication token management
 - **Colorama**: Cross-platform colored terminal output
+- **External Prompt Templates**: All AI agent prompts are externalized to Liquid template files under `prompts/` directory
 
 ## Data Contracts / Schemas
 

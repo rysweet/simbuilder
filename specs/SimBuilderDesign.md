@@ -314,9 +314,109 @@ AttackSpec → ResourcePlan → DeploymentManifests → TelemetrySchema → Grap
 - Microsoft 365 APIs for workload data.  
 - Sentinel & Log Analytics for telemetry collection.  
 
-## 6 Testing & Governance
+## 6 Prompt Templating Strategy
 
-- **Unit & contract tests** executed per micro-service in isolated sandbox.  
-- **Canary environments** validated nightly with representative attack library.  
-- **Policy guardrails** (Azure Policy, Defender for Cloud) enforced pre-merge.  
+SimBuilder adopts **Liquid** as the standard templating engine for all LLM prompts across AI agents. This design decision ensures consistency, maintainability, and language-agnostic template management.
+
+### 6.1 Template Engine Selection: Liquid
+
+**Rationale**: After evaluation against Prompty and other alternatives, Liquid was chosen for:
+- **Language agnostic**: Works across Python, TypeScript, and other runtimes
+- **Mature ecosystem**: Widely adopted with robust tooling support
+- **Simplicity**: Clean syntax without complex programming constructs
+- **OSS integration**: Already used by several open-source prompt management tools
+- **Rendering consistency**: Identical output across different language implementations
+
+### 6.2 Directory Structure
+
+All prompt templates are stored under the `prompts/` directory with agent-specific subdirectories:
+
+```
+prompts/
+├── clarifier/
+│   ├── initial_questions.liquid
+│   ├── follow_up_questions.liquid
+│   └── spec_generation.liquid
+├── planner/
+│   ├── resource_analysis.liquid
+│   ├── plan_generation.liquid
+│   └── cost_estimation.liquid
+├── infrasynthesis/
+│   ├── terraform_generation.liquid
+│   ├── bicep_generation.liquid
+│   └── arm_generation.liquid
+├── orchestrator/
+│   ├── deployment_orchestration.liquid
+│   └── status_updates.liquid
+├── dataseeder/
+│   ├── identity_generation.liquid
+│   ├── data_population.liquid
+│   └── relationship_mapping.liquid
+├── validator/
+│   ├── environment_validation.liquid
+│   ├── prerequisite_check.liquid
+│   └── telemetry_verification.liquid
+└── tenant-discovery/
+    ├── enumeration_analysis.liquid
+    ├── graph_population.liquid
+    └── narrative_generation.liquid
+```
+
+### 6.3 Template Loading and Runtime Requirements
+
+**Mandatory Implementation Standards**:
+- All agents MUST load prompts from external `.liquid` files at runtime
+- Hard-coded prompts within source code are STRICTLY FORBIDDEN
+- Template loading failures MUST cause agent initialization to fail gracefully
+- All template variables MUST be validated before rendering
+- Rendered prompts SHOULD be logged (with sensitive data redacted) for debugging
+
+### 6.4 CI/CD Integration and Linting
+
+**Template Quality Assurance**:
+- Pre-commit hooks MUST validate Liquid syntax across all template files
+- CI pipeline MUST include prompt template linting using liquid-linter or equivalent
+- Template variable reference validation MUST be enforced (no undefined variables)
+- Template output length validation SHOULD be included to prevent token limit issues
+
+**Example lint configuration**:
+```yaml
+# .github/workflows/prompt-validation.yml
+- name: Validate Liquid Templates
+  run: |
+    find prompts/ -name "*.liquid" -exec liquid-lint {} \;
+    python scripts/validate_template_variables.py
+```
+
+### 6.5 Template Variable Guidelines
+
+**Consistency Standards**:
+- Use `snake_case` for all template variables
+- Prefix context-specific variables (e.g., `attack_spec_`, `resource_plan_`)
+- Include variable documentation in template headers as Liquid comments
+- Provide default values for optional variables using Liquid conditionals
+
+**Example template structure**:
+```liquid
+{%- comment -%}
+Template: clarifier/initial_questions.liquid
+Variables:
+  - attack_description (required): User's initial attack scenario description
+  - user_experience_level (optional): beginner|intermediate|expert, default: intermediate
+  - max_questions (optional): Maximum questions to ask, default: 5
+{%- endcomment -%}
+
+Based on your attack scenario: "{{ attack_description }}"
+
+{%- assign experience = user_experience_level | default: "intermediate" -%}
+{%- assign question_limit = max_questions | default: 5 -%}
+
+I need to gather additional details to create a comprehensive simulation...
+```
+
+## 7 Testing & Governance
+
+- **Unit & contract tests** executed per micro-service in isolated sandbox.
+- **Canary environments** validated nightly with representative attack library.
+- **Policy guardrails** (Azure Policy, Defender for Cloud) enforced pre-merge.
 

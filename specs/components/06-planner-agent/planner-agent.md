@@ -48,6 +48,8 @@ POST /planner/plans/{id}/validate - Validate plan against constraints and polici
 - **Spec Library**: Access to template library and reference architectures
 - **Azure Cost Management API**: Real-time pricing and cost estimation
 - **Azure Resource Graph**: Service availability and regional capability queries
+- **Liquid Template Engine**: Runtime loading of prompts from `prompts/planner/*.liquid` files
+- **Prompt Templates**: External Liquid templates for resource analysis, plan generation, and cost estimation (no hard-coded prompts allowed)
 
 ## Data Contracts / Schemas
 
@@ -118,7 +120,9 @@ class CostOptimizationLevel(str, Enum):
 - **Cost Optimization Strategies**: Techniques for balancing cost, performance, and security
 - **Dependency Resolution Algorithms**: How complex resource dependencies are managed
 - **Compliance Validation Procedures**: Ensuring plans meet security and regulatory requirements
-- **Template Development Guide**: Creating reusable resource plan templates
+- **Liquid Template Documentation**: Template variable definitions and usage patterns for `prompts/planner/*.liquid` files
+- **Prompt Template Guidelines**: Standards for creating, testing, and maintaining external Liquid prompt templates
+- **Template Variable Schema**: Complete specification of all variables used across planner prompt templates
 - **Performance Tuning Guide**: Optimizing plan generation speed and quality
 
 ## Testing Strategy
@@ -130,6 +134,9 @@ class CostOptimizationLevel(str, Enum):
 - Template matching and customization logic
 - Azure service configuration generation
 - Plan optimization algorithms
+- Liquid template loading and variable validation
+- Template rendering with various resource plan scenarios
+- Prompt template syntax validation and error handling
 
 ### Integration Tests
 - **Live Azure services required** - no mocking of Azure APIs for cost and service data
@@ -138,6 +145,8 @@ class CostOptimizationLevel(str, Enum):
 - Compliance framework integration and policy validation
 - Template library integration and pattern matching
 - Complex dependency resolution with multi-region deployments
+- External Liquid template loading from `prompts/planner/` directory
+- Template variable injection and rendering accuracy
 
 ### Acceptance Tests
 - Complete resource plans for representative attack scenarios
@@ -145,6 +154,8 @@ class CostOptimizationLevel(str, Enum):
 - Deployment success rates following generated plans and dependencies
 - Compliance validation against enterprise security policies
 - Performance benchmarks for plan generation under various complexity levels
+- Prompt template lint validation in CI/CD pipeline
+- Template variable completeness and consistency across all planner prompts
 
 ## Acceptance Criteria
 
@@ -155,6 +166,9 @@ class CostOptimizationLevel(str, Enum):
 - **Optimization**: Identify cost savings opportunities averaging 20%+ from baseline configurations
 - **Dependencies**: Generate deployment orders that prevent dependency conflicts
 - **Scalability**: Handle plans with 100+ resources across multiple regions and subscriptions
+- **Template Compliance**: All prompts MUST be loaded from external Liquid templates in `prompts/planner/` directory
+- **Template Quality**: All Liquid templates MUST pass CI/CD linting with valid syntax and complete variable definitions
+- **Runtime Loading**: Template loading failures MUST cause graceful agent initialization failure with clear error messages
 
 ## Open Questions
 
