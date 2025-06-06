@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  neo4j:
+    image: neo4j:5.11
+    container_name: simbuilder-neo4j
+    ports:
+      - "7474:7474"  # HTTP Browser
+      - "7687:7687"  # Bolt Protocol
+    environment:
+      - NEO4J_AUTH=neo4j/your-secure-password
+      - NEO4J_apoc_export_file_enabled=true
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*,gds.*
+      - NEO4J_dbms_default_database=simbuilder
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+      - neo4j_import:/var/lib/neo4j/import
+      - neo4j_plugins:/plugins
+    networks:
+      - simbuilder-network
+    healthcheck:
+      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "your-secure-password", "RETURN 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  nats:
+    image: nats:2.10-alpine
+    container_name: simbuilder-nats
+    ports:
+      - "4222:4222"  # Client connections
+      - "8222:8222"  # Management UI
+      - "6222:6222"  # Cluster connections
+    command: [
+      "--jetstream", 
+      "--store_dir=/data", 
+      "--http_port=8222",
+      "--cluster_name=simbuilder-cluster"
+    ]
+    volumes:
+      - nats_data:/data
+    networks:
+      - simbuilder-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8222/varz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:latest
+    container_name: simbuilder-azurite
+    ports:
+      - "10000:10000"  # Blob service
+      - "10001:10001"  # Queue service
+      - "10002:10002"  # Table service
+    volumes:
+      - azurite_data:/data
+    networks:
+      - simbuilder-network
+    command: >
+      azurite 
+      --blobHost 0.0.0.0 
+      --queueHost 0.0.0.0 
+      --tableHost 0.0.0.0 
+      --location /data 
+      --debug /data/debug.log
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "10000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  neo4j_data:
+    driver: local
+  neo4j_logs:
+    driver: local
+  neo4j_import:
+    driver: local
+  neo4j_plugins:
+    driver: local
+  nats_data:
+    driver: local
+  azurite_data:
+    driver: local
+
+networks:
+  simbuilder-network:
+    driver: bridge
+    name: simbuilder-network

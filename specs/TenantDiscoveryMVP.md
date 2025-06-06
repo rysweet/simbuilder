@@ -140,6 +140,318 @@ For complete testing guidelines, see [.roo/rules-code/04-testing-requirements.md
 - **Marketplace Integration**: Simulation templates and community-contributed scenarios
 - **Advanced AI Features**: Intelligent simulation planning and automated optimization
 
+## Local Development Environment
+
+### Prerequisites
+
+#### Required Software
+- **Python 3.12**: Primary runtime for all services and agents
+- **uv**: Modern Python package manager for dependency management and virtual environments
+- **Docker Desktop**: Container runtime for Neo4j, NATS JetStream, and other infrastructure services
+- **Azure CLI**: Required for tenant-scoped authentication and Azure resource discovery
+- **Git**: Version control and repository management for spec library
+- **Node.js 18+**: Optional, for any frontend development or JavaScript tooling
+
+#### Azure Prerequisites
+- **Azure Subscription**: Active subscription with resources for discovery testing
+- **Azure Tenant Access**: Permissions to enumerate tenant resources via Azure Resource Graph
+- **Service Principal** (Alternative): For automated authentication scenarios
+
+### Environment Setup Steps
+
+#### 1. Python Environment Setup
+```bash
+# Install uv (if not already installed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Clone repository
+git clone <repository-url>
+cd simbuilder
+
+# Create shared virtual environment at repo root
+uv venv .venv --python 3.12
+
+# Activate virtual environment
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install all dependencies
+uv pip install -r requirements.txt
+```
+
+#### 2. Azure CLI Authentication
+```bash
+# Install Azure CLI (if not already installed)
+# See: https://docs.microsoft.com/en-us/cli/azure/install-azure-cli
+
+# Authenticate with tenant-scoped login
+az login --tenant $AZURE_TENANT_ID
+
+# Verify authentication and permissions
+az account show
+az graph query -q "Resources | limit 5"
+```
+
+#### 3. Infrastructure Services Setup
+```bash
+# Start local infrastructure via Docker Compose
+docker-compose up -d
+
+# Verify services are running
+docker-compose ps
+
+# Check service health
+curl http://localhost:7474  # Neo4j Browser
+curl http://localhost:8222  # NATS Management UI
+```
+
+#### 4. Configuration Setup
+```bash
+# Copy environment template
+cp .env.template .env
+
+# Edit .env file with your specific values
+# At minimum, update:
+# - AZURE_TENANT_ID
+# - AZURE_OPENAI_ENDPOINT
+# - AZURE_OPENAI_KEY
+# - NEO4J_PASSWORD
+```
+
+#### 5. Database Initialization
+```bash
+# Initialize Neo4j schema and constraints
+uv run python -m simbuilder.graphdb.schema --initialize
+
+# Verify database connectivity
+uv run python -c "from simbuilder.graphdb import Neo4jConnector; Neo4jConnector().check_connection()"
+```
+
+#### 6. Service Bus Setup
+```bash
+# NATS JetStream should auto-configure via Docker Compose
+# Verify message broker connectivity
+uv run python -c "from simbuilder.servicebus import ServiceBusClient; print('Service Bus OK')"
+```
+
+### Environment Variables
+
+All components share the same virtual environment located at `{repo_root}/.venv`. The following environment variables are required for local development:
+
+| Variable | Description | Example Value | Required |
+|----------|-------------|---------------|----------|
+| **Azure Authentication** | | | |
+| `AZURE_TENANT_ID` | Azure tenant identifier for authentication | `3cd87a41-1f61-4aef-a212-cefdecd9a2d1` | ✅ |
+| `AZURE_CLIENT_ID` | Service principal client ID (if not using `az login`) | `app-registration-client-id` | ⚠️ |
+| `AZURE_CLIENT_SECRET` | Service principal secret (if not using `az login`) | `your-client-secret` | ⚠️ |
+| **Graph Database** | | | |
+| `NEO4J_URI` | Neo4j connection string | `neo4j://localhost:7687` | ✅ |
+| `NEO4J_USER` | Neo4j username | `neo4j` | ✅ |
+| `NEO4J_PASSWORD` | Neo4j password | `your-secure-password` | ✅ |
+| `NEO4J_DATABASE` | Neo4j database name | `simbuilder` | ✅ |
+| **Service Bus** | | | |
+| `SERVICE_BUS_URL` | NATS JetStream connection | `nats://localhost:4222` | ✅ |
+| `SERVICE_BUS_CLUSTER_ID` | NATS cluster identifier | `simbuilder-local` | ✅ |
+| **LLM Integration** | | | |
+| `AZURE_OPENAI_ENDPOINT` | Azure OpenAI service endpoint | `https://your-endpoint.openai.azure.com/` | ✅ |
+| `AZURE_OPENAI_KEY` | Azure OpenAI API key | `your-openai-api-key` | ✅ |
+| `AZURE_OPENAI_API_VERSION` | API version | `2024-02-15-preview` | ✅ |
+| `AZURE_OPENAI_MODEL_CHAT` | Chat completion model | `gpt-4o` | ✅ |
+| `AZURE_OPENAI_MODEL_REASONING` | Text completion model | `gpt-4o` | ✅ |
+| **Core API Service** | | | |
+| `CORE_API_URL` | Core API base URL | `http://localhost:7000` | ✅ |
+| `CORE_API_PORT` | Core API listening port | `7000` | ✅ |
+| **Application Configuration** | | | |
+| `LOG_LEVEL` | Application log level | `INFO` | ✅ |
+| `ENVIRONMENT` | Runtime environment | `development` | ✅ |
+| `DEBUG_MODE` | Enable debug features | `true` | ⚠️ |
+
+### Docker Compose Infrastructure
+
+The MVP requires the following containerized services for local development:
+
+```yaml
+# docker-compose.yml (key services)
+services:
+  neo4j:
+    image: neo4j:5.11
+    ports:
+      - "7474:7474"  # HTTP Browser
+      - "7687:7687"  # Bolt Protocol
+    environment:
+      - NEO4J_AUTH=neo4j/your-secure-password
+      - NEO4J_apoc_export_file_enabled=true
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*,gds.*
+    volumes:
+      - neo4j_data:/data
+      - ./plugins:/plugins
+
+  nats:
+    image: nats:2.10-alpine
+    ports:
+      - "4222:4222"  # Client connections
+      - "8222:8222"  # Management UI
+    command: ["--jetstream", "--store_dir=/data"]
+    volumes:
+      - nats_data:/data
+
+  # Optional: Service Bus emulator for Azure Service Bus compatibility testing
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    ports:
+      - "10000:10000"  # Blob service
+    volumes:
+      - azurite_data:/data
+
+volumes:
+  neo4j_data:
+  nats_data:
+  azurite_data:
+```
+
+### Shared Virtual Environment
+
+All MVP components utilize a **shared virtual environment** located at the repository root under `.venv`. This approach:
+
+- **Simplifies Dependency Management**: Single `requirements.txt` for all components
+- **Reduces Disk Usage**: No duplicate package installations across components
+- **Ensures Consistency**: All components use identical package versions
+- **Streamlines Development**: Single environment activation for all development work
+
+#### Virtual Environment Structure
+```
+simbuilder/
+├── .venv/                     # Shared virtual environment
+│   ├── bin/activate          # Environment activation script
+│   ├── lib/python3.12/       # Installed packages
+│   └── pyvenv.cfg            # Environment configuration
+├── requirements.txt          # All dependencies for MVP
+├── pyproject.toml           # Project metadata and build config
+├── simbuilder/              # Source code packages
+│   ├── config/              # Configuration Service
+│   ├── graphdb/             # Graph Database Service
+│   ├── servicebus/          # Service Bus
+│   ├── spec_library/        # Spec Library
+│   ├── core_api/            # Core API Service
+│   ├── llm_foundry/         # LLM Foundry Integration
+│   └── tenant_discovery/    # Tenant Discovery Agent
+└── tests/                   # Test suites
+```
+
+### Running the MVP
+
+#### Start Infrastructure Services
+```bash
+# Start all infrastructure containers
+docker-compose up -d
+
+# Wait for services to be ready (30-60 seconds)
+docker-compose logs -f neo4j  # Wait for "Started" message
+```
+
+#### Initialize and Start Application Services
+```bash
+# Activate shared environment
+source .venv/bin/activate
+
+# Initialize database schema
+uv run python -m simbuilder.graphdb.schema --initialize
+
+# Start Core API Service
+uv run python -m simbuilder.core_api --port 7000 &
+
+# Start Tenant Discovery Agent (when code is generated)
+uv run python -m simbuilder.tenant_discovery --mode daemon &
+
+# Verify all services are healthy
+curl http://localhost:7000/health
+curl http://localhost:7000/agents/status
+```
+
+#### Execute Tenant Discovery (Placeholder)
+```bash
+# Once implementation is complete, discovery will be initiated via:
+uv run inv start-discovery --tenant-id $AZURE_TENANT_ID
+
+# Or via API:
+curl -X POST http://localhost:7000/api/v1/simulations \
+  -H "Content-Type: application/json" \
+  -d '{"tenant_id": "'$AZURE_TENANT_ID'", "type": "tenant_discovery"}'
+```
+
+### Integration Testing Setup
+
+#### Verification Commands
+```bash
+# Test Azure CLI authentication
+az account show --query "{subscriptionId: id, tenantId: tenantId}"
+
+# Test Neo4j connectivity
+echo "MATCH (n) RETURN count(n)" | uv run python -m simbuilder.graphdb.cli
+
+# Test Service Bus connectivity
+uv run python -c "
+from simbuilder.servicebus import ServiceBusClient
+client = ServiceBusClient()
+print('Service Bus connectivity:', client.health_check())
+"
+
+# Test LLM integration
+uv run python -c "
+from simbuilder.llm_foundry import LLMClient
+client = LLMClient.get_instance()
+print('LLM connectivity:', client.health_check())
+"
+```
+
+#### Integration Test Execution
+```bash
+# Run integration tests (once implemented)
+uv run pytest tests/integration/ -v --tb=short
+
+# Run end-to-end discovery test
+uv run pytest tests/e2e/test_tenant_discovery.py -v --live-azure
+```
+
+### Troubleshooting
+
+#### Common Setup Issues
+
+**Azure Authentication Failures**
+```bash
+# Clear Azure CLI cache and re-authenticate
+az logout
+az cache purge
+az login --tenant $AZURE_TENANT_ID
+```
+
+**Neo4j Connection Issues**
+```bash
+# Check Docker container status
+docker-compose logs neo4j
+
+# Verify port accessibility
+telnet localhost 7687
+```
+
+**Service Bus Connection Issues**
+```bash
+# Check NATS container
+docker-compose logs nats
+
+# Verify NATS management UI
+curl http://localhost:8222/varz
+```
+
+**Python Environment Issues**
+```bash
+# Recreate virtual environment
+rm -rf .venv
+uv venv .venv --python 3.12
+source .venv/bin/activate
+uv pip install -r requirements.txt
+```
+
 ---
 
 **Success Criteria**: MVP success is defined as end-to-end tenant discovery completing without errors.
