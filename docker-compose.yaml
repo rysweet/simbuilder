@@ -1,12 +1,13 @@
-version: '3.8'
+# Docker Compose file for SimBuilder infrastructure services
+# Session-aware with dynamic port allocation
 
 services:
   neo4j:
     image: neo4j:5.11
-    container_name: simbuilder-neo4j
+    env_file: .env.session
     ports:
-      - "7474:7474"  # HTTP Browser
-      - "7687:7687"  # Bolt Protocol
+      - "${NEO4J_PORT:-7687}:7687"  # Bolt Protocol
+      - "${NEO4J_HTTP_PORT:-7474}:7474"  # HTTP Browser
     environment:
       - NEO4J_AUTH=neo4j/your-secure-password
       - NEO4J_apoc_export_file_enabled=true
@@ -18,8 +19,7 @@ services:
       - neo4j_logs:/logs
       - neo4j_import:/var/lib/neo4j/import
       - neo4j_plugins:/plugins
-    networks:
-      - simbuilder-network
+    # Uses default network automatically created by Docker Compose
     healthcheck:
       test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "your-secure-password", "RETURN 1"]
       interval: 30s
@@ -29,21 +29,20 @@ services:
 
   nats:
     image: nats:2.10-alpine
-    container_name: simbuilder-nats
+    env_file: .env.session
     ports:
-      - "4222:4222"  # Client connections
-      - "8222:8222"  # Management UI
-      - "6222:6222"  # Cluster connections
+      - "${NATS_PORT:-4222}:4222"  # Client connections
+      - "${NATS_HTTP_PORT:-8222}:8222"  # Management UI
+      - "${NATS_CLUSTER_PORT:-6222}:6222"  # Cluster connections
     command: [
       "--jetstream", 
       "--store_dir=/data", 
       "--http_port=8222",
-      "--cluster_name=simbuilder-cluster"
+      "--cluster_name=${COMPOSE_PROJECT_NAME:-simbuilder}-cluster"
     ]
     volumes:
       - nats_data:/data
-    networks:
-      - simbuilder-network
+    # Uses default network automatically created by Docker Compose
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8222/varz"]
       interval: 30s
@@ -53,15 +52,14 @@ services:
 
   azurite:
     image: mcr.microsoft.com/azure-storage/azurite:latest
-    container_name: simbuilder-azurite
+    env_file: .env.session
     ports:
-      - "10000:10000"  # Blob service
-      - "10001:10001"  # Queue service
-      - "10002:10002"  # Table service
+      - "${AZURITE_BLOB_PORT:-10000}:10000"  # Blob service
+      - "${AZURITE_QUEUE_PORT:-10001}:10001"  # Queue service
+      - "${AZURITE_TABLE_PORT:-10002}:10002"  # Table service
     volumes:
       - azurite_data:/data
-    networks:
-      - simbuilder-network
+    # Uses default network automatically created by Docker Compose
     command: >
       azurite 
       --blobHost 0.0.0.0 
@@ -76,6 +74,27 @@ services:
       retries: 3
       start_period: 10s
 
+  # Placeholder services for future components
+  core-api:
+    image: alpine:latest
+    env_file: .env.session
+    ports:
+      - "${CORE_API_PORT:-8080}:8080"
+    # Uses default network automatically created by Docker Compose
+    command: ["sleep", "infinity"]
+    profiles: ["full"]  # Only start with --profile full
+
+  api-gateway:
+    image: alpine:latest
+    env_file: .env.session
+    ports:
+      - "${API_GATEWAY_PORT:-8090}:8090"
+    # Uses default network automatically created by Docker Compose
+    command: ["sleep", "infinity"]
+    profiles: ["full"]  # Only start with --profile full
+
+# Note: Volume names use project prefix automatically via Docker Compose
+# The actual volume names will be: {COMPOSE_PROJECT_NAME}_neo4j_data, etc.
 volumes:
   neo4j_data:
     driver: local
@@ -90,7 +109,5 @@ volumes:
   azurite_data:
     driver: local
 
-networks:
-  simbuilder-network:
-    driver: bridge
-    name: simbuilder-network
+# Docker Compose automatically creates a default network for the project
+# Network name will be: {COMPOSE_PROJECT_NAME}_default

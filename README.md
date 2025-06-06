@@ -35,9 +35,13 @@ A foundational Python package that provides shared utilities, configuration mana
    # Edit .env with your configuration
    ```
 
-4. **Start infrastructure services:**
+4. **Create a new session and start infrastructure services:**
    ```bash
-   docker-compose up -d
+   # Install the package in development mode
+   pip install -e .
+   
+   # Create a new session with dynamic ports and start containers
+   simbuilder session create --start-containers
    ```
 
 ## 📦 Package Structure
@@ -83,33 +87,96 @@ DEBUG_MODE=true
 
 ## 🛠️ CLI Usage
 
-The scaffolding package provides a CLI for system administration and health checks:
+The scaffolding package provides a CLI for system administration, session management, and health checks:
+
+### Session Management
+
+Create a new session with dynamic port allocation:
+```bash
+# Create session only
+simbuilder session create
+
+# Create session and start containers
+simbuilder session create --start-containers
+
+# Create session with specific services
+simbuilder session create --services "neo4j,nats,core_api"
+
+# Create session with Docker Compose profile
+simbuilder session create --start-containers --profile full
+```
+
+List existing sessions:
+```bash
+simbuilder session list
+```
+
+Check session status:
+```bash
+simbuilder session status <session-id>
+```
+
+Clean up a session:
+```bash
+simbuilder session cleanup <session-id>
+```
 
 ### View Configuration
 ```bash
-python -m src.scaffolding.cli info
+simbuilder info
 ```
 
 ### Health Checks
 ```bash
-python -m src.scaffolding.cli check
+simbuilder check
 ```
 
 ## 🏗️ Infrastructure Services
 
-### Start Services
+### Session-Aware Infrastructure
+
+SimBuilder uses a session-aware approach to infrastructure management with dynamic port allocation to avoid conflicts:
+
+1. **Create a session**: Generates unique ports and container names
+2. **Environment variables**: All configuration stored in `.env.session`
+3. **Docker Compose**: Uses environment variables for ports and project naming
+
+### Start Services with Session
 ```bash
-docker-compose up -d
+# Create session and start services
+simbuilder session create --start-containers
+
+# Or manually start services for existing session
+docker compose -p simbuilder-<session-short> --env-file .env.session up -d
 ```
 
 The compose file includes:
-- **Neo4j** (7474:7687) - Graph database
-- **NATS** (4222:8222) - Message bus with JetStream
-- **Azurite** (10000-10002) - Azure Storage emulator
+- **Neo4j** - Graph database with dynamic ports
+- **NATS** - Message bus with JetStream and dynamic ports
+- **Azurite** - Azure Storage emulator with dynamic ports
+- **Core API** - Placeholder service (profile: full)
+- **API Gateway** - Placeholder service (profile: full)
 
 ### Stop Services
 ```bash
-docker-compose down
+# Using session management
+simbuilder session cleanup <session-id>
+
+# Or manually
+docker compose -p simbuilder-<session-short> --env-file .env.session down
+```
+
+### Environment Variables
+
+After creating a session, `.env.session` contains:
+```bash
+SIMBUILDER_SESSION_ID=uuid-v4-session-id
+COMPOSE_PROJECT_NAME=simbuilder-<8-char-short-id>
+NEO4J_PORT=30002
+NEO4J_HTTP_PORT=30003
+NATS_PORT=30004
+NATS_HTTP_PORT=30005
+# ... other dynamic ports
 ```
 
 ## 🧪 Development
@@ -271,6 +338,47 @@ The scaffolding package follows these design principles:
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## ☁️ GitHub Codespaces & Dev Containers
+
+SimBuilder includes full support for GitHub Codespaces and VS Code Dev Containers with Docker-in-Docker capability.
+
+### Using GitHub Codespaces
+
+1. **Open in Codespaces**: Click "Code" → "Codespaces" → "Create codespace"
+2. **Automatic Setup**: The devcontainer will automatically:
+   - Install Python dependencies
+   - Create a new session
+   - Start Docker Compose services
+   - Forward necessary ports
+
+### Using VS Code Dev Containers
+
+1. **Open in VS Code**: Install the "Dev Containers" extension
+2. **Reopen in Container**: Command palette → "Dev Containers: Reopen in Container"
+3. **Automatic Setup**: Same as Codespaces
+
+### Port Forwarding
+
+The devcontainer automatically forwards these ports:
+- **7474**: Neo4j Browser (HTTP interface)
+- **7687**: Neo4j Bolt protocol
+- **4222**: NATS messaging
+- **8222**: NATS management interface
+- **10000**: Azurite blob storage
+- **8080**: Core API service
+- **8090**: API Gateway
+
+### Manual Commands in Codespaces
+
+If you need to recreate the session:
+```bash
+# Create new session and start containers
+simbuilder session create --start-containers
+
+# Or just create session without starting containers
+simbuilder session create
+```
 
 ## 🔗 Related Documentation
 

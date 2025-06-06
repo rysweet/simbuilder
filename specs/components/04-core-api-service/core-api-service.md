@@ -1,5 +1,27 @@
 # Core API Service Specification
 
+## Session ID Handling and Dynamic Port Allocation
+
+The Core API Service supports multi-instance deployment through session-aware configuration and dynamic port allocation, enabling multiple SimBuilder instances to run concurrently without conflicts.
+
+### Session-Aware Features
+- **Dynamic Port Binding**: Uses `API_GATEWAY_PORT` environment variable for conflict-free port allocation
+- **Session Context**: Maintains session ID in request context for downstream service communication
+- **Database Connections**: Uses session-specific connection strings with allocated ports
+- **Service Discovery**: Routes requests to session-specific backend services
+- **Container Naming**: Follows `simbuilder-api-<session_id_short>` naming convention
+
+### Environment Variables
+```bash
+# Session identification
+SIMBUILDER_SESSION_ID=a1b2c3d4-e5f6-7890-abcd-ef1234567890
+API_GATEWAY_PORT=18080
+
+# Session-specific service connections
+NEO4J_URI=bolt://localhost:${GRAPH_DB_BOLT_PORT}
+NATS_URL=nats://localhost:${NATS_CLIENT_PORT}
+```
+
 ## Purpose / Overview
 
 The Core API Service serves as the central orchestration and coordination layer for SimBuilder, providing a unified REST API that coordinates all agent interactions, manages simulation lifecycle, and provides authentication/authorization. Built with FastAPI, it acts as the primary interface between user-facing applications (CLI, GUI, MCP) and the distributed agent architecture, ensuring consistent state management and workflow coordination.

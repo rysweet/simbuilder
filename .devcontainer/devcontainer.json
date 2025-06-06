@@ -1,0 +1,118 @@
+{
+    "name": "SimBuilder Development",
+    "image": "mcr.microsoft.com/devcontainers/python:3.11",
+    
+    // Features to add to the dev container
+    "features": {
+        "ghcr.io/devcontainers/features/docker-in-docker:2": {
+            "moby": true,
+            "azureDnsAutoDetection": true,
+            "installDockerBuildx": true,
+            "version": "latest",
+            "dockerDashComposeVersion": "v2"
+        },
+        "ghcr.io/devcontainers/features/github-cli:1": {},
+        "ghcr.io/devcontainers/features/node:1": {
+            "nodeGypDependencies": true,
+            "version": "lts"
+        }
+    },
+
+    // Configure tool-specific properties
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "ms-python.pylint",
+                "ms-python.black-formatter",
+                "charliermarsh.ruff",
+                "ms-python.mypy-type-checker",
+                "ms-vscode.vscode-json",
+                "redhat.vscode-yaml",
+                "ms-azuretools.vscode-docker",
+                "github.copilot",
+                "github.copilot-chat",
+                "ms-vscode.test-adapter-converter",
+                "littlefoxteam.vscode-python-test-adapter"
+            ],
+            "settings": {
+                "python.defaultInterpreterPath": "/usr/local/bin/python",
+                "python.linting.enabled": true,
+                "python.linting.pylintEnabled": false,
+                "python.linting.mypyEnabled": true,
+                "python.formatting.provider": "black",
+                "python.testing.pytestEnabled": true,
+                "python.testing.unittestEnabled": false,
+                "files.associations": {
+                    "*.yaml": "yaml",
+                    "*.yml": "yaml"
+                }
+            }
+        }
+    },
+
+    // Use 'forwardPorts' to make a list of ports inside the container available locally.
+    // Note: These will be replaced with actual session ports when .env.session is created
+    "forwardPorts": [
+        7474,  // Neo4j HTTP (will be ${NEO4J_HTTP_PORT})
+        7687,  // Neo4j Bolt (will be ${NEO4J_PORT})
+        4222,  // NATS (will be ${NATS_PORT})
+        8222,  // NATS HTTP (will be ${NATS_HTTP_PORT})
+        10000, // Azurite Blob (will be ${AZURITE_BLOB_PORT})
+        8080,  // Core API (will be ${CORE_API_PORT})
+        8090   // API Gateway (will be ${API_GATEWAY_PORT})
+    ],
+
+    "portsAttributes": {
+        "7474": {
+            "label": "Neo4j Browser",
+            "onAutoForward": "notify"
+        },
+        "7687": {
+            "label": "Neo4j Bolt",
+            "onAutoForward": "silent"
+        },
+        "4222": {
+            "label": "NATS",
+            "onAutoForward": "silent"
+        },
+        "8222": {
+            "label": "NATS Management",
+            "onAutoForward": "notify"
+        },
+        "10000": {
+            "label": "Azurite Blob",
+            "onAutoForward": "silent"
+        },
+        "8080": {
+            "label": "Core API",
+            "onAutoForward": "notify"
+        },
+        "8090": {
+            "label": "API Gateway",
+            "onAutoForward": "notify"
+        }
+    },
+
+    // Use 'postCreateCommand' to run commands after the container is created.
+    "postCreateCommand": "pip install -e . && simbuilder session create --start-containers",
+
+    // Configure environment variables
+    "containerEnv": {
+        "PYTHONPATH": "/workspaces/simbuilder/src"
+    },
+
+    // Ensure Docker daemon is accessible
+    "mounts": [
+        "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+    ],
+
+    // Set the user for VS Code Server
+    "remoteUser": "vscode",
+
+    // Lifecycle scripts
+    "initializeCommand": "echo 'Initializing SimBuilder development environment...'",
+    "onCreateCommand": "echo 'Setting up SimBuilder development container...'",
+    "updateContentCommand": "pip install -e .",
+    "postStartCommand": "echo 'SimBuilder development environment ready!'"
+}

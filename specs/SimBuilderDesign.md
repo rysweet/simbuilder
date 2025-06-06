@@ -2,7 +2,9 @@
 
 ## 1 Architecture Overview
 
-SimBuilder employs a distributed multi-agent architecture that separates concerns of planning, generation, orchestration, seeding, and validation.  Users drive the system from a CLI, Simple GUI, or MCP service. Agents communicate asynchronously over an Azure Service Bus topic and persist state in a shared metadata store. The design emphasises stateless execution for horizontal scalability on Azure Kubernetes Service (AKS), but in its primary form can all be run locally on a developer desktop. 
+SimBuilder employs a distributed multi-agent architecture that separates concerns of planning, generation, orchestration, seeding, and validation.  Users drive the system from a CLI, Simple GUI, or MCP service. Agents communicate asynchronously over an Azure Service Bus topic and persist state in a shared metadata store. The design emphasises stateless execution for horizontal scalability on Azure Kubernetes Service (AKS), but in its primary form can all be run locally on a developer desktop.
+
+**Session Isolation**: SimBuilder supports concurrent execution through global session IDs and dynamic port allocation, enabling multiple instances to run simultaneously without conflicts (e.g., in GitHub Codespaces or Docker-in-Docker setups).
 
 ### Design Elements
 
@@ -124,7 +126,177 @@ graph TD
     class FINOPS,CLEANUP,SENTINEL,ENTRA,M365 support
 ```
 
-## 2 Agent Responsibilities
+## 2 Session Isolation and Multi-Instance Support
+
+SimBuilder implements a comprehensive session isolation system that enables multiple instances to run concurrently without resource conflicts. This capability is essential for multi-user environments, CI/CD pipelines, and cloud development platforms like GitHub Codespaces.
+
+### 2.1 Session ID Management
+
+#### Session ID Generation
+- **Generation Method**: UUIDv4 generated at startup by the scaffolding layer
+- **Format**: `a1b2c3d4-e5f6-7890-abcd-ef1234567890` (standard UUID format)
+- **Storage**: Persisted in environment variables and session files
+- **Scope**: Applied to all containers, networks, and resources within a session
+
+#### Environment Variable Strategy
+```bash
+# Core session identification
+SIMBUILDER_SESSION_ID=a1b2c3d4-e5f6-7890-abcd-ef1234567890
+COMPOSE_PROJECT_NAME=simbuilder-a1b2c3d4
+
+# Session-specific connection endpoints
+NEO4J_URI=bolt://localhost:17687
+NEO4J_HTTP_URI=http://localhost:17474
+NATS_URL=nats://localhost:14222
+AZURITE_BLOB_URI=http://localhost:11000
+```
+
+### 2.2 Dynamic Port Allocation
+
+#### Port Management Strategy
+- **Allocation Method**: Runtime port scanning for available ports in predefined ranges
+- **Conflict Resolution**: Automatic increment and retry if port is occupied
+- **Persistence**: Allocated ports stored in session environment file
+- **Cleanup**: Automatic port release on session termination
+
+#### Default Port Ranges
+```yaml
+Graph Database (Neo4j):
+  HTTP: 17000-17999
+  Bolt: 17000-17999
+  
+Message Bus (NATS):
+  Client: 14000-14999
+  HTTP: 14000-14999
+  
+Storage (Azurite):
+  Blob: 11000-11999
+  Queue: 11000-11999
+  Table: 11000-11999
+  
+API Services:
+  Gateway: 18000-18999
+  Core API: 18000-18999
+```
+
+### 2.3 Container and Resource Naming
+
+#### Naming Convention
+- **Pattern**: `<original_name>-<session_id_short>`
+- **Session ID Short**: First 8 characters of the UUID
+- **Examples**:
+  - `simbuilder-neo4j-a1b2c3d4`
+  - `simbuilder-nats-a1b2c3d4`
+  - `simbuilder-api-a1b2c3d4`
+
+#### Network Isolation
+```yaml
+# Session-specific networks
+networks:
+  simbuilder-a1b2c3d4-network:
+    name: simbuilder-a1b2c3d4-network
+    driver: bridge
+
+# Session-specific volumes
+volumes:
+  neo4j_data_a1b2c3d4:
+    driver: local
+  nats_data_a1b2c3d4:
+    driver: local
+```
+
+### 2.4 Docker-in-Docker Support
+
+#### Requirements
+- **Socket Mounting**: `/var/run/docker.sock` mounted into dev containers
+- **Docker Client**: Docker CLI available within development environment
+- **Network Access**: Container-to-container communication enabled
+- **Resource Limits**: Respect host system resource constraints
+
+#### GitHub Codespaces Integration
+```json
+{
+  "name": "SimBuilder Dev Environment",
+  "dockerFile": "../docker/dev.Dockerfile",
+  "mounts": [
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+  ],
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "forwardPorts": [
+    "17474", "17687", "14222", "18080"
+  ],
+  "portsAttributes": {
+    "17474": {"label": "Neo4j Browser"},
+    "17687": {"label": "Neo4j Bolt"},
+    "14222": {"label": "NATS Client"},
+    "18080": {"label": "API Gateway"}
+  }
+}
+```
+
+### 2.5 Session-Isolated Architecture Diagram
+
+```mermaid
+graph TB
+    subgraph "Session A (a1b2c3d4)"
+        direction TB
+        SA_CLI[CLI Interface A]
+        SA_API[API Service :18080]
+        SA_NEO4J[Neo4j :17474/:17687]
+        SA_NATS[NATS :14222]
+        SA_AZURITE[Azurite :11000]
+        SA_NET[simbuilder-a1b2c3d4-network]
+        
+        SA_CLI --> SA_API
+        SA_API --> SA_NEO4J
+        SA_API --> SA_NATS
+        SA_API --> SA_AZURITE
+        SA_NEO4J -.-> SA_NET
+        SA_NATS -.-> SA_NET
+        SA_AZURITE -.-> SA_NET
+    end
+    
+    subgraph "Session B (c3d4e5f6)"
+        direction TB
+        SB_CLI[CLI Interface B]
+        SB_API[API Service :18081]
+        SB_NEO4J[Neo4j :17475/:17688]
+        SB_NATS[NATS :14223]
+        SB_AZURITE[Azurite :11001]
+        SB_NET[simbuilder-c3d4e5f6-network]
+        
+        SB_CLI --> SB_API
+        SB_API --> SB_NEO4J
+        SB_API --> SB_NATS
+        SB_API --> SB_AZURITE
+        SB_NEO4J -.-> SB_NET
+        SB_NATS -.-> SB_NET
+        SB_AZURITE -.-> SB_NET
+    end
+    
+    subgraph "Host System"
+        DOCKER[Docker Daemon]
+        PORTS[Port Manager]
+        CLEANUP[Session Cleanup]
+    end
+    
+    SA_NET -.-> DOCKER
+    SB_NET -.-> DOCKER
+    PORTS -.-> DOCKER
+    CLEANUP -.-> DOCKER
+    
+    classDef sessionA fill:#e1f5fe
+    classDef sessionB fill:#f3e5f5
+    classDef system fill:#fff3e0
+    
+    class SA_CLI,SA_API,SA_NEO4J,SA_NATS,SA_AZURITE,SA_NET sessionA
+    class SB_CLI,SB_API,SB_NEO4J,SB_NATS,SB_AZURITE,SB_NET sessionB
+    class DOCKER,PORTS,CLEANUP system
+```
+
+## 3 Agent Responsibilities
 
 | Agent | Responsibility |
 |-------|---------------|

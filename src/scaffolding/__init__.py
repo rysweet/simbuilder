@@ -13,6 +13,8 @@ from .config import get_settings
 from .exceptions import ConfigurationError
 from .exceptions import DependencyError
 from .logging import setup_logging
+from .port_manager import PortManager
+from .session import SessionManager
 
 __all__ = [
     "Settings",
@@ -20,5 +22,7 @@ __all__ = [
     "ConfigurationError",
     "DependencyError",
     "setup_logging",
+    "PortManager",
+    "SessionManager",
     "__version__",
 ]

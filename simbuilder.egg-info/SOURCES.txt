@@ -12,3 +12,5 @@ src/scaffolding/cli.py
 src/scaffolding/config.py
 src/scaffolding/exceptions.py
 src/scaffolding/logging.py
+src/scaffolding/port_manager.py
+src/scaffolding/session.py

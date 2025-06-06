@@ -453,16 +453,18 @@ The Graph Database Service provides interfaces consumed by:
 
 - **Multi-tenancy partitioning not required**: All tenant resource nodes share the same Neo4j database; isolation handled by application context
 
-## Docker Configuration
+## Docker Configuration and Session ID Handling
 
-The Neo4j database runs in a Docker container with the following configuration:
+The Neo4j database runs in a Docker container with session-aware configuration to support multiple concurrent instances:
 
+### Session-Aware Container Configuration
 ```yaml
 neo4j:
   image: neo4j:5.11
+  container_name: ${COMPOSE_PROJECT_NAME}-neo4j
   ports:
-    - "7474:7474"  # HTTP for browser access
-    - "7687:7687"  # Bolt protocol
+    - "${GRAPH_DB_HTTP_PORT}:7474"  # Dynamic HTTP port
+    - "${GRAPH_DB_BOLT_PORT}:7687"  # Dynamic Bolt port
   environment:
     - NEO4J_AUTH=neo4j/password  # Default credentials
     - NEO4J_apoc_export_file_enabled=true
@@ -470,14 +472,34 @@ neo4j:
     - NEO4J_dbms_security_procedures_unrestricted=apoc.*,gds.*
     - NEO4J_dbms_memory_heap_initial__size=1G
     - NEO4J_dbms_memory_heap_max__size=2G
+    - NEO4J_dbms_default_database=simbuilder_${SESSION_ID_SHORT}
   volumes:
-    - neo4j_data:/data  # Persistent data
-    - ./plugins:/plugins  # Custom plugins
+    - neo4j_data_${SESSION_ID_SHORT}:/data  # Session-isolated data
+    - neo4j_plugins_${SESSION_ID_SHORT}:/plugins  # Session-isolated plugins
+  networks:
+    - ${COMPOSE_PROJECT_NAME}-network
   healthcheck:
-    test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:7474"]
-    interval: 10s
-    timeout: 5s
+    test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "password", "RETURN 1"]
+    interval: 30s
+    timeout: 10s
     retries: 5
+    start_period: 30s
+```
+
+### Dynamic Port Allocation
+The Graph Database Service supports dynamic port allocation through environment variables:
+
+- **GRAPH_DB_HTTP_PORT**: Allocated HTTP port for Neo4j browser access
+- **GRAPH_DB_BOLT_PORT**: Allocated Bolt protocol port for driver connections
+- **NEO4J_URI**: Constructed as `bolt://localhost:${GRAPH_DB_BOLT_PORT}`
+- **NEO4J_HTTP_URI**: Constructed as `http://localhost:${GRAPH_DB_HTTP_PORT}`
+
+### Session Isolation Features
+- **Container Names**: Include session ID short form (e.g., `simbuilder-neo4j-a1b2c3d4`)
+- **Database Names**: Session-specific database names to prevent data mixing
+- **Volume Isolation**: Separate data volumes per session
+- **Network Isolation**: Session-specific Docker networks
+- **Connection String Management**: Environment-based configuration for session-aware connections
 ```
 
 ## Usage Examples

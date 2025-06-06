@@ -1,2 +1,3 @@
 [console_scripts]
 scaffolding = src.scaffolding.cli:main
+simbuilder = src.scaffolding.cli:main

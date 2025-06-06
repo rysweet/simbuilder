@@ -1,5 +1,15 @@
 # Service Bus Specification
 
+## Session ID Handling and Multi-Instance Support
+
+The Service Bus component supports session isolation through environment-based configuration and session-aware topic/queue naming to enable multiple SimBuilder instances to run concurrently without message conflicts.
+
+### Session-Aware Configuration
+- **NATS Client Port**: Uses `NATS_CLIENT_PORT` environment variable for dynamic port allocation
+- **Topic Naming**: Includes session ID in topic names (e.g., `simbuilder.events.a1b2c3d4`)
+- **Queue Groups**: Session-specific queue groups to prevent cross-session message consumption
+- **Connection Strings**: Environment-based NATS URL configuration using allocated ports
+
 ## Purpose / Overview
 
 The Service Bus provides asynchronous message-based communication between SimBuilder agents and services using **CloudEvents-over-Protobuf** standard for message serialization. Built on Azure Service Bus for production and **NATS JetStream for local development**, it enables loosely coupled, scalable inter-agent communication with guaranteed message delivery, dead letter handling, and workflow orchestration. The service bus serves as the backbone for the agent workflow pipeline, ensuring reliable state transitions and coordination across the distributed simulation lifecycle.
