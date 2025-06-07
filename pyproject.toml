@@ -32,6 +32,7 @@ dev = [
 [project.scripts]
 scaffolding = "src.scaffolding.cli:main"
 simbuilder = "src.scaffolding.cli:main"
+tdcli = "src.tenant_discovery.cli:app"
 
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
@@ -156,4 +157,10 @@ exclude_lines = [
     "if __name__ == .__main__.:",
     "class .*\\bProtocol\\):",
     "@(abc\\.)?abstractmethod",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.16.0",
+    "ruff>=0.11.13",
 ]
