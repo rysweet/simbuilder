@@ -6,6 +6,8 @@ import socket
 from typing import Dict, Set
 from pathlib import Path
 import json
+from filelock import FileLock
+from .config import get_project_root
 
 from .logging import get_logger, LoggingMixin
 from .exceptions import ConfigurationError
@@ -27,6 +29,13 @@ class PortManager(LoggingMixin):
         self.port_range_end = port_range_end
         self.allocated_ports: Dict[str, int] = {}
         self.used_ports: Set[int] = set()
+
+        # Global tracking files
+        self.global_file: Path = get_project_root() / ".port_allocations.json"
+        self.lock_file: Path = self.global_file.with_suffix(".lock")
+
+        # Load any previously allocated global ports
+        self._load_global_state()
         
         self.logger.info(
             "PortManager initialized",
@@ -64,6 +73,7 @@ class PortManager(LoggingMixin):
         for port in range(self.port_range_start, self.port_range_end + 1):
             if port not in self.used_ports and self._is_port_available(port):
                 self.used_ports.add(port)
+                self._save_global_state()
                 self.logger.debug("Found free port", port=port)
                 return port
         
@@ -107,6 +117,7 @@ class PortManager(LoggingMixin):
         if service_name in self.allocated_ports:
             port = self.allocated_ports.pop(service_name)
             self.used_ports.discard(port)
+            self._save_global_state()
             
             self.logger.info(
                 "Released port",
@@ -173,10 +184,36 @@ class PortManager(LoggingMixin):
             self.log_error(e, {"operation": "load_from_file", "file_path": str(file_path)})
             raise
 
+    # ------------------------------------------------------------------ #
+    # Global state helpers
+    # ------------------------------------------------------------------ #
+
+    def _load_global_state(self) -> None:
+        """Load global port usage from disk under a file lock."""
+        try:
+            with FileLock(str(self.lock_file), timeout=10):
+                if self.global_file.exists():
+                    with open(self.global_file, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                    self.used_ports.update(data.get("used_ports", []))
+        except Exception as e:
+            # Non-critical; log and continue with fresh state
+            self.log_error(e, {"operation": "load_global_state", "file": str(self.global_file)})
+
+    def _save_global_state(self) -> None:
+        """Persist global port usage to disk under a file lock."""
+        try:
+            with FileLock(str(self.lock_file), timeout=10):
+                with open(self.global_file, "w", encoding="utf-8") as f:
+                    json.dump({"used_ports": list(self.used_ports)}, f, indent=2)
+        except Exception as e:
+            self.log_error(e, {"operation": "save_global_state", "file": str(self.global_file)})
+
     def clear_all_ports(self) -> None:
         """Clear all allocated ports."""
         cleared_count = len(self.allocated_ports)
         self.allocated_ports.clear()
         self.used_ports.clear()
+        self._save_global_state()
         
         self.logger.info("Cleared all allocated ports", cleared_count=cleared_count)
