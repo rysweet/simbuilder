@@ -68,12 +68,7 @@ class Settings(BaseSettings):
         valid_levels = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
         v_upper = v.upper()
         if v_upper not in valid_levels:
-            from pydantic_core import PydanticCustomError
-            raise PydanticCustomError(
-                'value_error',
-                f"Log level must be one of: {', '.join(valid_levels)}",
-                {'reason': f"Log level must be one of: {', '.join(valid_levels)}"}
-            )
+            raise ValueError(f"Log level must be one of: {', '.join(valid_levels)}")
         return v_upper
 
     @field_validator("core_api_port")
@@ -81,12 +76,7 @@ class Settings(BaseSettings):
     def validate_port(cls, v: int) -> int:
         """Validate port is in valid range."""
         if not 1024 <= v <= 65535:
-            from pydantic_core import PydanticCustomError
-            raise PydanticCustomError(
-                'value_error',
-                "Port must be between 1024 and 65535",
-                {'reason': "Port must be between 1024 and 65535"}
-            )
+            raise ValueError("Port must be between 1024 and 65535")
         return v
 
     def validate_required_for_environment(self) -> None:
