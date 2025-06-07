@@ -116,6 +116,7 @@ cython_debug/
 .env.session
 .venv
 *.env
+.port_allocations.json
 
 # Session runtime artefacts
 .sessions/

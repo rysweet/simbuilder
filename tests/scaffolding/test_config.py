@@ -187,6 +187,9 @@ class TestConfigHelpers:
     def test_get_settings_configuration_error(self):
         """Test get_settings with invalid configuration."""
         with patch.dict(os.environ, {}, clear=True):
+            # Also clear the cache to ensure fresh Settings() creation
+            from src.scaffolding.config import get_settings
+            get_settings.cache_clear()
             with pytest.raises(ConfigurationError) as exc_info:
                 get_settings()
             
