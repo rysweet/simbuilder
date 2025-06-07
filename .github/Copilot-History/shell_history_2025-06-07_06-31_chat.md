@@ -18,3 +18,19 @@
 # Checked git status to see which files need to be staged for commit
 git status
 # Shows modified files including port_manager.py and history files, plus untracked history files
+
+# Staged all modified and added files for commit
+git add .
+# Successfully staged all changes including port_manager.py and history files
+
+# Committed changes with conventional commit message
+git commit -m "feat(scaffolding): global, file-locked port allocation to prevent multi-instance conflicts..."
+# Commit 703caa1 created with 12 files changed, 2398 insertions, 2301 deletions
+
+# Pushed to remote initial-impl branch
+git push -u origin initial-impl
+# Successfully pushed to remote, branch tracking set up
+
+# Created draft pull request
+gh pr create --fill --draft
+# Created PR #1: https://github.com/rysweet/simbuilder/pull/1
