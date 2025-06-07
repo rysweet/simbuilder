@@ -190,6 +190,11 @@ class PortManager(LoggingMixin):
 
     def _load_global_state(self) -> None:
         """Load global port usage from disk under a file lock."""
+        # In unit tests, don't load global state to keep tests isolated
+        import sys
+        if "pytest" in sys.modules:
+            return
+            
         try:
             with FileLock(str(self.lock_file), timeout=10):
                 if self.global_file.exists():

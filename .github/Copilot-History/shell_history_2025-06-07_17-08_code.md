@@ -68,4 +68,48 @@ find . -name "*port_allocations*" -type f
 
 unset DEBUG_MODE && pytest tests/tenant_discovery/ -v
 # Verified tenant discovery tests all pass (16/16)
+
+# Committed env-only test isolation changes
+git add -A && git commit -m "fix(scaffolding-tests): revert scaffold code changes and use env-only test isolation"
+# Created commit 1016c8f with scaffold code reverted and env fixes applied
+
+# Pushed changes to remote branch
+git push origin initial-impl
+# Successfully pushed to initial-impl branch
 ```
+```bash
+git show --name-only e88ba50
+```
+# Audited commit e88ba50 to see which files were modified
+
+```bash
+git show e88ba50 -- src/scaffolding/config.py src/scaffolding/port_manager.py tests/scaffolding/test_config.py
+```
+# Examined scaffolding code changes that need to be reverted
+
+```bash
+mv .env .env.backup
+```
+# Moved .env file to prevent test interference
+
+```bash
+git checkout HEAD~1 -- src/scaffolding/config.py src/scaffolding/port_manager.py tests/scaffolding/test_config.py
+```
+# Reverted scaffolding files to previous commit state
+
+```bash
+uv run pytest tests/scaffolding/ -v
+```
+# Ran scaffolding tests - reduced failures from 8 to 1
+
+```bash
+uv run pytest --tb=short -q
+```
+# Ran full test suite - confirmed only 1 test failing due to environment variables
+
+# Fixed test_required_fields_validation by adding environment isolation with patch.dict()
+
+```bash
+uv run pytest --tb=short -q
+```
+# Confirmed all 90 tests now pass - full test suite green

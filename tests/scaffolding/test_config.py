@@ -19,8 +19,9 @@ class TestSettings:
 
     def test_required_fields_validation(self):
         """Test that required fields are validated."""
-        with pytest.raises(ValidationError) as exc_info:
-            Settings()
+        with patch.dict(os.environ, {}, clear=True):
+            with pytest.raises(ValidationError) as exc_info:
+                Settings()
         
         errors = exc_info.value.errors()
         required_fields = {error["loc"][0] for error in errors if error["type"] == "missing"}
@@ -187,6 +188,9 @@ class TestConfigHelpers:
     def test_get_settings_configuration_error(self):
         """Test get_settings with invalid configuration."""
         with patch.dict(os.environ, {}, clear=True):
+            # Also clear the cache to ensure fresh Settings() creation
+            from src.scaffolding.config import get_settings
+            get_settings.cache_clear()
             with pytest.raises(ConfigurationError) as exc_info:
                 get_settings()
             
