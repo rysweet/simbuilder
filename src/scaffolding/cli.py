@@ -3,7 +3,6 @@ CLI interface for SimBuilder scaffolding operations.
 """
 
 import asyncio
-from typing import Optional
 
 import typer
 from rich.console import Console
@@ -38,7 +37,7 @@ def info() -> None:
     try:
         # Setup logging first
         logger = setup_logging()
-        
+
         # Try to get current session info
         session_id = _get_current_session_id()
         if session_id:
@@ -108,7 +107,7 @@ def info() -> None:
 def check() -> None:
     """Perform health checks on configured services."""
     logger = setup_logging()
-    
+
     # Try to get current session info
     session_id = _get_current_session_id()
     if session_id:
@@ -235,7 +234,7 @@ def _check_nats(settings) -> tuple[str, str]:
 
 @session_app.command()
 def create(
-    services: Optional[str] = typer.Option(
+    services: str | None = typer.Option(
         None,
         "--services",
         help="Comma-separated list of services to allocate ports for"
@@ -245,7 +244,7 @@ def create(
         "--start-containers",
         help="Start Docker Compose containers after creating session"
     ),
-    profile: Optional[str] = typer.Option(
+    profile: str | None = typer.Option(
         None,
         "--profile",
         help="Docker Compose profile to use when starting containers"
@@ -255,50 +254,50 @@ def create(
     try:
         logger = setup_logging()
         session_manager = SessionManager()
-        
+
         # Parse services list if provided
         services_list = None
         if services:
             services_list = [s.strip() for s in services.split(",")]
-        
+
         # Create the session
         session_info = session_manager.create_session(services_list)
-        
+
         console.print("\n[bold green]* New SimBuilder session created![/bold green]")
         console.print("=" * 50)
-        
+
         # Create session details table
         details_table = Table(title="Session Details")
         details_table.add_column("Property", style="cyan")
         details_table.add_column("Value", style="magenta")
-        
+
         details_table.add_row("Session ID", session_info["session_id"])
         details_table.add_row("Short ID", session_info["session_short"])
         details_table.add_row("Compose Project", session_info["compose_project_name"])
         details_table.add_row("Created At", session_info["created_at"])
         details_table.add_row("Environment File", session_info["env_file_path"])
-        
+
         console.print(details_table)
-        
+
         # Create ports table
         ports_table = Table(title="Allocated Ports")
         ports_table.add_column("Service", style="cyan")
         ports_table.add_column("Port", style="green")
-        
+
         for service, port in session_info["allocated_ports"].items():
             ports_table.add_row(service, str(port))
-        
+
         console.print(ports_table)
-        
+
         console.print(f"\n[dim]Environment variables written to: {session_info['env_file_path']}[/dim]")
         console.print("[dim]Use 'source .env.session' to load environment variables[/dim]")
-        
+
         # Start containers if requested
         if start_containers:
             console.print("\n[bold yellow]Starting Docker Compose containers...[/bold yellow]")
-            
+
             success = session_manager.compose_up(detached=True, profile=profile)
-            
+
             if success:
                 console.print("[green]* Docker Compose services started successfully![/green]")
                 console.print(f"[dim]Use 'docker compose -p {session_info['compose_project_name']} logs' to view logs[/dim]")
@@ -306,15 +305,15 @@ def create(
                 console.print("[red]X Failed to start Docker Compose services[/red]")
                 console.print("[dim]Check the logs above for more details[/dim]")
         else:
-            console.print(f"\n[dim]To start containers manually, run:[/dim]")
+            console.print("\n[dim]To start containers manually, run:[/dim]")
             console.print(f"[dim]  docker compose -p {session_info['compose_project_name']} --env-file .env.session up -d[/dim]")
-        
+
         logger.info(
             "Session creation completed via CLI",
             session_id=session_info["session_id"],
             containers_started=start_containers
         )
-        
+
     except Exception as e:
         logger = setup_logging()
         logger.error("Session creation failed", error=str(e))
@@ -328,16 +327,16 @@ def list() -> None:
     try:
         logger = setup_logging()
         session_manager = SessionManager()
-        
+
         sessions = session_manager.list_sessions()
-        
+
         if not sessions:
             console.print("[yellow]No sessions found.[/yellow]")
             return
-        
+
         console.print(f"\n[bold blue]SimBuilder Sessions ({len(sessions)} found)[/bold blue]")
         console.print("=" * 50)
-        
+
         # Create sessions table
         sessions_table = Table()
         sessions_table.add_column("Session ID", style="cyan")
@@ -345,14 +344,14 @@ def list() -> None:
         sessions_table.add_column("Compose Project", style="green")
         sessions_table.add_column("Created", style="dim")
         sessions_table.add_column("Services", style="yellow")
-        
+
         for session in sessions:
             created_at = session.get("created_at", "Unknown")
             if "T" in created_at:
                 created_at = created_at.split("T")[0]  # Show just the date
-            
+
             services_count = len(session.get("services", []))
-            
+
             sessions_table.add_row(
                 session["session_id"][:8] + "...",
                 session["session_short"],
@@ -360,11 +359,11 @@ def list() -> None:
                 created_at,
                 f"{services_count} services"
             )
-        
+
         console.print(sessions_table)
-        
+
         logger.info("Listed sessions via CLI", session_count=len(sessions))
-        
+
     except Exception as e:
         logger = setup_logging()
         logger.error("Session listing failed", error=str(e))
@@ -378,21 +377,21 @@ def status(session_id: str) -> None:
     try:
         logger = setup_logging()
         session_manager = SessionManager()
-        
+
         session_info = session_manager.get_session_status(session_id)
-        
+
         if not session_info:
             console.print(f"[red]Session not found:[/red] {session_id}")
             raise typer.Exit(1)
-        
+
         console.print(f"\n[bold blue]Session Status: {session_info['session_short']}[/bold blue]")
         console.print("=" * 50)
-        
+
         # Create status table
         status_table = Table(title="Session Information")
         status_table.add_column("Property", style="cyan")
         status_table.add_column("Value", style="magenta")
-        
+
         status_table.add_row("Session ID", session_info["session_id"])
         status_table.add_row("Short ID", session_info["session_short"])
         status_table.add_row("Compose Project", session_info["compose_project_name"])
@@ -400,25 +399,25 @@ def status(session_id: str) -> None:
         status_table.add_row("Environment File", session_info["env_file_path"])
         status_table.add_row("Env File Exists", "* Yes" if session_info.get("env_file_exists") else "X No")
         status_table.add_row("Containers Running", "* Yes" if session_info.get("containers_running") else "X No")
-        
+
         console.print(status_table)
-        
+
         # Show allocated ports
         if "allocated_ports" in session_info:
             ports_table = Table(title="Allocated Ports")
             ports_table.add_column("Service", style="cyan")
             ports_table.add_column("Port", style="green")
-            
+
             for service, port in session_info["allocated_ports"].items():
                 ports_table.add_row(service, str(port))
-            
+
             console.print(ports_table)
-        
+
         logger.info(
             "Displayed session status via CLI",
             session_id=session_id
         )
-        
+
     except Exception as e:
         logger = setup_logging()
         logger.error("Session status check failed", error=str(e), session_id=session_id)
@@ -432,18 +431,18 @@ def cleanup(session_id: str) -> None:
     try:
         logger = setup_logging()
         session_manager = SessionManager()
-        
+
         # Get session info first
         session_info = session_manager.get_session_status(session_id)
         if not session_info:
             console.print(f"[red]Session not found:[/red] {session_id}")
             raise typer.Exit(1)
-        
+
         console.print(f"\n[yellow]Cleaning up session: {session_info['session_short']}[/yellow]")
-        
+
         # Perform cleanup
         success = session_manager.cleanup_session(session_id)
-        
+
         if success:
             console.print("[green]* Session cleanup completed successfully![/green]")
             console.print(f"[dim]- Stopped containers for project: {session_info['compose_project_name']}[/dim]")
@@ -452,12 +451,12 @@ def cleanup(session_id: str) -> None:
         else:
             console.print("[red]X Session cleanup failed![/red]")
             raise typer.Exit(1)
-        
+
         logger.info(
             "Session cleanup completed via CLI",
             session_id=session_id
         )
-        
+
     except Exception as e:
         logger = setup_logging()
         logger.error("Session cleanup failed", error=str(e), session_id=session_id)
@@ -465,7 +464,7 @@ def cleanup(session_id: str) -> None:
         raise typer.Exit(1)
 
 
-def _get_current_session_id() -> Optional[str]:
+def _get_current_session_id() -> str | None:
     """
     Get the current session ID from environment or .env.session file.
     
@@ -473,24 +472,25 @@ def _get_current_session_id() -> Optional[str]:
         Session ID if found, None otherwise
     """
     import os
+
     from .config import get_project_root
-    
+
     # Check environment variable first
     session_id = os.getenv("SIMBUILDER_SESSION_ID")
     if session_id:
         return session_id
-    
+
     # Check .env.session file
     try:
         env_session_path = get_project_root() / ".env.session"
         if env_session_path.exists():
-            with open(env_session_path, 'r', encoding='utf-8') as f:
+            with open(env_session_path, encoding='utf-8') as f:
                 for line in f:
                     if line.startswith("SIMBUILDER_SESSION_ID="):
                         return line.split("=", 1)[1].strip()
     except Exception:
         pass
-    
+
     return None
 
 

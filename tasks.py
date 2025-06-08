@@ -2,37 +2,36 @@
 Project automation tasks using Invoke.
 """
 
-import os
 import sys
 from pathlib import Path
 
-from invoke import Context, task
+from invoke import task
 
 
 @task
 def bootstrap(ctx):
     """Bootstrap the development environment."""
     print("🚀 Bootstrapping SimBuilder development environment...")
-    
+
     # Check if uv is installed
     if not ctx.run("where uv", warn=True, hide=True).ok:
         print("❌ uv is not installed. Please install uv first:")
         print("   curl -LsSf https://astral.sh/uv/install.sh | sh")
         sys.exit(1)
-    
+
     # Create virtual environment
     print("📦 Creating virtual environment...")
     ctx.run("uv venv .venv --python 3.12")
-    
+
     # Install dependencies
     print("📥 Installing dependencies...")
     ctx.run("uv pip install -r requirements.txt")
-    
+
     # Install development dependencies
     print("🔧 Installing development dependencies...")
     dev_deps = [
         "pytest>=7.4.0",
-        "pytest-asyncio>=0.21.0", 
+        "pytest-asyncio>=0.21.0",
         "pytest-cov>=4.1.0",
         "ruff>=0.1.6",
         "mypy>=1.7.0",
@@ -42,18 +41,18 @@ def bootstrap(ctx):
         "invoke>=2.2.0"
     ]
     ctx.run(f"uv pip install {' '.join(dev_deps)}")
-    
+
     # Install pre-commit hooks
     print("🪝 Installing pre-commit hooks...")
     ctx.run("uv run pre-commit install")
-    
+
     # Create .env from template if it doesn't exist
     env_file = Path(".env")
     if not env_file.exists():
         print("📝 Creating .env file from template...")
         ctx.run("python -c \"from src.scaffolding.config import create_env_template; create_env_template()\"")
         print("⚠️  Please edit .env file with your configuration before running services!")
-    
+
     print("✅ Bootstrap complete! Don't forget to:")
     print("   1. Edit .env file with your configuration")
     print("   2. Run 'invoke start-infra' to start infrastructure services")
@@ -64,16 +63,16 @@ def bootstrap(ctx):
 def lint(ctx):
     """Run linting and code quality checks."""
     print("🔍 Running linting checks...")
-    
+
     print("📋 Running ruff...")
     ctx.run("uv run ruff check src/ tests/")
-    
+
     print("🎨 Running black...")
     ctx.run("uv run black --check src/ tests/")
-    
+
     print("🔧 Running mypy...")
     ctx.run("uv run mypy src/")
-    
+
     print("✅ All linting checks passed!")
 
 
@@ -81,13 +80,13 @@ def lint(ctx):
 def format(ctx):
     """Format code using ruff and black."""
     print("🎨 Formatting code...")
-    
+
     print("📋 Running ruff formatter...")
     ctx.run("uv run ruff format src/ tests/")
-    
+
     print("🎨 Running black...")
     ctx.run("uv run black src/ tests/")
-    
+
     print("✅ Code formatting complete!")
 
 
@@ -95,13 +94,13 @@ def format(ctx):
 def test(ctx, coverage=False):
     """Run tests."""
     print("🧪 Running tests...")
-    
+
     cmd = "uv run pytest tests/ -v"
     if coverage:
         cmd += " --cov=src --cov-report=html --cov-report=term"
-    
+
     ctx.run(cmd)
-    
+
     if coverage:
         print("📊 Coverage report generated in htmlcov/")
 
@@ -124,18 +123,18 @@ def test_integration(ctx):
 def start_infra(ctx):
     """Start infrastructure services with Docker Compose."""
     print("🐳 Starting infrastructure services...")
-    
+
     # Check if Docker is running
     if not ctx.run("docker info", warn=True, hide=True).ok:
         print("❌ Docker is not running. Please start Docker first.")
         sys.exit(1)
-    
+
     # Start services
     ctx.run("docker-compose up -d")
-    
+
     print("⏳ Waiting for services to be ready...")
     ctx.run("docker-compose ps")
-    
+
     print("✅ Infrastructure services started!")
     print("   - Neo4j Browser: http://localhost:7474")
     print("   - NATS Management: http://localhost:8222")
@@ -173,17 +172,17 @@ def logs_infra(ctx, service=""):
 def clean(ctx):
     """Clean up build artifacts and caches."""
     print("🧹 Cleaning up...")
-    
+
     # Remove Python cache files
     ctx.run("find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true")
     ctx.run("find . -type f -name '*.pyc' -delete 2>/dev/null || true")
-    
+
     # Remove test artifacts
     ctx.run("rm -rf .pytest_cache htmlcov .coverage")
-    
+
     # Remove mypy cache
     ctx.run("rm -rf .mypy_cache")
-    
+
     print("✅ Cleanup complete!")
 
 

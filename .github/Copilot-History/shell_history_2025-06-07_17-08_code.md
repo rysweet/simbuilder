@@ -113,3 +113,39 @@ uv run pytest --tb=short -q
 uv run pytest --tb=short -q
 ```
 # Confirmed all 90 tests now pass - full test suite green
+```bash
+git add -A && git commit -m "fix(test): add environment isolation to scaffolding test for dev environment compatibility
+
+- Add patch.dict() to test_required_fields_validation to clear env vars
+- Ensures ValidationError is raised even when Azure env vars are set
+- Maintains test isolation and prevents false positives in dev environments
+- All 90 tests now pass consistently"
+```
+# Committed the final fix for test environment isolation
+
+```bash
+git push origin initial-impl
+```
+# Pushed final commit c47bbde to complete Phase 1 implementation
+
+## 2025-06-08
+
+```bash
+uv run ruff check
+```
+# Checked linting across entire project - found formatting issues in scaffolding and tenant_discovery
+
+```bash
+uv run ruff check --fix
+```
+# Auto-fixed many formatting issues but some remain in scaffolding files
+
+```bash
+uv run mypy --explicit-package-bases src/tenant_discovery tests/tenant_discovery
+```
+# Checked type compliance for tenant_discovery - found import issues and some missing annotations
+
+```bash
+uv run python -m pytest tests/tenant_discovery/ -v
+```
+# Ran Phase 2 graph database tests - all 43 tests pass including 27 new graph tests

@@ -9,7 +9,9 @@ from pydantic import ValidationError
 from typer.testing import CliRunner
 
 from src.tenant_discovery.cli import app
-from src.tenant_discovery.config import LogLevel, TenantDiscoverySettings, get_td_settings
+from src.tenant_discovery.config import LogLevel
+from src.tenant_discovery.config import TenantDiscoverySettings
+from src.tenant_discovery.config import get_td_settings
 
 
 class TestTenantDiscoverySettings:
@@ -21,7 +23,7 @@ class TestTenantDiscoverySettings:
         tenant_id = str(uuid.uuid4())
         client_id = str(uuid.uuid4())
         subscription_id = str(uuid.uuid4())
-        
+
         settings = TenantDiscoverySettings(
             azure_tenant_id=tenant_id,
             azure_client_id=client_id,
@@ -29,7 +31,7 @@ class TestTenantDiscoverySettings:
             subscription_id=subscription_id,
             _env_file=None,
         )
-        
+
         assert settings.azure_tenant_id == tenant_id
         assert settings.azure_client_id == client_id
         assert settings.azure_client_secret == "test-secret-123"
@@ -43,7 +45,7 @@ class TestTenantDiscoverySettings:
         tenant_id = str(uuid.uuid4())
         client_id = str(uuid.uuid4())
         subscription_id = str(uuid.uuid4())
-        
+
         settings = TenantDiscoverySettings(
             azure_tenant_id=tenant_id,
             azure_client_id=client_id,
@@ -54,7 +56,7 @@ class TestTenantDiscoverySettings:
             log_level=LogLevel.DEBUG,
             _env_file=None,
         )
-        
+
         assert settings.graph_db_url == "bolt://remote:7687"
         assert settings.service_bus_url == "nats://remote:4222"
         assert settings.log_level == LogLevel.DEBUG
@@ -69,7 +71,7 @@ class TestTenantDiscoverySettings:
                 subscription_id=str(uuid.uuid4()),
                 _env_file=None,
             )
-        
+
         errors = exc_info.value.errors()
         assert len(errors) == 1
         assert "azure_tenant_id" in str(errors[0]["loc"])
@@ -85,7 +87,7 @@ class TestTenantDiscoverySettings:
                 subscription_id="still-not-a-uuid",
                 _env_file=None,
             )
-        
+
         errors = exc_info.value.errors()
         assert len(errors) == 3  # Three UUID validation errors
         error_fields = {str(error["loc"]) for error in errors}
@@ -98,7 +100,7 @@ class TestTenantDiscoverySettings:
         tenant_id = str(uuid.uuid4())
         client_id = str(uuid.uuid4())
         subscription_id = str(uuid.uuid4())
-        
+
         with pytest.raises(ValidationError) as exc_info:
             TenantDiscoverySettings(
                 azure_tenant_id=tenant_id,
@@ -108,7 +110,7 @@ class TestTenantDiscoverySettings:
                 graph_db_url="http://localhost:7687",
                 _env_file=None,
             )
-        
+
         errors = exc_info.value.errors()
         assert len(errors) == 1
         assert "graph_db_url" in str(errors[0]["loc"])
@@ -119,7 +121,7 @@ class TestTenantDiscoverySettings:
         tenant_id = str(uuid.uuid4())
         client_id = str(uuid.uuid4())
         subscription_id = str(uuid.uuid4())
-        
+
         valid_schemes = [
             "bolt://localhost:7687",
             "bolt+s://localhost:7687",
@@ -128,7 +130,7 @@ class TestTenantDiscoverySettings:
             "neo4j+s://localhost:7687",
             "neo4j+ssc://localhost:7687",
         ]
-        
+
         for url in valid_schemes:
             settings = TenantDiscoverySettings(
                 azure_tenant_id=tenant_id,
@@ -145,7 +147,7 @@ class TestTenantDiscoverySettings:
         tenant_id = str(uuid.uuid4())
         client_id = str(uuid.uuid4())
         subscription_id = str(uuid.uuid4())
-        
+
         with pytest.raises(ValidationError) as exc_info:
             TenantDiscoverySettings(
                 azure_tenant_id=tenant_id,
@@ -155,7 +157,7 @@ class TestTenantDiscoverySettings:
                 service_bus_url="http://localhost:4222",
                 _env_file=None,
             )
-        
+
         errors = exc_info.value.errors()
         assert len(errors) == 1
         assert "service_bus_url" in str(errors[0]["loc"])
@@ -166,12 +168,12 @@ class TestTenantDiscoverySettings:
         tenant_id = str(uuid.uuid4())
         client_id = str(uuid.uuid4())
         subscription_id = str(uuid.uuid4())
-        
+
         valid_schemes = [
             "nats://localhost:4222",
             "nats+tls://localhost:4222",
         ]
-        
+
         for url in valid_schemes:
             settings = TenantDiscoverySettings(
                 azure_tenant_id=tenant_id,
@@ -188,7 +190,7 @@ class TestTenantDiscoverySettings:
         tenant_id = str(uuid.uuid4())
         client_id = str(uuid.uuid4())
         subscription_id = str(uuid.uuid4())
-        
+
         for level in LogLevel:
             settings = TenantDiscoverySettings(
                 azure_tenant_id=tenant_id,
@@ -211,9 +213,9 @@ class TestTenantDiscoverySettings:
         """Test loading configuration from environment variables."""
         # Clear the cache to ensure fresh loading
         get_td_settings.cache_clear()
-        
+
         settings = get_td_settings()
-        
+
         assert settings.azure_tenant_id == "12345678-1234-1234-1234-123456789012"
         assert settings.azure_client_id == "87654321-4321-4321-4321-210987654321"
         assert settings.azure_client_secret == "env-secret-123"
@@ -232,7 +234,7 @@ class TestGetTdSettings:
         """Test that get_td_settings returns the same instance."""
         # Clear cache first
         get_td_settings.cache_clear()
-        
+
         with patch.dict(os.environ, {
             "TD_AZURE_TENANT_ID": str(uuid.uuid4()),
             "TD_AZURE_CLIENT_ID": str(uuid.uuid4()),
@@ -241,7 +243,7 @@ class TestGetTdSettings:
         }, clear=True):
             settings1 = get_td_settings()
             settings2 = get_td_settings()
-            
+
             assert settings1 is settings2
 
 
@@ -262,8 +264,8 @@ class TestTenantDiscoveryCLI:
         """Test the info command with valid configuration."""
         get_td_settings.cache_clear()
         runner = CliRunner()
-        result = runner.invoke(app, ["info"])
-        
+        result = runner.invoke(app, ["config", "info"])
+
         assert result.exit_code == 0
         assert "Tenant Discovery Configuration" in result.stdout
         assert "***" in result.stdout  # Masked secret
@@ -280,8 +282,8 @@ class TestTenantDiscoveryCLI:
         """Test the info command with invalid configuration."""
         get_td_settings.cache_clear()
         runner = CliRunner()
-        result = runner.invoke(app, ["info"])
-        
+        result = runner.invoke(app, ["config", "info"])
+
         assert result.exit_code == 1
         assert "Configuration validation failed" in result.stdout
 
@@ -295,8 +297,8 @@ class TestTenantDiscoveryCLI:
         """Test the check command with valid configuration."""
         get_td_settings.cache_clear()
         runner = CliRunner()
-        result = runner.invoke(app, ["check"])
-        
+        result = runner.invoke(app, ["config", "check"])
+
         assert result.exit_code == 0
         assert "Validating Tenant Discovery configuration" in result.stdout
         assert "All configuration checks passed" in result.stdout
@@ -311,8 +313,8 @@ class TestTenantDiscoveryCLI:
         """Test the check command with invalid configuration."""
         get_td_settings.cache_clear()
         runner = CliRunner()
-        result = runner.invoke(app, ["check"])
-        
+        result = runner.invoke(app, ["config", "check"])
+
         assert result.exit_code == 1
         assert "Configuration validation failed" in result.stdout
 
@@ -320,8 +322,8 @@ class TestTenantDiscoveryCLI:
         """Test CLI help output."""
         runner = CliRunner()
         result = runner.invoke(app, ["--help"])
-        
+
         assert result.exit_code == 0
-        assert "Tenant Discovery Configuration CLI" in result.stdout
-        assert "info" in result.stdout
-        assert "check" in result.stdout
+        assert "Tenant Discovery CLI" in result.stdout
+        assert "config" in result.stdout
+        assert "graph" in result.stdout

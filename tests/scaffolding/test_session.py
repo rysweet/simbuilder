@@ -6,12 +6,11 @@ import json
 import tempfile
 import uuid
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
-import pytest
-
-from src.scaffolding.session import SessionManager
 from src.scaffolding.port_manager import PortManager
+from src.scaffolding.session import SessionManager
 
 
 class TestSessionManager:
@@ -22,7 +21,7 @@ class TestSessionManager:
         with tempfile.TemporaryDirectory() as temp_dir:
             with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
                 session_manager = SessionManager()
-                
+
                 assert session_manager.project_root == Path(temp_dir)
                 assert session_manager.sessions_dir == Path(temp_dir) / ".sessions"
                 assert session_manager.sessions_dir.exists()
@@ -36,7 +35,7 @@ class TestSessionManager:
             # Mock UUID generation
             test_uuid = uuid.UUID('12345678-1234-5678-9012-123456789012')
             mock_uuid.return_value = test_uuid
-            
+
             # Mock port allocation
             port_map = {
                 "neo4j": 30000,
@@ -54,33 +53,33 @@ class TestSessionManager:
                 "tenant_discovery_api": 30012
             }
             mock_get_port.side_effect = lambda service: port_map[service]
-            
+
             with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
                 session_manager = SessionManager()
                 session_info = session_manager.create_session()
-                
+
                 # Verify session info
                 assert session_info["session_id"] == str(test_uuid)
                 assert session_info["session_short"] == "12345678"
                 assert session_info["compose_project_name"] == "simbuilder-12345678"
                 assert "created_at" in session_info
                 assert session_info["env_file_path"] == str(Path(temp_dir) / ".env.session")
-                
+
                 # Verify allocated ports
                 expected_ports = port_map
                 assert session_info["allocated_ports"] == expected_ports
-                
+
                 # Verify services
                 assert set(session_info["services"]) == set(SessionManager.DEFAULT_SERVICES)
-                
+
                 # Verify .env.session file was created
                 env_file = Path(temp_dir) / ".env.session"
                 assert env_file.exists()
-                
+
                 # Check env file content
-                with open(env_file, 'r', encoding='utf-8') as f:
+                with open(env_file, encoding='utf-8') as f:
                     env_content = f.read()
-                
+
                 assert f"SIMBUILDER_SESSION_ID={test_uuid}" in env_content
                 assert "SIMBUILDER_SESSION_SHORT=12345678" in env_content
                 assert "COMPOSE_PROJECT_NAME=simbuilder-12345678" in env_content
@@ -89,15 +88,15 @@ class TestSessionManager:
                 assert "NATS_PORT=30002" in env_content
                 assert "NATS_HTTP_PORT=30003" in env_content
                 assert "CORE_API_PORT=30008" in env_content
-                
+
                 # Verify session metadata file was created
                 session_dir = session_manager.sessions_dir / str(test_uuid)
                 metadata_file = session_dir / "metadata.json"
                 assert metadata_file.exists()
-                
-                with open(metadata_file, 'r', encoding='utf-8') as f:
+
+                with open(metadata_file, encoding='utf-8') as f:
                     metadata = json.load(f)
-                
+
                 assert metadata["session_id"] == str(test_uuid)
                 assert metadata["compose_project_name"] == "simbuilder-12345678"
 
@@ -109,15 +108,15 @@ class TestSessionManager:
         with tempfile.TemporaryDirectory() as temp_dir:
             test_uuid = uuid.UUID('12345678-1234-5678-9012-123456789012')
             mock_uuid.return_value = test_uuid
-            
+
             custom_services = ["service1", "service2"]
             port_map = {"service1": 30000, "service2": 30001}
             mock_get_port.side_effect = lambda service: port_map[service]
-            
+
             with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
                 session_manager = SessionManager()
                 session_info = session_manager.create_session(custom_services)
-                
+
                 assert session_info["services"] == custom_services
                 assert session_info["allocated_ports"] == port_map
 
@@ -127,7 +126,7 @@ class TestSessionManager:
             with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
                 session_manager = SessionManager()
                 sessions = session_manager.list_sessions()
-                
+
                 assert sessions == []
 
     def test_list_sessions_with_sessions(self):
@@ -135,12 +134,12 @@ class TestSessionManager:
         with tempfile.TemporaryDirectory() as temp_dir:
             with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
                 session_manager = SessionManager()
-                
+
                 # Create a test session directory and metadata
                 session_id = "test-session-1"
                 session_dir = session_manager.sessions_dir / session_id
                 session_dir.mkdir(parents=True)
-                
+
                 metadata = {
                     "session_id": session_id,
                     "session_short": "test1234",
@@ -148,13 +147,13 @@ class TestSessionManager:
                     "created_at": "2024-01-01T00:00:00",
                     "services": ["service1", "service2"]
                 }
-                
+
                 metadata_file = session_dir / "metadata.json"
                 with open(metadata_file, 'w', encoding='utf-8') as f:
                     json.dump(metadata, f)
-                
+
                 sessions = session_manager.list_sessions()
-                
+
                 assert len(sessions) == 1
                 assert sessions[0]["session_id"] == session_id
                 assert sessions[0]["compose_project_name"] == "simbuilder-test1234"
@@ -165,7 +164,7 @@ class TestSessionManager:
             with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
                 session_manager = SessionManager()
                 status = session_manager.get_session_status("nonexistent-session")
-                
+
                 assert status is None
 
     @patch.object(SessionManager, '_check_containers_running')
@@ -175,15 +174,15 @@ class TestSessionManager:
             with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
                 session_manager = SessionManager()
                 mock_check_containers.return_value = False
-                
+
                 # Create test session
                 session_id = "test-session-1"
                 session_dir = session_manager.sessions_dir / session_id
                 session_dir.mkdir(parents=True)
-                
+
                 env_file_path = Path(temp_dir) / ".env.session"
                 env_file_path.write_text("SIMBUILDER_SESSION_ID=test-session-1")
-                
+
                 metadata = {
                     "session_id": session_id,
                     "session_short": "test1234",
@@ -192,13 +191,13 @@ class TestSessionManager:
                     "env_file_path": str(env_file_path),
                     "allocated_ports": {"service1": 30000}
                 }
-                
+
                 metadata_file = session_dir / "metadata.json"
                 with open(metadata_file, 'w', encoding='utf-8') as f:
                     json.dump(metadata, f)
-                
+
                 status = session_manager.get_session_status(session_id)
-                
+
                 assert status is not None
                 assert status["session_id"] == session_id
                 assert status["env_file_exists"] is True
@@ -211,7 +210,7 @@ class TestSessionManager:
             with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
                 session_manager = SessionManager()
                 result = session_manager.cleanup_session("nonexistent-session")
-                
+
                 assert result is False
                 mock_stop_containers.assert_not_called()
 
@@ -221,27 +220,27 @@ class TestSessionManager:
         with tempfile.TemporaryDirectory() as temp_dir:
             with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
                 session_manager = SessionManager()
-                
+
                 # Create test session
                 session_id = "test-session-1"
                 session_dir = session_manager.sessions_dir / session_id
                 session_dir.mkdir(parents=True)
-                
+
                 env_file_path = Path(temp_dir) / ".env.session"
                 env_file_path.write_text(f"SIMBUILDER_SESSION_ID={session_id}")
-                
+
                 metadata = {
                     "session_id": session_id,
                     "compose_project_name": "simbuilder-test1234",
                     "env_file_path": str(env_file_path)
                 }
-                
+
                 metadata_file = session_dir / "metadata.json"
                 with open(metadata_file, 'w', encoding='utf-8') as f:
                     json.dump(metadata, f)
-                
+
                 result = session_manager.cleanup_session(session_id)
-                
+
                 assert result is True
                 assert not session_dir.exists()
                 assert not env_file_path.exists()
@@ -252,21 +251,21 @@ class TestSessionManager:
         with tempfile.TemporaryDirectory() as temp_dir:
             with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
                 session_manager = SessionManager()
-                
+
                 env_vars = {
                     "SIMBUILDER_SESSION_ID": "test-session",
                     "NEO4J_PORT": "30000",
                     "CORE_API_PORT": "30001"
                 }
-                
+
                 env_file_path = Path(temp_dir) / "test.env"
                 session_manager._write_env_file(env_file_path, env_vars)
-                
+
                 assert env_file_path.exists()
-                
-                with open(env_file_path, 'r', encoding='utf-8') as f:
+
+                with open(env_file_path, encoding='utf-8') as f:
                     content = f.read()
-                
+
                 assert "SIMBUILDER_SESSION_ID=test-session" in content
                 assert "NEO4J_PORT=30000" in content
                 assert "CORE_API_PORT=30001" in content
@@ -276,21 +275,21 @@ class TestSessionManager:
         with tempfile.TemporaryDirectory() as temp_dir:
             with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
                 session_manager = SessionManager()
-                
+
                 session_info = {
                     "session_id": "test-session",
                     "compose_project_name": "simbuilder-test",
                     "allocated_ports": {"service1": 30000}
                 }
-                
+
                 metadata_file = Path(temp_dir) / "metadata.json"
                 session_manager._write_session_metadata(metadata_file, session_info)
-                
+
                 assert metadata_file.exists()
-                
-                with open(metadata_file, 'r', encoding='utf-8') as f:
+
+                with open(metadata_file, encoding='utf-8') as f:
                     loaded_data = json.load(f)
-                
+
                 assert loaded_data == session_info
 
     def test_read_session_metadata(self):
@@ -298,18 +297,18 @@ class TestSessionManager:
         with tempfile.TemporaryDirectory() as temp_dir:
             with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
                 session_manager = SessionManager()
-                
+
                 session_info = {
                     "session_id": "test-session",
                     "compose_project_name": "simbuilder-test"
                 }
-                
+
                 metadata_file = Path(temp_dir) / "metadata.json"
                 with open(metadata_file, 'w', encoding='utf-8') as f:
                     json.dump(session_info, f)
-                
+
                 loaded_data = session_manager._read_session_metadata(metadata_file)
-                
+
                 assert loaded_data == session_info
 
     @patch('subprocess.run')
@@ -318,11 +317,11 @@ class TestSessionManager:
         with tempfile.TemporaryDirectory() as temp_dir:
             with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
                 session_manager = SessionManager()
-                
+
                 mock_run.return_value = MagicMock(stdout="container1\ncontainer2\n")
-                
+
                 result = session_manager._check_containers_running("test-project")
-                
+
                 assert result is True
                 mock_run.assert_called_once()
 
@@ -332,11 +331,11 @@ class TestSessionManager:
         with tempfile.TemporaryDirectory() as temp_dir:
             with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
                 session_manager = SessionManager()
-                
+
                 mock_run.return_value = MagicMock(stdout="")
-                
+
                 result = session_manager._check_containers_running("test-project")
-                
+
                 assert result is False
 
     @patch('subprocess.run')
@@ -345,11 +344,11 @@ class TestSessionManager:
         with tempfile.TemporaryDirectory() as temp_dir:
             with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
                 session_manager = SessionManager()
-                
+
                 mock_run.side_effect = Exception("Docker not available")
-                
+
                 result = session_manager._check_containers_running("test-project")
-                
+
                 assert result is False
 
     @patch('subprocess.run')
@@ -358,11 +357,11 @@ class TestSessionManager:
         with tempfile.TemporaryDirectory() as temp_dir:
             with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
                 session_manager = SessionManager()
-                
+
                 mock_run.return_value = MagicMock(returncode=0)
-                
+
                 session_manager._stop_containers("test-project")
-                
+
                 mock_run.assert_called_once_with(
                     ["docker", "compose", "-p", "test-project", "down"],
                     capture_output=True,
@@ -377,9 +376,9 @@ class TestSessionManager:
         with tempfile.TemporaryDirectory() as temp_dir:
             with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
                 session_manager = SessionManager()
-                
+
                 mock_run.return_value = MagicMock(returncode=1, stderr="Error message")
-                
+
                 # Should not raise exception
                 session_manager._stop_containers("test-project")
 
@@ -389,9 +388,9 @@ class TestSessionManager:
         with tempfile.TemporaryDirectory() as temp_dir:
             with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
                 session_manager = SessionManager()
-                
+
                 mock_run.side_effect = Exception("Command failed")
-                
+
                 # Should not raise exception
                 session_manager._stop_containers("test-project")
 
@@ -401,15 +400,15 @@ class TestSessionManager:
         with tempfile.TemporaryDirectory() as temp_dir:
             with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
                 session_manager = SessionManager()
-                
+
                 # Create .env.session file
                 env_file_path = Path(temp_dir) / ".env.session"
                 env_file_path.write_text("COMPOSE_PROJECT_NAME=simbuilder-test1234\n")
-                
+
                 mock_run.return_value = MagicMock(returncode=0)
-                
+
                 result = session_manager.compose_up()
-                
+
                 assert result is True
                 mock_run.assert_called_once_with(
                     ["docker", "compose", "-p", "simbuilder-test1234", "--env-file", str(env_file_path), "up", "-d"],
@@ -425,15 +424,15 @@ class TestSessionManager:
         with tempfile.TemporaryDirectory() as temp_dir:
             with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
                 session_manager = SessionManager()
-                
+
                 # Create .env.session file
                 env_file_path = Path(temp_dir) / ".env.session"
                 env_file_path.write_text("COMPOSE_PROJECT_NAME=simbuilder-test1234\n")
-                
+
                 mock_run.return_value = MagicMock(returncode=0)
-                
+
                 result = session_manager.compose_up(profile="full")
-                
+
                 assert result is True
                 mock_run.assert_called_once_with(
                     ["docker", "compose", "-p", "simbuilder-test1234", "--env-file", str(env_file_path), "up", "-d", "--profile", "full"],
@@ -449,15 +448,15 @@ class TestSessionManager:
         with tempfile.TemporaryDirectory() as temp_dir:
             with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
                 session_manager = SessionManager()
-                
+
                 # Create .env.session file
                 env_file_path = Path(temp_dir) / ".env.session"
                 env_file_path.write_text("COMPOSE_PROJECT_NAME=simbuilder-test1234\n")
-                
+
                 mock_run.return_value = MagicMock(returncode=0)
-                
+
                 result = session_manager.compose_up(detached=False)
-                
+
                 assert result is True
                 mock_run.assert_called_once_with(
                     ["docker", "compose", "-p", "simbuilder-test1234", "--env-file", str(env_file_path), "up"],
@@ -472,9 +471,9 @@ class TestSessionManager:
         with tempfile.TemporaryDirectory() as temp_dir:
             with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
                 session_manager = SessionManager()
-                
+
                 result = session_manager.compose_up()
-                
+
                 assert result is False
 
     @patch('subprocess.run')
@@ -483,13 +482,13 @@ class TestSessionManager:
         with tempfile.TemporaryDirectory() as temp_dir:
             with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
                 session_manager = SessionManager()
-                
+
                 # Create .env.session file without COMPOSE_PROJECT_NAME
                 env_file_path = Path(temp_dir) / ".env.session"
                 env_file_path.write_text("OTHER_VAR=value\n")
-                
+
                 result = session_manager.compose_up()
-                
+
                 assert result is False
                 mock_run.assert_not_called()
 
@@ -499,15 +498,15 @@ class TestSessionManager:
         with tempfile.TemporaryDirectory() as temp_dir:
             with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
                 session_manager = SessionManager()
-                
+
                 # Create .env.session file
                 env_file_path = Path(temp_dir) / ".env.session"
                 env_file_path.write_text("COMPOSE_PROJECT_NAME=simbuilder-test1234\n")
-                
+
                 mock_run.return_value = MagicMock(returncode=1, stderr="Docker error")
-                
+
                 result = session_manager.compose_up()
-                
+
                 assert result is False
 
     @patch('subprocess.run')
@@ -516,15 +515,15 @@ class TestSessionManager:
         with tempfile.TemporaryDirectory() as temp_dir:
             with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
                 session_manager = SessionManager()
-                
+
                 # Create .env.session file
                 env_file_path = Path(temp_dir) / ".env.session"
                 env_file_path.write_text("COMPOSE_PROJECT_NAME=simbuilder-test1234\n")
-                
+
                 mock_run.return_value = MagicMock(returncode=0)
-                
+
                 result = session_manager.compose_down()
-                
+
                 assert result is True
                 mock_run.assert_called_once_with(
                     ["docker", "compose", "-p", "simbuilder-test1234", "--env-file", str(env_file_path), "down"],
@@ -540,15 +539,15 @@ class TestSessionManager:
         with tempfile.TemporaryDirectory() as temp_dir:
             with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
                 session_manager = SessionManager()
-                
+
                 # Create .env.session file
                 env_file_path = Path(temp_dir) / ".env.session"
                 env_file_path.write_text("COMPOSE_PROJECT_NAME=simbuilder-test1234\n")
-                
+
                 mock_run.return_value = MagicMock(returncode=0)
-                
+
                 result = session_manager.compose_down(remove_volumes=True)
-                
+
                 assert result is True
                 mock_run.assert_called_once_with(
                     ["docker", "compose", "-p", "simbuilder-test1234", "--env-file", str(env_file_path), "down", "-v"],
@@ -563,9 +562,9 @@ class TestSessionManager:
         with tempfile.TemporaryDirectory() as temp_dir:
             with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
                 session_manager = SessionManager()
-                
+
                 result = session_manager.compose_down()
-                
+
                 assert result is False
 
     @patch('subprocess.run')
@@ -574,13 +573,13 @@ class TestSessionManager:
         with tempfile.TemporaryDirectory() as temp_dir:
             with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
                 session_manager = SessionManager()
-                
+
                 # Create .env.session file
                 env_file_path = Path(temp_dir) / ".env.session"
                 env_file_path.write_text("COMPOSE_PROJECT_NAME=simbuilder-test1234\n")
-                
+
                 mock_run.return_value = MagicMock(returncode=1, stderr="Docker error")
-                
+
                 result = session_manager.compose_down()
-                
+
                 assert result is False

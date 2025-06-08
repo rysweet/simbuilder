@@ -2,12 +2,11 @@
 Tests for the session CLI commands.
 """
 
-import json
 import tempfile
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
-import pytest
 from typer.testing import CliRunner
 
 from src.scaffolding.cli import session_app
@@ -27,11 +26,11 @@ class TestSessionCLI:
         # Mock logger
         mock_logger = MagicMock()
         mock_setup_logging.return_value = mock_logger
-        
+
         # Mock session manager
         mock_session_manager = MagicMock()
         mock_session_manager_class.return_value = mock_session_manager
-        
+
         session_info = {
             "session_id": "12345678-1234-5678-9012-123456789012",
             "session_short": "12345678",
@@ -45,15 +44,15 @@ class TestSessionCLI:
             }
         }
         mock_session_manager.create_session.return_value = session_info
-        
+
         result = self.runner.invoke(session_app, ["create"])
-        
+
         assert result.exit_code == 0
         assert "* New SimBuilder session created!" in result.stdout
         assert "Session ID" in result.stdout
         assert "12345678-1234-5678-9012-123456789012" in result.stdout
         assert "Allocated Ports" in result.stdout
-        
+
         mock_session_manager.create_session.assert_called_once_with(None)
 
     @patch('src.scaffolding.cli.SessionManager')
@@ -62,10 +61,10 @@ class TestSessionCLI:
         """Test session create command with custom services."""
         mock_logger = MagicMock()
         mock_setup_logging.return_value = mock_logger
-        
+
         mock_session_manager = MagicMock()
         mock_session_manager_class.return_value = mock_session_manager
-        
+
         session_info = {
             "session_id": "test-session",
             "session_short": "testsess",
@@ -75,9 +74,9 @@ class TestSessionCLI:
             "allocated_ports": {"service1": 30000, "service2": 30001}
         }
         mock_session_manager.create_session.return_value = session_info
-        
+
         result = self.runner.invoke(session_app, ["create", "--services", "service1,service2"])
-        
+
         assert result.exit_code == 0
         mock_session_manager.create_session.assert_called_once_with(["service1", "service2"])
 
@@ -87,13 +86,13 @@ class TestSessionCLI:
         """Test session create command failure."""
         mock_logger = MagicMock()
         mock_setup_logging.return_value = mock_logger
-        
+
         mock_session_manager = MagicMock()
         mock_session_manager_class.return_value = mock_session_manager
         mock_session_manager.create_session.side_effect = Exception("Creation failed")
-        
+
         result = self.runner.invoke(session_app, ["create"])
-        
+
         assert result.exit_code == 1
         assert "Error creating session" in result.stdout
 
@@ -103,13 +102,13 @@ class TestSessionCLI:
         """Test session list command with no sessions."""
         mock_logger = MagicMock()
         mock_setup_logging.return_value = mock_logger
-        
+
         mock_session_manager = MagicMock()
         mock_session_manager_class.return_value = mock_session_manager
         mock_session_manager.list_sessions.return_value = []
-        
+
         result = self.runner.invoke(session_app, ["list"])
-        
+
         assert result.exit_code == 0
         assert "No sessions found." in result.stdout
 
@@ -119,10 +118,10 @@ class TestSessionCLI:
         """Test session list command with existing sessions."""
         mock_logger = MagicMock()
         mock_setup_logging.return_value = mock_logger
-        
+
         mock_session_manager = MagicMock()
         mock_session_manager_class.return_value = mock_session_manager
-        
+
         sessions = [
             {
                 "session_id": "12345678-1234-5678-9012-123456789012",
@@ -140,9 +139,9 @@ class TestSessionCLI:
             }
         ]
         mock_session_manager.list_sessions.return_value = sessions
-        
+
         result = self.runner.invoke(session_app, ["list"])
-        
+
         assert result.exit_code == 0
         assert "SimBuilder Sessions (2 found)" in result.stdout
         assert "12345678..." in result.stdout
@@ -157,13 +156,13 @@ class TestSessionCLI:
         """Test session list command failure."""
         mock_logger = MagicMock()
         mock_setup_logging.return_value = mock_logger
-        
+
         mock_session_manager = MagicMock()
         mock_session_manager_class.return_value = mock_session_manager
         mock_session_manager.list_sessions.side_effect = Exception("List failed")
-        
+
         result = self.runner.invoke(session_app, ["list"])
-        
+
         assert result.exit_code == 1
         assert "Error listing sessions" in result.stdout
 
@@ -173,13 +172,13 @@ class TestSessionCLI:
         """Test session status command for nonexistent session."""
         mock_logger = MagicMock()
         mock_setup_logging.return_value = mock_logger
-        
+
         mock_session_manager = MagicMock()
         mock_session_manager_class.return_value = mock_session_manager
         mock_session_manager.get_session_status.return_value = None
-        
+
         result = self.runner.invoke(session_app, ["status", "nonexistent-session"])
-        
+
         assert result.exit_code == 1
         assert "Session not found" in result.stdout
 
@@ -189,10 +188,10 @@ class TestSessionCLI:
         """Test session status command for existing session."""
         mock_logger = MagicMock()
         mock_setup_logging.return_value = mock_logger
-        
+
         mock_session_manager = MagicMock()
         mock_session_manager_class.return_value = mock_session_manager
-        
+
         session_info = {
             "session_id": "12345678-1234-5678-9012-123456789012",
             "session_short": "12345678",
@@ -207,9 +206,9 @@ class TestSessionCLI:
             }
         }
         mock_session_manager.get_session_status.return_value = session_info
-        
+
         result = self.runner.invoke(session_app, ["status", "test-session"])
-        
+
         assert result.exit_code == 0
         assert "Session Status: 12345678" in result.stdout
         assert "Session ID" in result.stdout
@@ -227,13 +226,13 @@ class TestSessionCLI:
         """Test session status command failure."""
         mock_logger = MagicMock()
         mock_setup_logging.return_value = mock_logger
-        
+
         mock_session_manager = MagicMock()
         mock_session_manager_class.return_value = mock_session_manager
         mock_session_manager.get_session_status.side_effect = Exception("Status failed")
-        
+
         result = self.runner.invoke(session_app, ["status", "test-session"])
-        
+
         assert result.exit_code == 1
         assert "Error getting session status" in result.stdout
 
@@ -243,13 +242,13 @@ class TestSessionCLI:
         """Test session cleanup command for nonexistent session."""
         mock_logger = MagicMock()
         mock_setup_logging.return_value = mock_logger
-        
+
         mock_session_manager = MagicMock()
         mock_session_manager_class.return_value = mock_session_manager
         mock_session_manager.get_session_status.return_value = None
-        
+
         result = self.runner.invoke(session_app, ["cleanup", "nonexistent-session"])
-        
+
         assert result.exit_code == 1
         assert "Session not found" in result.stdout
 
@@ -259,19 +258,19 @@ class TestSessionCLI:
         """Test session cleanup command success."""
         mock_logger = MagicMock()
         mock_setup_logging.return_value = mock_logger
-        
+
         mock_session_manager = MagicMock()
         mock_session_manager_class.return_value = mock_session_manager
-        
+
         session_info = {
             "session_short": "12345678",
             "compose_project_name": "simbuilder-12345678"
         }
         mock_session_manager.get_session_status.return_value = session_info
         mock_session_manager.cleanup_session.return_value = True
-        
+
         result = self.runner.invoke(session_app, ["cleanup", "test-session"])
-        
+
         assert result.exit_code == 0
         assert "Cleaning up session: 12345678" in result.stdout
         assert "* Session cleanup completed successfully!" in result.stdout
@@ -285,19 +284,19 @@ class TestSessionCLI:
         """Test session cleanup command failure."""
         mock_logger = MagicMock()
         mock_setup_logging.return_value = mock_logger
-        
+
         mock_session_manager = MagicMock()
         mock_session_manager_class.return_value = mock_session_manager
-        
+
         session_info = {
             "session_short": "12345678",
             "compose_project_name": "simbuilder-12345678"
         }
         mock_session_manager.get_session_status.return_value = session_info
         mock_session_manager.cleanup_session.return_value = False
-        
+
         result = self.runner.invoke(session_app, ["cleanup", "test-session"])
-        
+
         assert result.exit_code == 1
         assert "X Session cleanup failed!" in result.stdout
 
@@ -307,13 +306,13 @@ class TestSessionCLI:
         """Test session cleanup command with exception."""
         mock_logger = MagicMock()
         mock_setup_logging.return_value = mock_logger
-        
+
         mock_session_manager = MagicMock()
         mock_session_manager_class.return_value = mock_session_manager
         mock_session_manager.get_session_status.side_effect = Exception("Cleanup failed")
-        
+
         result = self.runner.invoke(session_app, ["cleanup", "test-session"])
-        
+
         assert result.exit_code == 1
         assert "Error cleaning up session" in result.stdout
 
@@ -324,7 +323,7 @@ class TestSessionCLI:
         mock_logger = MagicMock()
         mock_setup_logging.return_value = mock_logger
         mock_get_session_id.return_value = "test-session-id"
-        
+
         # Test that _get_current_session_id is imported and callable
         result = mock_get_session_id()
         assert result == "test-session-id"
@@ -332,7 +331,7 @@ class TestSessionCLI:
     def test_get_current_session_id_function(self):
         """Test _get_current_session_id function directly."""
         from src.scaffolding.cli import _get_current_session_id
-        
+
         # Test with environment variable
         with patch('os.getenv', return_value="env-session-id"):
             session_id = _get_current_session_id()
@@ -341,11 +340,11 @@ class TestSessionCLI:
     def test_get_current_session_id_from_file(self):
         """Test _get_current_session_id reads from .env.session file."""
         from src.scaffolding.cli import _get_current_session_id
-        
+
         with tempfile.TemporaryDirectory() as temp_dir:
             env_file = Path(temp_dir) / ".env.session"
             env_file.write_text("SIMBUILDER_SESSION_ID=file-session-id\nOTHER_VAR=value\n")
-            
+
             with patch('os.getenv', return_value=None):
                 with patch('src.scaffolding.config.get_project_root', return_value=Path(temp_dir)):
                     session_id = _get_current_session_id()
@@ -354,7 +353,7 @@ class TestSessionCLI:
     def test_get_current_session_id_none(self):
         """Test _get_current_session_id returns None when no session found."""
         from src.scaffolding.cli import _get_current_session_id
-        
+
         with patch('os.getenv', return_value=None):
             with patch('src.scaffolding.config.get_project_root') as mock_get_root:
                 # Point to non-existent directory

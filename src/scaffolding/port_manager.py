@@ -2,15 +2,15 @@
 Port management for SimBuilder sessions with dynamic port allocation.
 """
 
-import socket
-from typing import Dict, Set
-from pathlib import Path
 import json
-from filelock import FileLock
-from .config import get_project_root
+import socket
+from pathlib import Path
 
-from .logging import get_logger, LoggingMixin
+from filelock import FileLock
+
+from .config import get_project_root
 from .exceptions import ConfigurationError
+from .logging import LoggingMixin
 
 
 class PortManager(LoggingMixin):
@@ -27,8 +27,8 @@ class PortManager(LoggingMixin):
         super().__init__()
         self.port_range_start = port_range_start
         self.port_range_end = port_range_end
-        self.allocated_ports: Dict[str, int] = {}
-        self.used_ports: Set[int] = set()
+        self.allocated_ports: dict[str, int] = {}
+        self.used_ports: set[int] = set()
 
         # Global tracking files
         self.global_file: Path = get_project_root() / ".port_allocations.json"
@@ -36,7 +36,7 @@ class PortManager(LoggingMixin):
 
         # Load any previously allocated global ports
         self._load_global_state()
-        
+
         self.logger.info(
             "PortManager initialized",
             port_range_start=port_range_start,
@@ -76,7 +76,7 @@ class PortManager(LoggingMixin):
                 self._save_global_state()
                 self.logger.debug("Found free port", port=port)
                 return port
-        
+
         raise ConfigurationError(
             f"No free ports available in range {self.port_range_start}-{self.port_range_end}"
         )
@@ -95,16 +95,16 @@ class PortManager(LoggingMixin):
             port = self.allocated_ports[service_name]
             self.logger.debug("Returning existing port", service=service_name, port=port)
             return port
-        
+
         port = self._find_free_port()
         self.allocated_ports[service_name] = port
-        
+
         self.logger.info(
             "Allocated new port",
             service=service_name,
             port=port
         )
-        
+
         return port
 
     def release_port(self, service_name: str) -> None:
@@ -118,14 +118,14 @@ class PortManager(LoggingMixin):
             port = self.allocated_ports.pop(service_name)
             self.used_ports.discard(port)
             self._save_global_state()
-            
+
             self.logger.info(
                 "Released port",
                 service=service_name,
                 port=port
             )
 
-    def get_allocated_ports(self) -> Dict[str, int]:
+    def get_allocated_ports(self) -> dict[str, int]:
         """
         Get all currently allocated ports.
         
@@ -147,11 +147,11 @@ class PortManager(LoggingMixin):
             "allocated_ports": self.allocated_ports,
             "used_ports": list(self.used_ports)
         }
-        
+
         try:
             with open(file_path, 'w', encoding='utf-8') as f:
                 json.dump(port_data, f, indent=2)
-            
+
             self.logger.info("Saved port data to file", file_path=str(file_path))
         except Exception as e:
             self.log_error(e, {"operation": "save_to_file", "file_path": str(file_path)})
@@ -165,14 +165,14 @@ class PortManager(LoggingMixin):
             file_path: Path to load the port allocation data from
         """
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, encoding='utf-8') as f:
                 port_data = json.load(f)
-            
+
             self.port_range_start = port_data.get("port_range_start", self.port_range_start)
             self.port_range_end = port_data.get("port_range_end", self.port_range_end)
             self.allocated_ports = port_data.get("allocated_ports", {})
             self.used_ports = set(port_data.get("used_ports", []))
-            
+
             self.logger.info(
                 "Loaded port data from file",
                 file_path=str(file_path),
@@ -194,11 +194,11 @@ class PortManager(LoggingMixin):
         import sys
         if "pytest" in sys.modules:
             return
-            
+
         try:
             with FileLock(str(self.lock_file), timeout=10):
                 if self.global_file.exists():
-                    with open(self.global_file, "r", encoding="utf-8") as f:
+                    with open(self.global_file, encoding="utf-8") as f:
                         data = json.load(f)
                     self.used_ports.update(data.get("used_ports", []))
         except Exception as e:
@@ -220,5 +220,5 @@ class PortManager(LoggingMixin):
         self.allocated_ports.clear()
         self.used_ports.clear()
         self._save_global_state()
-        
+
         self.logger.info("Cleared all allocated ports", cleared_count=cleared_count)

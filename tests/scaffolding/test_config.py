@@ -10,7 +10,9 @@ from unittest.mock import patch
 import pytest
 from pydantic import ValidationError
 
-from src.scaffolding.config import Settings, get_settings, create_env_template
+from src.scaffolding.config import Settings
+from src.scaffolding.config import create_env_template
+from src.scaffolding.config import get_settings
 from src.scaffolding.exceptions import ConfigurationError
 
 
@@ -22,10 +24,10 @@ class TestSettings:
         with patch.dict(os.environ, {}, clear=True):
             with pytest.raises(ValidationError) as exc_info:
                 Settings()
-        
+
         errors = exc_info.value.errors()
         required_fields = {error["loc"][0] for error in errors if error["type"] == "missing"}
-        
+
         # Check that core required fields are present
         assert "azure_tenant_id" in required_fields
         assert "neo4j_password" in required_fields
@@ -41,7 +43,7 @@ class TestSettings:
             azure_openai_endpoint="https://test.openai.azure.com",
             azure_openai_key="test-key"
         )
-        
+
         assert settings.neo4j_uri == "neo4j://localhost:7687"
         assert settings.neo4j_user == "neo4j"
         assert settings.neo4j_database == "simbuilder"
@@ -61,7 +63,7 @@ class TestSettings:
             azure_openai_endpoint="https://test.openai.azure.com",  # No trailing slash
             azure_openai_key="test-key"
         )
-        
+
         # Should add trailing slash
         assert settings.azure_openai_endpoint == "https://test.openai.azure.com/"
 
@@ -76,7 +78,7 @@ class TestSettings:
             log_level="DEBUG"
         )
         assert settings.log_level == "DEBUG"
-        
+
         # Invalid log level
         with pytest.raises(ValidationError) as exc_info:
             Settings(
@@ -86,7 +88,7 @@ class TestSettings:
                 azure_openai_key="test-key",
                 log_level="INVALID"
             )
-        
+
         errors = exc_info.value.errors()
         assert any("Log level must be one of" in str(error["ctx"]["reason"]) for error in errors)
 
@@ -101,7 +103,7 @@ class TestSettings:
             core_api_port=8080
         )
         assert settings.core_api_port == 8080
-        
+
         # Invalid port (too low)
         with pytest.raises(ValidationError) as exc_info:
             Settings(
@@ -111,7 +113,7 @@ class TestSettings:
                 azure_openai_key="test-key",
                 core_api_port=80
             )
-        
+
         errors = exc_info.value.errors()
         assert any("Port must be between 1024 and 65535" in str(error["ctx"]["reason"]) for error in errors)
 
@@ -124,10 +126,10 @@ class TestSettings:
             azure_openai_key="test-key",
             environment="development"
         )
-        
+
         assert dev_settings.is_development is True
         assert dev_settings.is_production is False
-        
+
         prod_settings = Settings(
             azure_tenant_id="test-tenant",
             neo4j_password="test-password",
@@ -135,7 +137,7 @@ class TestSettings:
             azure_openai_key="test-key",
             environment="production"
         )
-        
+
         assert prod_settings.is_development is False
         assert prod_settings.is_production is True
 
@@ -148,10 +150,10 @@ class TestSettings:
             azure_openai_key="test-key",
             environment="production"
         )
-        
+
         # Should not raise an error for complete config
         settings.validate_required_for_environment()
-        
+
         # Test with missing required field
         settings_incomplete = Settings(
             azure_tenant_id="test-tenant",
@@ -160,10 +162,10 @@ class TestSettings:
             azure_openai_key="test-key",
             environment="production"
         )
-        
+
         with pytest.raises(ConfigurationError) as exc_info:
             settings_incomplete.validate_required_for_environment()
-        
+
         assert "Missing required configuration for production environment" in str(exc_info.value)
 
 
@@ -181,7 +183,7 @@ class TestConfigHelpers:
         }):
             settings1 = get_settings()
             settings2 = get_settings()
-            
+
             # Should return the same instance due to caching
             assert settings1 is settings2
 
@@ -193,7 +195,7 @@ class TestConfigHelpers:
             get_settings.cache_clear()
             with pytest.raises(ConfigurationError) as exc_info:
                 get_settings()
-            
+
             assert "Failed to load configuration" in str(exc_info.value)
 
     def test_create_env_template(self):
@@ -202,12 +204,12 @@ class TestConfigHelpers:
             # Mock get_project_root to return temp directory
             with patch("src.scaffolding.config.get_project_root", return_value=Path(temp_dir)):
                 create_env_template()
-                
+
                 template_file = Path(temp_dir) / ".env.template"
                 assert template_file.exists()
-                
+
                 content = template_file.read_text(encoding="utf-8")
-                
+
                 # Check that template contains expected sections
                 assert "# Azure Authentication" in content
                 assert "AZURE_TENANT_ID=" in content
@@ -234,10 +236,10 @@ class TestEnvironmentVariableLoading:
             "DEBUG_MODE": "true",
             "CORE_API_PORT": "8080"
         }
-        
+
         with patch.dict(os.environ, env_vars, clear=True):
             settings = Settings()
-            
+
             assert settings.azure_tenant_id == "env-tenant-id"
             assert settings.neo4j_password == "env-password"
             assert settings.azure_openai_endpoint == "https://env.openai.azure.com/"
@@ -255,7 +257,7 @@ class TestEnvironmentVariableLoading:
             "AZURE_OPENAI_ENDPOINT": "https://test.openai.azure.com/",
             "AZURE_OPENAI_KEY": "test-key"
         }
-        
+
         with patch.dict(os.environ, env_vars, clear=True):
             settings = Settings()
             assert settings.azure_tenant_id == "lowercase-tenant"
