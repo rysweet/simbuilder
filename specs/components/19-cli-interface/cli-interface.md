@@ -1,5 +1,44 @@
 # CLI Interface Specification
 
+## Session Management Commands
+
+The CLI Interface provides comprehensive session management capabilities to support multiple concurrent SimBuilder instances with isolated resources and dynamic port allocation.
+
+### Session Management Commands
+```bash
+# Create new session with automatic port allocation
+sim session create [--ports=custom-range]
+
+# List all active sessions
+sim session list
+
+# Show detailed session information
+sim session status [--session-id=UUID]
+
+# Cleanup session resources
+sim session cleanup [--session-id=UUID] [--force]
+
+# Switch to different session context
+sim session switch --session-id=UUID
+
+# Export session environment variables
+sim session env [--session-id=UUID] [--format=bash|powershell|json]
+```
+
+### Session-Aware Command Execution
+All CLI commands automatically detect and use the current session context through:
+- **Environment Variables**: `SIMBUILDER_SESSION_ID` and related session variables
+- **Session File**: `.env.session` containing session-specific configuration
+- **Port Discovery**: Automatic detection of allocated ports for service connections
+- **Container Management**: Session-specific container operations and health checks
+
+### Multi-Instance Support Features
+- **Port Conflict Prevention**: Automatic port allocation and conflict resolution
+- **Resource Isolation**: Session-specific containers, networks, and volumes
+- **Concurrent Operations**: Support for multiple simultaneous SimBuilder instances
+- **Session Cleanup**: Comprehensive cleanup of all session resources
+- **GitHub Codespaces Integration**: Seamless operation in containerized development environments
+
 ## Purpose / Overview
 
 The CLI Interface provides a rich command-line experience for SimBuilder, enabling developers, security researchers, and operations teams to manage simulation environments through an intuitive terminal interface. Built with Python's Rich library, it offers interactive workflows, real-time progress visualization, and comprehensive simulation management capabilities while maintaining the power and scriptability expected from enterprise CLI tools.

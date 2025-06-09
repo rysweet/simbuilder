@@ -1,5 +1,42 @@
 # REST API Gateway Specification
 
+## Session ID Handling and Dynamic Port Allocation
+
+The REST API Gateway supports multi-instance deployment through session-aware configuration and dynamic port allocation, enabling multiple SimBuilder instances to operate concurrently without conflicts.
+
+### Session-Aware Features
+- **Dynamic Port Binding**: Uses `API_GATEWAY_PORT` environment variable for runtime port allocation
+- **Session Context Headers**: Automatically includes session ID in all downstream service requests
+- **Service Discovery**: Routes to session-specific backend services using allocated ports
+- **Health Checks**: Session-aware health monitoring of connected services
+- **Load Balancing**: Session-isolated request routing and load distribution
+
+### Environment Configuration
+```bash
+# Session identification and networking
+SIMBUILDER_SESSION_ID=a1b2c3d4-e5f6-7890-abcd-ef1234567890
+API_GATEWAY_PORT=18080
+COMPOSE_PROJECT_NAME=simbuilder-a1b2c3d4
+
+# Backend service connections with dynamic ports
+CORE_API_URL=http://localhost:${CORE_API_PORT}
+NEO4J_HTTP_URI=http://localhost:${GRAPH_DB_HTTP_PORT}
+NATS_MANAGEMENT_URL=http://localhost:${NATS_HTTP_PORT}
+```
+
+### Container Configuration
+```yaml
+api-gateway:
+  container_name: ${COMPOSE_PROJECT_NAME}-api-gateway
+  ports:
+    - "${API_GATEWAY_PORT}:8080"
+  environment:
+    - SIMBUILDER_SESSION_ID=${SIMBUILDER_SESSION_ID}
+    - BACKEND_SERVICES_PREFIX=${COMPOSE_PROJECT_NAME}
+  networks:
+    - ${COMPOSE_PROJECT_NAME}-network
+```
+
 ## Purpose / Overview
 
 The REST API Gateway component provides a unified external API interface for third-party integrations and external systems to interact with SimBuilder. It handles authentication, authorization, rate limiting, API versioning, and request routing while maintaining security isolation between external clients and internal SimBuilder components. This gateway enables enterprise integration scenarios and supports automated CI/CD pipelines that need to interact with simulation environments.

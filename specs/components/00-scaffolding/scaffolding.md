@@ -4,10 +4,13 @@
 
 The Project Scaffolding component provides **unified cross-cutting infrastructure** that establishes foundational tooling, development workflows, and repository structure for the entire SimBuilder ecosystem. This component ensures consistent development practices, automated quality gates, and streamlined onboarding across all other components.
 
-**Core Purpose:** Unify cross-cutting infrastructure including uv package management, pyproject.toml configuration, Ruff linting, Black formatting, pre-commit hooks, pytest configuration, .env handling, prompts folder organization, and Docker dev-container setup.
+**Core Purpose:** Unify cross-cutting infrastructure including uv package management, pyproject.toml configuration, Ruff linting, Black formatting, pre-commit hooks, pytest configuration, .env handling, prompts folder organization, Docker dev-container setup, session management, and dynamic port allocation for multi-instance support.
 
 ### 1.1 Key Capabilities
 - **Bootstrap CLI Command:** `sim init` for rapid project initialization
+- **Session Management:** Global session ID generation and isolation
+- **Dynamic Port Allocation:** Runtime port scanning and conflict-free assignment
+- **Multi-Instance Support:** Concurrent execution with resource isolation
 - **Unified Python Tooling:** uv, pyproject.toml, Ruff, Black, pytest integration
 - **Development Environment:** Docker dev-container with all required tools
 - **Quality Gates:** Pre-commit hooks, automated linting, testing pipelines
@@ -16,34 +19,86 @@ The Project Scaffolding component provides **unified cross-cutting infrastructur
 
 ## 2. Functional Requirements / User Stories
 
-### 2.1 Contributors (New Team Members)
-- **US-001:** As a new contributor, I want to run `sim init` and have a fully configured development environment within 5 minutes
-- **US-002:** As a developer, I want consistent code formatting and linting across all components without manual configuration
-- **US-003:** As a contributor, I want pre-commit hooks to catch issues before they reach CI/CD
+### 2.1 Session Management and Multi-Instance Support
+- **US-001:** As a developer, I want to run multiple SimBuilder instances simultaneously without port conflicts
+- **US-002:** As a CI/CD system, I want each pipeline run to have isolated resources and not interfere with others
+- **US-003:** As a GitHub Codespaces user, I want SimBuilder to work seamlessly in containerized environments
+- **US-004:** As a team member, I want session cleanup to happen automatically when I stop working
+- **US-005:** As a developer, I want to easily identify which containers belong to my session
 
-### 2.2 CI/CD System 
-- **US-004:** As a CI system, I want standardized Make targets (`make test`, `make lint`, `make build`) that work consistently across all components
-- **US-005:** As a build system, I want lockfile-based dependency management for reproducible builds
+### 2.2 Contributors (New Team Members)
+- **US-006:** As a new contributor, I want to run `sim init` and have a fully configured development environment within 5 minutes
+- **US-007:** As a developer, I want consistent code formatting and linting across all components without manual configuration
+- **US-008:** As a contributor, I want pre-commit hooks to catch issues before they reach CI/CD
 
-### 2.3 Security Team
-- **US-006:** As a security engineer, I want centralized secret management with .env templates and validation
-- **US-007:** As a compliance officer, I want CODEOWNERS enforcement and signed commits for audit trails
+### 2.3 CI/CD System
+- **US-009:** As a CI system, I want standardized Make targets (`make test`, `make lint`, `make build`) that work consistently across all components
+- **US-010:** As a build system, I want lockfile-based dependency management for reproducible builds
 
-### 2.4 DevOps Team
-- **US-008:** As a platform engineer, I want containerized development environments that match production closely
+### 2.4 Security Team
+- **US-011:** As a security engineer, I want centralized secret management with .env templates and validation
+- **US-012:** As a compliance officer, I want CODEOWNERS enforcement and signed commits for audit trails
+
+### 2.5 DevOps Team
+- **US-013:** As a platform engineer, I want containerized development environments that match production closely
 
 ## 3. Interfaces / APIs
 
 ### 3.1 CLI Bootstrap Interface
 ```bash
-# Primary bootstrap command
-sim init [--template=python|node|full] [--path=./project]
+# Primary bootstrap command with session management
+sim init [--template=python|node|full] [--path=./project] [--session-id=UUID]
 
 # Component-specific initialization
 sim init component --name=my-agent --type=agent
 
 # Update existing project scaffolding
 sim scaffold update
+
+# Session management commands
+sim session create [--ports=custom-range]
+sim session list
+sim session cleanup [--session-id=UUID]
+sim session status [--session-id=UUID]
+```
+
+### 3.2 Session ID Handling
+```bash
+# Session ID generation and management
+sim session create
+# Output: Created session a1b2c3d4-e5f6-7890-abcd-ef1234567890
+#         Allocated ports: Neo4j=17474,17687 NATS=14222 API=18080
+
+# Environment variable setup
+sim session env [--session-id=UUID]
+# Output: Environment variables for session a1b2c3d4:
+#         SIMBUILDER_SESSION_ID=a1b2c3d4-e5f6-7890-abcd-ef1234567890
+#         COMPOSE_PROJECT_NAME=simbuilder-a1b2c3d4
+#         GRAPH_DB_HTTP_PORT=17474
+#         GRAPH_DB_BOLT_PORT=17687
+
+# Session cleanup
+sim session cleanup --session-id=a1b2c3d4-e5f6-7890-abcd-ef1234567890
+# Output: Stopped containers: simbuilder-neo4j-a1b2c3d4, simbuilder-nats-a1b2c3d4
+#         Removed networks: simbuilder-a1b2c3d4-network
+#         Released ports: 17474, 17687, 14222, 18080
+```
+
+### 3.3 Dynamic Port Allocation
+```python
+# Port allocation interface
+class PortManager:
+    def allocate_ports(self, service_configs: dict) -> dict:
+        """Allocate available ports for services"""
+        
+    def release_ports(self, session_id: str) -> bool:
+        """Release ports allocated to a session"""
+        
+    def get_port_ranges(self) -> dict:
+        """Get configured port ranges for each service type"""
+        
+    def check_conflicts(self, ports: list) -> list:
+        """Check for port conflicts with existing sessions"""
 ```
 
 ### 3.2 Make Targets (Standardized across all components)
@@ -75,17 +130,89 @@ install: proto
 	uv pip install -e .
 ```
 
-### 3.3 Dev-Container Configuration
+### 3.4 Dev-Container Configuration with Docker-in-Docker Support
 ```json
 {
   "name": "SimBuilder Dev Environment",
   "dockerFile": "../docker/dev.Dockerfile",
+  "mounts": [
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+  ],
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+  },
   "customizations": {
     "vscode": {
-      "extensions": ["ms-python.python", "charliermarsh.ruff"],
+      "extensions": [
+        "ms-python.python",
+        "charliermarsh.ruff",
+        "ms-azuretools.vscode-docker",
+        "ms-vscode-remote.remote-containers"
+      ],
       "settings": {
-        "python.defaultInterpreterPath": "/usr/local/bin/python"
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "docker.dockerPath": "/usr/local/bin/docker"
       }
+    }
+  },
+  "forwardPorts": [
+    "17474", "17687", "14222", "18080"
+  ],
+  "portsAttributes": {
+    "17474": {
+      "label": "Neo4j Browser",
+      "onAutoForward": "openPreview"
+    },
+    "17687": {
+      "label": "Neo4j Bolt Protocol"
+    },
+    "14222": {
+      "label": "NATS Client"
+    },
+    "18080": {
+      "label": "API Gateway",
+      "onAutoForward": "openPreview"
+    }
+  },
+  "postCreateCommand": "sim session create && sim init",
+  "shutdownAction": "stopCompose"
+}
+```
+
+### 3.5 GitHub Codespaces Integration
+```yaml
+# .devcontainer/devcontainer.json for Codespaces
+{
+  "name": "SimBuilder Codespaces",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "enableNonRootDocker": "true"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "customizations": {
+    "codespaces": {
+      "openFiles": [
+        "README.md",
+        "specs/SimBuilderDesign.md"
+      ]
+    }
+  },
+  "postCreateCommand": ".devcontainer/postCreate.sh",
+  "forwardPorts": [
+    17474, 17687, 14222, 18080
+  ],
+  "portsAttributes": {
+    "17474": {
+      "label": "Neo4j Browser",
+      "visibility": "public"
+    },
+    "18080": {
+      "label": "SimBuilder API",
+      "visibility": "public"
     }
   }
 }
@@ -116,13 +243,54 @@ volumes:
 
 #### Environment Variable Configuration
 ```bash
-# .env.example - Local development
+# .env.example - Local development with session isolation
 SIMBUS_BACKEND=nats
-NATS_URL=nats://localhost:4222
+NATS_URL=nats://localhost:${NATS_CLIENT_PORT}
+
+# Session-specific configuration
+SIMBUILDER_SESSION_ID=${SESSION_ID}
+COMPOSE_PROJECT_NAME=simbuilder-${SESSION_ID_SHORT}
+
+# Dynamic port allocation
+GRAPH_DB_HTTP_PORT=${ALLOCATED_NEO4J_HTTP_PORT}
+GRAPH_DB_BOLT_PORT=${ALLOCATED_NEO4J_BOLT_PORT}
+NATS_CLIENT_PORT=${ALLOCATED_NATS_CLIENT_PORT}
+NATS_HTTP_PORT=${ALLOCATED_NATS_HTTP_PORT}
+API_GATEWAY_PORT=${ALLOCATED_API_GATEWAY_PORT}
+AZURITE_BLOB_PORT=${ALLOCATED_AZURITE_BLOB_PORT}
+AZURITE_QUEUE_PORT=${ALLOCATED_AZURITE_QUEUE_PORT}
+AZURITE_TABLE_PORT=${ALLOCATED_AZURITE_TABLE_PORT}
 
 # .env.production - Azure production
 SIMBUS_BACKEND=azure_service_bus
 AZURE_SERVICE_BUS_CONNECTION_STRING=Endpoint=sb://...
+```
+
+#### Session Environment File (.env.session)
+```bash
+# Generated automatically by scaffolding layer
+SIMBUILDER_SESSION_ID=a1b2c3d4-e5f6-7890-abcd-ef1234567890
+COMPOSE_PROJECT_NAME=simbuilder-a1b2c3d4
+SESSION_ID_SHORT=a1b2c3d4
+SESSION_CREATED_AT=2025-06-06T14:30:00Z
+
+# Allocated ports for this session
+GRAPH_DB_HTTP_PORT=17474
+GRAPH_DB_BOLT_PORT=17687
+NATS_CLIENT_PORT=14222
+NATS_HTTP_PORT=18222
+API_GATEWAY_PORT=18080
+AZURITE_BLOB_PORT=11000
+AZURITE_QUEUE_PORT=11001
+AZURITE_TABLE_PORT=11002
+
+# Connection strings using allocated ports
+NEO4J_URI=bolt://localhost:17687
+NEO4J_HTTP_URI=http://localhost:17474
+NATS_URL=nats://localhost:14222
+AZURITE_BLOB_URI=http://localhost:11000
+AZURITE_QUEUE_URI=http://localhost:11001
+AZURITE_TABLE_URI=http://localhost:11002
 ```
 
 ## 4. Dependencies
@@ -168,7 +336,8 @@ simbuilder/
 │   └── ISSUE_TEMPLATE/
 ├── docker/
 │   ├── dev.Dockerfile
-│   └── prod.Dockerfile
+│   ├── prod.Dockerfile
+│   └── docker-compose.session.yml.template
 ├── prompts/
 │   ├── agents/
 │   └── shared/
@@ -182,11 +351,221 @@ simbuilder/
 ├── docs/
 │   ├── CONTRIBUTING.md
 │   └── adr/
+├── sessions/
+│   ├── .gitkeep
+│   └── active_sessions.json
 ├── pyproject.toml
 ├── Makefile
 ├── .env.example
+├── .env.session
 ├── .pre-commit-config.yaml
 └── uv.lock
+```
+
+### 5.2 Session Management Data Structures
+
+#### Session Registry Schema
+```json
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "activeSessions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "sessionId": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+          },
+          "sessionIdShort": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}$"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastActivity": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "allocatedPorts": {
+            "type": "object",
+            "properties": {
+              "neo4jHttp": {"type": "integer"},
+              "neo4jBolt": {"type": "integer"},
+              "natsClient": {"type": "integer"},
+              "natsHttp": {"type": "integer"},
+              "apiGateway": {"type": "integer"},
+              "azuriteBlob": {"type": "integer"},
+              "azuriteQueue": {"type": "integer"},
+              "azuriteTable": {"type": "integer"}
+            },
+            "required": ["neo4jHttp", "neo4jBolt", "natsClient"]
+          },
+          "containerNames": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "networkName": {"type": "string"},
+          "status": {
+            "type": "string",
+            "enum": ["active", "stopped", "cleanup_pending"]
+          }
+        },
+        "required": ["sessionId", "sessionIdShort", "createdAt", "allocatedPorts", "status"]
+      }
+    }
+  },
+  "required": ["activeSessions"]
+}
+```
+
+#### Port Allocation Configuration
+```yaml
+# Port allocation configuration
+portRanges:
+  neo4j:
+    http:
+      min: 17000
+      max: 17999
+    bolt:
+      min: 17000
+      max: 17999
+  nats:
+    client:
+      min: 14000
+      max: 14999
+    http:
+      min: 14000
+      max: 14999
+  api:
+    gateway:
+      min: 18000
+      max: 18999
+  azurite:
+    blob:
+      min: 11000
+      max: 11999
+    queue:
+      min: 11000
+      max: 11999
+    table:
+      min: 11000
+      max: 11999
+
+# Port allocation strategy
+allocationStrategy:
+  conflictResolution: "increment_and_retry"
+  maxRetries: 100
+  reservationTimeout: 30 # seconds
+  cleanupInterval: 300 # seconds
+```
+
+### 5.3 Session-Aware Docker Compose Template
+
+#### docker-compose.session.yml.template
+```yaml
+# Session-isolated docker-compose template
+# Variables are substituted by scaffolding layer
+version: '3.8'
+
+services:
+  neo4j:
+    image: neo4j:5.11
+    container_name: ${COMPOSE_PROJECT_NAME}-neo4j
+    ports:
+      - "${GRAPH_DB_HTTP_PORT}:7474"
+      - "${GRAPH_DB_BOLT_PORT}:7687"
+    environment:
+      - NEO4J_AUTH=neo4j/your-secure-password
+      - NEO4J_apoc_export_file_enabled=true
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*,gds.*
+      - NEO4J_dbms_default_database=simbuilder
+    volumes:
+      - neo4j_data_${SESSION_ID_SHORT}:/data
+      - neo4j_logs_${SESSION_ID_SHORT}:/logs
+      - neo4j_import_${SESSION_ID_SHORT}:/var/lib/neo4j/import
+      - neo4j_plugins_${SESSION_ID_SHORT}:/plugins
+    networks:
+      - ${COMPOSE_PROJECT_NAME}-network
+    healthcheck:
+      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "your-secure-password", "RETURN 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  nats:
+    image: nats:2.10-alpine
+    container_name: ${COMPOSE_PROJECT_NAME}-nats
+    ports:
+      - "${NATS_CLIENT_PORT}:4222"
+      - "${NATS_HTTP_PORT}:8222"
+      - "6222:6222"
+    command: [
+      "--jetstream",
+      "--store_dir=/data",
+      "--http_port=8222",
+      "--cluster_name=${COMPOSE_PROJECT_NAME}-cluster"
+    ]
+    volumes:
+      - nats_data_${SESSION_ID_SHORT}:/data
+    networks:
+      - ${COMPOSE_PROJECT_NAME}-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8222/varz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:latest
+    container_name: ${COMPOSE_PROJECT_NAME}-azurite
+    ports:
+      - "${AZURITE_BLOB_PORT}:10000"
+      - "${AZURITE_QUEUE_PORT}:10001"
+      - "${AZURITE_TABLE_PORT}:10002"
+    volumes:
+      - azurite_data_${SESSION_ID_SHORT}:/data
+    networks:
+      - ${COMPOSE_PROJECT_NAME}-network
+    command: >
+      azurite
+      --blobHost 0.0.0.0
+      --queueHost 0.0.0.0
+      --tableHost 0.0.0.0
+      --location /data
+      --debug /data/debug.log
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "10000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  neo4j_data_${SESSION_ID_SHORT}:
+    driver: local
+  neo4j_logs_${SESSION_ID_SHORT}:
+    driver: local
+  neo4j_import_${SESSION_ID_SHORT}:
+    driver: local
+  neo4j_plugins_${SESSION_ID_SHORT}:
+    driver: local
+  nats_data_${SESSION_ID_SHORT}:
+    driver: local
+  azurite_data_${SESSION_ID_SHORT}:
+    driver: local
+
+networks:
+  ${COMPOSE_PROJECT_NAME}-network:
+    driver: bridge
+    name: ${COMPOSE_PROJECT_NAME}-network
 ```
 
 ### 5.2 Configuration File Schemas
