@@ -1,0 +1,26 @@
+{
+  "session_id": "a6bf03f9-6915-4c49-b777-7dbce3b2af07",
+  "session_short": "a6bf03f9",
+  "compose_project_name": "simbuilder-a6bf03f9",
+  "created_at": "2025-06-06T15:01:57.790735",
+  "env_file_path": "C:\\Users\\rysweet\\src\\simbuilder\\.env.session",
+  "session_dir": "C:\\Users\\rysweet\\src\\simbuilder\\.sessions\\a6bf03f9-6915-4c49-b777-7dbce3b2af07",
+  "allocated_ports": {
+    "neo4j": 30000,
+    "nats": 30001,
+    "core_api": 30002,
+    "api_gateway": 30003,
+    "graph_db_admin": 30004,
+    "spec_library_api": 30005,
+    "tenant_discovery_api": 30006
+  },
+  "services": [
+    "neo4j",
+    "nats",
+    "core_api",
+    "api_gateway",
+    "graph_db_admin",
+    "spec_library_api",
+    "tenant_discovery_api"
+  ]
+}

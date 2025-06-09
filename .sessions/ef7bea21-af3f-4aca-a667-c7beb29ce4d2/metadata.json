@@ -1,0 +1,38 @@
+{
+  "session_id": "ef7bea21-af3f-4aca-a667-c7beb29ce4d2",
+  "session_short": "ef7bea21",
+  "compose_project_name": "simbuilder-ef7bea21",
+  "created_at": "2025-06-06T15:12:21.204326",
+  "env_file_path": "C:\\Users\\rysweet\\src\\simbuilder\\.env.session",
+  "session_dir": "C:\\Users\\rysweet\\src\\simbuilder\\.sessions\\ef7bea21-af3f-4aca-a667-c7beb29ce4d2",
+  "allocated_ports": {
+    "neo4j": 30000,
+    "neo4j_http": 30001,
+    "nats": 30002,
+    "nats_http": 30003,
+    "nats_cluster": 30004,
+    "azurite_blob": 30005,
+    "azurite_queue": 30006,
+    "azurite_table": 30007,
+    "core_api": 30008,
+    "api_gateway": 30009,
+    "graph_db_admin": 30010,
+    "spec_library_api": 30011,
+    "tenant_discovery_api": 30012
+  },
+  "services": [
+    "neo4j",
+    "neo4j_http",
+    "nats",
+    "nats_http",
+    "nats_cluster",
+    "azurite_blob",
+    "azurite_queue",
+    "azurite_table",
+    "core_api",
+    "api_gateway",
+    "graph_db_admin",
+    "spec_library_api",
+    "tenant_discovery_api"
+  ]
+}

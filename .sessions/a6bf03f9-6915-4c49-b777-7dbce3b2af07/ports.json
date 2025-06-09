@@ -1,0 +1,22 @@
+{
+  "port_range_start": 30000,
+  "port_range_end": 40000,
+  "allocated_ports": {
+    "neo4j": 30000,
+    "nats": 30001,
+    "core_api": 30002,
+    "api_gateway": 30003,
+    "graph_db_admin": 30004,
+    "spec_library_api": 30005,
+    "tenant_discovery_api": 30006
+  },
+  "used_ports": [
+    30000,
+    30001,
+    30002,
+    30003,
+    30004,
+    30005,
+    30006
+  ]
+}

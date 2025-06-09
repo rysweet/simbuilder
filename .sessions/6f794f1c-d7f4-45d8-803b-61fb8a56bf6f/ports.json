@@ -1,0 +1,14 @@
+{
+  "port_range_start": 30000,
+  "port_range_end": 40000,
+  "allocated_ports": {
+    "custom_service1": 30000,
+    "custom_service2": 30001,
+    "neo4j": 30002
+  },
+  "used_ports": [
+    30000,
+    30001,
+    30002
+  ]
+}
