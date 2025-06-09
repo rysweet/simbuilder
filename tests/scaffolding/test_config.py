@@ -37,24 +37,27 @@ class TestSettings:
 
     def test_default_values(self):
         """Test that default values are set correctly."""
-        # Provide minimal required config
-        settings = Settings(
-            azure_tenant_id="test-tenant",
-            neo4j_password="test-password",
-            azure_openai_endpoint="https://test.openai.azure.com",
-            azure_openai_key="test-key"
-        )
+        # Clear environment variables and prevent .env file loading
+        with patch.dict(os.environ, {}, clear=True):
+            # Provide minimal required config without loading from .env file
+            settings = Settings(
+                azure_tenant_id="test-tenant",
+                neo4j_password="test-password",
+                azure_openai_endpoint="https://test.openai.azure.com",
+                azure_openai_key="test-key",
+                _env_file=None  # Prevent loading from .env file
+            )
 
-        assert settings.neo4j_uri == "neo4j://localhost:7687"
-        assert settings.neo4j_user == "neo4j"
-        assert settings.neo4j_database == "simbuilder"
-        assert settings.service_bus_url == "nats://localhost:4222"
-        assert settings.service_bus_cluster_id == "simbuilder-local"
-        assert settings.core_api_url == "http://localhost:7000"
-        assert settings.core_api_port == 7000
-        assert settings.log_level == "INFO"
-        assert settings.environment == "development"
-        assert settings.debug_mode is False
+            assert settings.neo4j_uri == "neo4j://localhost:7687"
+            assert settings.neo4j_user == "neo4j"
+            assert settings.neo4j_database == "simbuilder"
+            assert settings.service_bus_url == "nats://localhost:4222"
+            assert settings.service_bus_cluster_id == "simbuilder-local"
+            assert settings.core_api_url == "http://localhost:7000"
+            assert settings.core_api_port == 7000
+            assert settings.log_level == "INFO"
+            assert settings.environment == "development"
+            assert settings.debug_mode is False
 
     def test_openai_endpoint_validation(self):
         """Test OpenAI endpoint URL validation."""

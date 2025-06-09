@@ -1,4 +1,4 @@
-"""Neo4j graph database service for Tenant Discovery."""
+"""Neo4j graph database service for SimBuilder."""
 
 import logging
 from collections.abc import Generator
@@ -11,8 +11,9 @@ from neo4j.exceptions import AuthError
 from neo4j.exceptions import ServiceUnavailable
 
 from src.scaffolding.exceptions import ConfigurationError
-from ..config import TenantDiscoverySettings
-from ..config import get_td_settings
+from src.tenant_discovery.config import TenantDiscoverySettings
+from src.tenant_discovery.config import get_td_settings
+
 from .models import SubscriptionNode
 from .models import TenantNode
 

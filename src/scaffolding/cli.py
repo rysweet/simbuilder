@@ -28,6 +28,46 @@ session_app = typer.Typer(
 )
 app.add_typer(session_app, name="session")
 
+# Create graph subcommand group
+graph_app = typer.Typer(
+    name="graph",
+    help="Graph database commands",
+    add_completion=False,
+)
+app.add_typer(graph_app, name="graph")
+
+# Create servicebus subcommand group
+servicebus_app = typer.Typer(
+    name="servicebus",
+    help="Service Bus messaging commands",
+    add_completion=False,
+)
+app.add_typer(servicebus_app, name="servicebus")
+
+# Create specs subcommand group
+specs_app = typer.Typer(
+    name="specs",
+    help="Spec Library management commands",
+    add_completion=False,
+)
+app.add_typer(specs_app, name="specs")
+
+# Create api subcommand group
+api_app = typer.Typer(
+    name="api",
+    help="Core API service commands",
+    add_completion=False,
+)
+app.add_typer(api_app, name="api")
+
+# Create llm subcommand group
+llm_app = typer.Typer(
+    name="llm",
+    help="LLM integration commands",
+    add_completion=False,
+)
+app.add_typer(llm_app, name="llm")
+
 console = Console()
 
 
@@ -492,6 +532,34 @@ def _get_current_session_id() -> str | None:
         pass
 
     return None
+
+
+# Register graph commands
+from src.simbuilder_graph.cli import graph_check
+from src.simbuilder_graph.cli import graph_info
+
+graph_app.command("info")(graph_info)
+graph_app.command("check")(graph_check)
+
+# Register servicebus commands
+from src.simbuilder_servicebus.cli import app as servicebus_cli_app
+
+servicebus_app.add_typer(servicebus_cli_app, name="")
+
+# Register specs commands
+from src.simbuilder_specs.cli import app as specs_cli_app
+
+specs_app.add_typer(specs_cli_app, name="")
+
+# Register api commands
+from src.simbuilder_api.cli import app as api_cli_app
+
+api_app.add_typer(api_cli_app, name="")
+
+# Register llm commands
+from src.simbuilder_llm.cli import app as llm_cli_app
+
+llm_app.add_typer(llm_cli_app, name="")
 
 
 def main() -> None:

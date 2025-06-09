@@ -24,6 +24,10 @@ class Settings(BaseSettings):
 
     # Azure Authentication
     azure_tenant_id: str = Field(..., description="Azure tenant identifier")
+    azure_subscription_id: str | None = Field(
+        None,
+        description="Azure subscription identifier (optional for tests/CLI)"
+    )
     azure_client_id: str | None = Field(None, description="Service principal client ID")
     azure_client_secret: str | None = Field(None, description="Service principal secret")
 
@@ -47,11 +51,16 @@ class Settings(BaseSettings):
     # Core API Service
     core_api_url: str = Field("http://localhost:7000", description="Core API base URL")
     core_api_port: int = Field(7000, description="Core API listening port")
+    jwt_secret: str = Field("insecure-dev-secret", description="JWT signing secret")
 
     # Application Configuration
     log_level: str = Field("INFO", description="Application log level")
     environment: str = Field("development", description="Runtime environment")
     debug_mode: bool = Field(False, description="Enable debug features")
+
+    # Spec Library
+    spec_repo_url: str = Field("https://github.com/SimBuilder/spec-library.git", description="Spec repository URL")
+    spec_repo_branch: str = Field("main", description="Spec repository branch")
 
     @field_validator("azure_openai_endpoint")
     @classmethod
@@ -174,11 +183,17 @@ AZURE_OPENAI_MODEL_REASONING=gpt-4o
 # Core API Service
 CORE_API_URL=http://localhost:7000
 CORE_API_PORT=7000
+JWT_SECRET=insecure-dev-secret
 
 # Application Configuration
 LOG_LEVEL=INFO
 ENVIRONMENT=development
 DEBUG_MODE=true
+
+# Spec Library
+SPEC_REPO_URL=https://github.com/SimBuilder/spec-library.git
+SPEC_REPO_BRANCH=main
+SPEC_REPO_TOKEN=  # Optional: Git access token for private repositories
 """
 
     with open(template_path, "w", encoding="utf-8") as f:

@@ -34,3 +34,33 @@ git push -u origin initial-impl
 # Created draft pull request
 gh pr create --fill --draft
 # Created PR #1: https://github.com/rysweet/simbuilder/pull/1
+
+## 2025-06-09
+
+```bash
+# Tested simbuilder_specs tests after fixing liquid soft dependency pattern
+uv run pytest tests/simbuilder_specs/ -v
+# Failed with yaml module not found error - need to install PyYAML dependency
+
+# Added missing python-liquid and PyYAML dependencies
+uv add python-liquid pyyaml
+# Successfully installed python-liquid==2.0.2, pyyaml==6.0.2, and dependencies
+
+# Re-tested simbuilder_specs tests after adding dependencies
+uv run pytest tests/simbuilder_specs/ -v
+# Tests now collect properly, but 15 failures out of 68 tests - need to fix test issues
+
+# Fixed variable extraction logic in template_loader.py to properly filter local variables
+uv run pytest tests/simbuilder_specs/test_template_loader.py::TestTemplateLoader::test_extract_variables_complex -v
+# Fixed - now passes variable extraction test
+
+# Confirmed soft dependency fix works - package imports successfully
+uv run python -c "from src.simbuilder_specs import TemplateMeta, TemplateRenderRequest; print('Import successful')"
+# Success - import works without hard liquid dependency failure
+```
+## 2025-06-09
+
+```bash
+# Updated requirements.txt to use python-liquid==2.0.2 as specified in Phase 4 requirements
+# Fixed version compatibility for SimBuilder Specs Library
+```

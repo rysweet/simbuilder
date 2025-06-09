@@ -149,3 +149,8 @@ uv run mypy --explicit-package-bases src/tenant_discovery tests/tenant_discovery
 uv run python -m pytest tests/tenant_discovery/ -v
 ```
 # Ran Phase 2 graph database tests - all 43 tests pass including 27 new graph tests
+
+```bash
+git status
+```
+# Checked current repository state - found refactoring in progress with graph service moved to simbuilder_graph

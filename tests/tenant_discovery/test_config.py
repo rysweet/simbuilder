@@ -326,4 +326,4 @@ class TestTenantDiscoveryCLI:
         assert result.exit_code == 0
         assert "Tenant Discovery CLI" in result.stdout
         assert "config" in result.stdout
-        assert "graph" in result.stdout
+        # Note: graph commands moved to shared scaffolding CLI

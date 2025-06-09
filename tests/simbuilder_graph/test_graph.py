@@ -1,4 +1,4 @@
-"""Tests for the graph database service."""
+"""Tests for the shared graph database service."""
 
 from unittest.mock import MagicMock
 from unittest.mock import Mock
@@ -9,10 +9,9 @@ from pydantic import ValidationError
 from typer.testing import CliRunner
 
 from src.scaffolding.exceptions import ConfigurationError
-from src.tenant_discovery.cli import app
-from src.tenant_discovery.graph.models import SubscriptionNode
-from src.tenant_discovery.graph.models import TenantNode
-from src.tenant_discovery.graph.service import GraphService
+from src.simbuilder_graph.models import SubscriptionNode
+from src.simbuilder_graph.models import TenantNode
+from src.simbuilder_graph.service import GraphService
 
 
 class TestTenantNode:
@@ -86,7 +85,7 @@ class TestGraphService:
         """Provide a GraphService instance with mock config."""
         return GraphService(config=mock_config)
 
-    @patch('src.tenant_discovery.graph.service.GraphDatabase.driver')
+    @patch('src.simbuilder_graph.service.GraphDatabase.driver')
     def test_connect_success(self, mock_driver_class, service):
         """Test successful database connection."""
         mock_driver = Mock()
@@ -102,7 +101,7 @@ class TestGraphService:
         mock_driver_class.assert_called_once_with("bolt://localhost:7687", auth=("neo4j", "password"))
         mock_session.run.assert_called_once_with("RETURN 1")
 
-    @patch('src.tenant_discovery.graph.service.GraphDatabase.driver')
+    @patch('src.simbuilder_graph.service.GraphDatabase.driver')
     def test_connect_failure(self, mock_driver_class, service):
         """Test database connection failure."""
         from neo4j.exceptions import ServiceUnavailable
@@ -120,7 +119,7 @@ class TestGraphService:
         with pytest.raises(ConfigurationError, match="Graph database URL not configured"):
             service.connect()
 
-    @patch('src.tenant_discovery.graph.service.GraphDatabase.driver')
+    @patch('src.simbuilder_graph.service.GraphDatabase.driver')
     def test_close(self, mock_driver_class, service):
         """Test closing database connection."""
         mock_driver = Mock()
@@ -132,7 +131,7 @@ class TestGraphService:
         mock_driver.close.assert_called_once()
         assert service._driver is None
 
-    @patch('src.tenant_discovery.graph.service.GraphDatabase.driver')
+    @patch('src.simbuilder_graph.service.GraphDatabase.driver')
     def test_context_manager(self, mock_driver_class, service):
         """Test using service as context manager."""
         mock_driver = Mock()
@@ -148,11 +147,10 @@ class TestGraphService:
 
     def test_session_not_connected(self, service):
         """Test session context manager when not connected."""
-        with pytest.raises(ConfigurationError, match="Not connected to database"):
-            with service.session():
-                pass
+        with pytest.raises(ConfigurationError, match="Not connected to database"), service.session():
+            pass
 
-    @patch('src.tenant_discovery.graph.service.GraphDatabase.driver')
+    @patch('src.simbuilder_graph.service.GraphDatabase.driver')
     def test_create_tenant(self, mock_driver_class, service):
         """Test creating a tenant."""
         mock_driver = Mock()
@@ -169,7 +167,7 @@ class TestGraphService:
             name="Test Tenant"
         )
 
-    @patch('src.tenant_discovery.graph.service.GraphDatabase.driver')
+    @patch('src.simbuilder_graph.service.GraphDatabase.driver')
     def test_create_subscription(self, mock_driver_class, service):
         """Test creating a subscription."""
         mock_driver = Mock()
@@ -194,7 +192,7 @@ class TestGraphService:
             tenant_id="tenant-123"
         )
 
-    @patch('src.tenant_discovery.graph.service.GraphDatabase.driver')
+    @patch('src.simbuilder_graph.service.GraphDatabase.driver')
     def test_tenant_exists_true(self, mock_driver_class, service):
         """Test tenant_exists returns True when tenant exists."""
         mock_driver = Mock()
@@ -216,7 +214,7 @@ class TestGraphService:
             id="tenant-123"
         )
 
-    @patch('src.tenant_discovery.graph.service.GraphDatabase.driver')
+    @patch('src.simbuilder_graph.service.GraphDatabase.driver')
     def test_tenant_exists_false(self, mock_driver_class, service):
         """Test tenant_exists returns False when tenant doesn't exist."""
         mock_driver = Mock()
@@ -234,7 +232,7 @@ class TestGraphService:
 
         assert result is False
 
-    @patch('src.tenant_discovery.graph.service.GraphDatabase.driver')
+    @patch('src.simbuilder_graph.service.GraphDatabase.driver')
     def test_list_subscriptions(self, mock_driver_class, service):
         """Test listing subscriptions for a tenant."""
         mock_driver = Mock()
@@ -270,7 +268,7 @@ class TestGraphService:
         assert result[1].id == "sub-2"
         assert result[1].name == "Subscription 2"
 
-    @patch('src.tenant_discovery.graph.service.GraphDatabase.driver')
+    @patch('src.simbuilder_graph.service.GraphDatabase.driver')
     def test_get_node_counts(self, mock_driver_class, service):
         """Test getting node counts."""
         mock_driver = Mock()
@@ -288,7 +286,7 @@ class TestGraphService:
 
         assert result == {"tenants": 5, "subscriptions": 12}
 
-    @patch('src.tenant_discovery.graph.service.GraphDatabase.driver')
+    @patch('src.simbuilder_graph.service.GraphDatabase.driver')
     def test_check_connectivity_success(self, mock_driver_class, service):
         """Test successful connectivity check."""
         mock_driver = Mock()
@@ -311,7 +309,7 @@ class TestGraphService:
         result = service.check_connectivity()
         assert result is False
 
-    @patch('src.tenant_discovery.graph.service.GraphDatabase.driver')
+    @patch('src.simbuilder_graph.service.GraphDatabase.driver')
     def test_check_connectivity_exception(self, mock_driver_class, service):
         """Test connectivity check when exception occurs."""
         mock_driver = Mock()
@@ -333,7 +331,7 @@ class TestGraphCLI:
         """Set up test method."""
         self.runner = CliRunner()
 
-    @patch('src.tenant_discovery.cli.get_graph_service')
+    @patch('src.simbuilder_graph.cli.get_graph_service')
     def test_graph_info_success(self, mock_get_service):
         """Test graph info command success."""
         mock_service = MagicMock()
@@ -341,6 +339,8 @@ class TestGraphCLI:
         mock_service.get_node_counts.return_value = {"tenants": 3, "subscriptions": 7}
         mock_get_service.return_value = mock_service
 
+        # Import the app from scaffolding CLI
+        from src.scaffolding.cli import app
         result = self.runner.invoke(app, ["graph", "info"])
 
         assert result.exit_code == 0
@@ -348,29 +348,31 @@ class TestGraphCLI:
         assert "3" in result.stdout  # tenant count
         assert "7" in result.stdout  # subscription count
 
-    @patch('src.tenant_discovery.cli.get_graph_service')
+    @patch('src.simbuilder_graph.cli.get_graph_service')
     def test_graph_info_connection_failure(self, mock_get_service):
         """Test graph info command with connection failure."""
         mock_service = MagicMock()
         mock_service.check_connectivity.return_value = False
         mock_get_service.return_value = mock_service
 
+        from src.scaffolding.cli import app
         result = self.runner.invoke(app, ["graph", "info"])
 
         assert result.exit_code == 1
         assert "Failed to connect" in result.stdout
 
-    @patch('src.tenant_discovery.cli.get_graph_service')
+    @patch('src.simbuilder_graph.cli.get_graph_service')
     def test_graph_info_configuration_error(self, mock_get_service):
         """Test graph info command with configuration error."""
         mock_get_service.side_effect = ConfigurationError("Config error")
 
+        from src.scaffolding.cli import app
         result = self.runner.invoke(app, ["graph", "info"])
 
         assert result.exit_code == 1
         assert "Configuration error" in result.stdout
 
-    @patch('src.tenant_discovery.cli.get_graph_service')
+    @patch('src.simbuilder_graph.cli.get_graph_service')
     def test_graph_check_success(self, mock_get_service):
         """Test graph check command success."""
         mock_service = MagicMock()
@@ -378,28 +380,31 @@ class TestGraphCLI:
         mock_service.get_node_counts.return_value = {"tenants": 2, "subscriptions": 5}
         mock_get_service.return_value = mock_service
 
+        from src.scaffolding.cli import app
         result = self.runner.invoke(app, ["graph", "check"])
 
         assert result.exit_code == 0
         assert "All graph database checks passed!" in result.stdout
 
-    @patch('src.tenant_discovery.cli.get_graph_service')
+    @patch('src.simbuilder_graph.cli.get_graph_service')
     def test_graph_check_failure(self, mock_get_service):
         """Test graph check command failure."""
         mock_service = MagicMock()
         mock_service.check_connectivity.return_value = False
         mock_get_service.return_value = mock_service
 
+        from src.scaffolding.cli import app
         result = self.runner.invoke(app, ["graph", "check"])
 
         assert result.exit_code == 1
         assert "Some graph database checks failed!" in result.stdout
 
-    @patch('src.tenant_discovery.cli.get_graph_service')
+    @patch('src.simbuilder_graph.cli.get_graph_service')
     def test_graph_check_configuration_error(self, mock_get_service):
         """Test graph check command with configuration error."""
         mock_get_service.side_effect = ConfigurationError("Config error")
 
+        from src.scaffolding.cli import app
         result = self.runner.invoke(app, ["graph", "check"])
 
         assert result.exit_code == 1

@@ -349,19 +349,31 @@ tests/
 - Session context properly maintained across requests
 - Comprehensive API documentation available
 
-### Phase 6: LLM Foundry Integration (Week 5)
+### Phase 6: LLM Foundry Integration (Week 5) ✅
 **Goal**: Azure OpenAI integration for narrative generation
 
-**Deliverables**:
-- [`LLMClient`](src/simbuilder/llm_foundry/llm_client.py:1) singleton with unified interface
-- Multi-authentication support (API key + bearer token)
-- Usage tracking and cost monitoring
-- Template-based prompt generation
+**Status**: Complete - Shared Azure OpenAI client and prompt rendering system
 
-**Acceptance Criteria**:
+**Deliverables**:
+- [`AzureOpenAIClient`](src/simbuilder_llm/client.py:1) with async support and retry logic
+- Liquid template-based prompt system with variable validation
+- CLI interface for chat completions and embeddings (`sbcli llm ...`)
+- Comprehensive error handling with custom exceptions
+- Full test coverage (90%+) with mocked OpenAI interactions
+
+**Implementation Highlights**:
+- **Async Azure OpenAI Client**: Supports both chat completions and embeddings with exponential backoff retry
+- **Prompt Template System**: Liquid templates with variable validation and caching
+- **CLI Integration**: Commands for `chat`, `embed`, `info`, and `check` operations
+- **Configuration Integration**: Extends scaffolding config with Azure OpenAI settings
+- **Error Handling**: Custom `LLMError` and `PromptRenderError` exceptions
+- **Security**: API key masking in logs and repr methods
+
+**Acceptance Criteria**: ✅
 - Text generation working with rate limiting
-- Cost tracking accurate to Azure billing
-- Template variable injection functioning correctly
+- Prompt template system with variable validation
+- CLI interface integrated with scaffolding commands
+- Comprehensive test coverage with pure unit tests
 
 ### Phase 7: Tenant Discovery Agent (Weeks 6-7)
 **Goal**: Complete Azure tenant enumeration capability

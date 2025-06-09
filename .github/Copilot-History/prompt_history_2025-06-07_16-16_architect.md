@@ -25,3 +25,14 @@
   - Will implement Typer CLI with info/check commands
   - Will add comprehensive tests and ensure quality gates pass
   - Will commit and push changes to initial-impl branch
+
+## Prompt 3 (2025-06-09 01:52 UTC)
+- **Prompt**: Phase 3 (Service Bus Integration) is complete and merged into the code-base. We now proceed directly to Phase 4 of the Tenant Discovery MVP implementation plan: Spec Library Integration. Create shared package `src/simbuilder_specs/` that manages external Liquid prompt templates used by all agents.
+- **Response**:
+  - Updated prompt history with current task (Phase 4 - Spec Library Integration)
+  - Will implement shared package `src/simbuilder_specs/` with core modules: git_repository.py, template_loader.py, spec_validator.py, models.py
+  - Will create CLI interface with Typer commands: specs info, specs pull, specs validate, specs render
+  - Will extend scaffolding config.py with spec_repo_url and spec_repo_branch fields
+  - Will implement comprehensive test suite with 90%+ coverage using local fixtures
+  - Will add liquid dependency to requirements.txt
+  - Will ensure Ruff & MyPy clean with no external network calls in tests
