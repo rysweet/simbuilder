@@ -22,8 +22,9 @@ class TestSettings:
     def test_required_fields_validation(self):
         """Test that required fields are validated."""
         with patch.dict(os.environ, {}, clear=True):
+            # Create Settings without loading from .env file
             with pytest.raises(ValidationError) as exc_info:
-                Settings()
+                Settings(_env_file=None)
 
         errors = exc_info.value.errors()
         required_fields = {error["loc"][0] for error in errors if error["type"] == "missing"}
@@ -193,10 +194,13 @@ class TestConfigHelpers:
             # Also clear the cache to ensure fresh Settings() creation
             from src.scaffolding.config import get_settings
             get_settings.cache_clear()
-            with pytest.raises(ConfigurationError) as exc_info:
-                get_settings()
+            # Mock Settings to not load from .env file
+            with patch("src.scaffolding.config.Settings") as mock_settings:
+                mock_settings.side_effect = ValidationError.from_exception_data("Settings", [])
+                with pytest.raises(ConfigurationError) as exc_info:
+                    get_settings()
 
-            assert "Failed to load configuration" in str(exc_info.value)
+                assert "Failed to load configuration" in str(exc_info.value)
 
     def test_create_env_template(self):
         """Test creation of .env.template file."""

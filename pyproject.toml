@@ -15,6 +15,14 @@ dependencies = [
     "structlog>=23.2.0",
     "loguru>=0.7.2",
     "rich>=13.7.0",
+    "python-liquid>=1.9,<2.0",
+    "pyyaml>=6.0.2",
+    "openai>=1.20,<2.0",
+    "tenacity>=8,<9",
+    "fastapi>=0.115.0",
+    "python-jose[cryptography]>=3.3,<4.0",
+    "gitpython>=3.1.43",
+    "uvicorn>=0.30.0",
 ]
 
 [project.optional-dependencies]
@@ -27,6 +35,8 @@ dev = [
     "black>=23.10.0",
     "pre-commit>=3.5.0",
     "mdformat>=0.7.17",
+    "types-python-jose>=3.5.0.20250531",
+    "pytest-mock>=3.12.0",
 ]
 
 [project.scripts]
@@ -118,6 +128,9 @@ module = [
     "neo4j.*",
     "nats.*",
     "loguru.*",
+    "openai.*",
+    "liquid.*",
+    "tenacity.*",
 ]
 ignore_missing_imports = true
 
@@ -163,4 +176,5 @@ exclude_lines = [
 dev = [
     "mypy>=1.16.0",
     "ruff>=0.11.13",
+    "types-python-jose>=3.5.0.20250531",
 ]
