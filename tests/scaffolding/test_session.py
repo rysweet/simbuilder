@@ -1,6 +1,7 @@
 """
 Tests for the SessionManager module.
 """
+# ruff: noqa: SIM117
 
 import json
 import tempfile
