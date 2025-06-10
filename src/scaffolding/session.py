@@ -227,7 +227,7 @@ class SessionManager(LoggingMixin):
                 if env_session_path.exists():
                     try:
                         # Check if the env file contains our session ID
-                        with open(env_session_path, encoding='utf-8') as f:
+                        with env_session_path.open(encoding='utf-8') as f:
                             content = f.read()
                         if session_id in content:
                             env_session_path.unlink()
@@ -252,7 +252,7 @@ class SessionManager(LoggingMixin):
     def _write_env_file(self, file_path: Path, env_vars: dict[str, str]) -> None:
         """Write environment variables to a .env file."""
         try:
-            with open(file_path, 'w', encoding='utf-8') as f:
+            with file_path.open('w', encoding='utf-8') as f:
                 f.write("# SimBuilder Session Environment Variables\n")
                 f.write(f"# Generated on {datetime.now().isoformat()}\n\n")
 
@@ -270,7 +270,7 @@ class SessionManager(LoggingMixin):
         import json
 
         try:
-            with open(file_path, 'w', encoding='utf-8') as f:
+            with file_path.open('w', encoding='utf-8') as f:
                 json.dump(session_info, f, indent=2)
 
             self.logger.debug("Wrote session metadata", path=str(file_path))
@@ -283,7 +283,7 @@ class SessionManager(LoggingMixin):
         """Read session metadata from JSON file."""
         import json
 
-        with open(file_path, encoding='utf-8') as f:
+        with file_path.open(encoding='utf-8') as f:
             return json.load(f)
 
     def _check_containers_running(self, compose_project_name: str) -> bool:
@@ -349,7 +349,7 @@ class SessionManager(LoggingMixin):
         try:
             # Read compose project name from env file
             compose_project_name = None
-            with open(env_session_path, encoding='utf-8') as f:
+            with env_session_path.open(encoding='utf-8') as f:
                 for line in f:
                     if line.startswith('COMPOSE_PROJECT_NAME='):
                         compose_project_name = line.split('=', 1)[1].strip()
@@ -428,7 +428,7 @@ class SessionManager(LoggingMixin):
         try:
             # Read compose project name from env file
             compose_project_name = None
-            with open(env_session_path, encoding='utf-8') as f:
+            with env_session_path.open(encoding='utf-8') as f:
                 for line in f:
                     if line.startswith('COMPOSE_PROJECT_NAME='):
                         compose_project_name = line.split('=', 1)[1].strip()
