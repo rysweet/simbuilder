@@ -137,10 +137,10 @@ def info() -> None:
 
     except ConfigurationError as e:
         console.print(f"[red]Configuration Error:[/red] {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
     except Exception as e:
         console.print(f"[red]Unexpected Error:[/red] {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @app.command()
@@ -206,11 +206,11 @@ def check() -> None:
 
     except ConfigurationError as e:
         console.print(f"[red]Configuration Error:[/red] {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
     except Exception as e:
         console.print(f"[red]Unexpected Error:[/red] {e}")
         logger.error("Health check failed with unexpected error", error=str(e))
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 def _check_neo4j(settings) -> tuple[str, str]:
@@ -358,7 +358,7 @@ def create(
         logger = setup_logging()
         logger.error("Session creation failed", error=str(e))
         console.print(f"[red]Error creating session:[/red] {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @session_app.command()
@@ -408,7 +408,7 @@ def list() -> None:
         logger = setup_logging()
         logger.error("Session listing failed", error=str(e))
         console.print(f"[red]Error listing sessions:[/red] {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @session_app.command()
@@ -462,7 +462,7 @@ def status(session_id: str) -> None:
         logger = setup_logging()
         logger.error("Session status check failed", error=str(e), session_id=session_id)
         console.print(f"[red]Error getting session status:[/red] {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @session_app.command()
@@ -501,7 +501,7 @@ def cleanup(session_id: str) -> None:
         logger = setup_logging()
         logger.error("Session cleanup failed", error=str(e), session_id=session_id)
         console.print(f"[red]Error cleaning up session:[/red] {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 def _get_current_session_id() -> str | None:
