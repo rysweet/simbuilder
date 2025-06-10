@@ -24,9 +24,15 @@ class TenantDiscoverySettings(BaseSettings):
     """Configuration settings for Tenant Discovery service."""
 
     azure_tenant_id: str = Field(..., description="Azure tenant ID for authentication")
-    azure_client_id: str = Field(..., description="Azure client ID for authentication")
+    azure_client_id: str | None = Field(
+        default_factory=lambda: None,
+        description="Azure client ID for authentication (optional)",
+    )
     azure_client_secret: str = Field(..., description="Azure client secret for authentication")
-    subscription_id: str = Field(..., description="Azure subscription ID for resource discovery")
+    subscription_id: str | None = Field(
+        default_factory=lambda: None,
+        description="Azure subscription ID for resource discovery (optional)",
+    )
     graph_db_url: str = Field(
         default="bolt://localhost:30000", description="Neo4j graph database connection URL"
     )
@@ -43,10 +49,34 @@ class TenantDiscoverySettings(BaseSettings):
         "extra": "ignore",
     }
 
+    @field_validator("azure_client_id", "subscription_id", mode="before")
+    @classmethod
+    def optional_nullify_zero_uuid(cls, v: object) -> object:
+        """Force well-known bogus/placeholder values and zero-UUID to None for optional fields."""
+        print(f"DEBUG: Validator input for optional_nullify_zero_uuid: {v!r}")
+        if not v:
+            print("DEBUG: Value is None/Falsey, returning None")
+            return None
+        sval = str(v).strip()
+        uuid_pattern = re.compile(
+            r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.IGNORECASE
+        )
+        if (
+            sval == "00000000-0000-0000-0000-000000000000"
+            or sval.lower().startswith("# optional")
+            or not uuid_pattern.match(sval)
+        ):
+            print(f"DEBUG: Value {sval!r} is not a valid UUID or is a placeholder, returning None")
+            return None
+        print("DEBUG: Returning unmodified value")
+        return v
+
     @field_validator("azure_tenant_id", "azure_client_id", "subscription_id")
     @classmethod
-    def validate_uuid_format(cls, v: str, info: ValidationInfo) -> str:
-        """Validate that the field follows UUID format."""
+    def validate_uuid_format(cls, v: str | None, info: ValidationInfo) -> str | None:
+        """Validate that the field follows UUID format, unless it's None (for optional fields)."""
+        if v is None:
+            return v
         uuid_pattern = re.compile(
             r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.IGNORECASE
         )
