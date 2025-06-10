@@ -26,7 +26,7 @@ def mock_settings():
     mock.core_api_url = "http://localhost:7000"
     mock.debug_mode = False
     mock.log_level = "INFO"
-    mock.jwt_secret = "test-secret"
+    mock.jwt_secret = "test-secret"  # noqa: S105
     return mock
 
 
@@ -74,7 +74,7 @@ class TestAPICLI:
         """Test check command with successful validation."""
         mock_settings.environment = "development"
         mock_settings.core_api_port = 8080
-        mock_settings.jwt_secret = "custom-secret"
+        mock_settings.jwt_secret = "custom-secret"  # noqa: S105
 
         mock_get_settings.return_value = mock_settings
         mock_create_app.return_value = MagicMock()
@@ -93,7 +93,7 @@ class TestAPICLI:
         mock_settings = MagicMock()
         mock_settings.environment = "production"
         mock_settings.core_api_port = 8080
-        mock_settings.jwt_secret = "insecure-dev-secret"
+        mock_settings.jwt_secret = "insecure-dev-secret"  # noqa: S105
 
         mock_get_settings.return_value = mock_settings
 
@@ -109,7 +109,7 @@ class TestAPICLI:
         mock_settings = MagicMock()
         mock_settings.environment = "development"
         mock_settings.core_api_port = 80
-        mock_settings.jwt_secret = "custom-secret"
+        mock_settings.jwt_secret = "custom-secret"  # noqa: S105
 
         mock_get_settings.return_value = mock_settings
 
@@ -144,7 +144,7 @@ class TestAPICLI:
         mock_settings = MagicMock()
         mock_settings.environment = "development"
         mock_settings.core_api_port = 8080
-        mock_settings.jwt_secret = "insecure-dev-secret"
+        mock_settings.jwt_secret = "insecure-dev-secret"  # noqa: S105
 
         mock_get_settings.return_value = mock_settings
 
