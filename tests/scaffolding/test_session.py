@@ -18,20 +18,21 @@ class TestSessionManager:
 
     def test_init(self):
         """Test SessionManager initialization."""
-        with tempfile.TemporaryDirectory() as temp_dir:
-            with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
-                session_manager = SessionManager()
+        with tempfile.TemporaryDirectory() as temp_dir, \
+             patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
+            session_manager = SessionManager()
 
-                assert session_manager.project_root == Path(temp_dir)
-                assert session_manager.sessions_dir == Path(temp_dir) / ".sessions"
-                assert session_manager.sessions_dir.exists()
+            assert session_manager.project_root == Path(temp_dir)
+            assert session_manager.sessions_dir == Path(temp_dir) / ".sessions"
+            assert session_manager.sessions_dir.exists()
 
     @patch('uuid.uuid4')
     @patch.object(PortManager, 'get_port')
     @patch.object(PortManager, 'save_to_file')
     def test_create_session_default_services(self, mock_save_to_file, mock_get_port, mock_uuid):
         """Test create_session with default services."""
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory() as temp_dir, \
+             patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
             # Mock UUID generation
             test_uuid = uuid.UUID('12345678-1234-5678-9012-123456789012')
             mock_uuid.return_value = test_uuid
@@ -54,51 +55,50 @@ class TestSessionManager:
             }
             mock_get_port.side_effect = lambda service: port_map[service]
 
-            with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
-                session_manager = SessionManager()
-                session_info = session_manager.create_session()
+            session_manager = SessionManager()
+            session_info = session_manager.create_session()
 
                 # Verify session info
-                assert session_info["session_id"] == str(test_uuid)
-                assert session_info["session_short"] == "12345678"
-                assert session_info["compose_project_name"] == "simbuilder-12345678"
-                assert "created_at" in session_info
-                assert session_info["env_file_path"] == str(Path(temp_dir) / ".env.session")
+            assert session_info["session_id"] == str(test_uuid)
+            assert session_info["session_short"] == "12345678"
+            assert session_info["compose_project_name"] == "simbuilder-12345678"
+            assert "created_at" in session_info
+            assert session_info["env_file_path"] == str(Path(temp_dir) / ".env.session")
 
-                # Verify allocated ports
-                expected_ports = port_map
-                assert session_info["allocated_ports"] == expected_ports
+            # Verify allocated ports
+            expected_ports = port_map
+            assert session_info["allocated_ports"] == expected_ports
 
-                # Verify services
-                assert set(session_info["services"]) == set(SessionManager.DEFAULT_SERVICES)
+            # Verify services
+            assert set(session_info["services"]) == set(SessionManager.DEFAULT_SERVICES)
 
-                # Verify .env.session file was created
-                env_file = Path(temp_dir) / ".env.session"
-                assert env_file.exists()
+            # Verify .env.session file was created
+            env_file = Path(temp_dir) / ".env.session"
+            assert env_file.exists()
 
-                # Check env file content
-                with open(env_file, encoding='utf-8') as f:
-                    env_content = f.read()
+            # Check env file content
+            with open(env_file, encoding='utf-8') as f:
+                env_content = f.read()
 
-                assert f"SIMBUILDER_SESSION_ID={test_uuid}" in env_content
-                assert "SIMBUILDER_SESSION_SHORT=12345678" in env_content
-                assert "COMPOSE_PROJECT_NAME=simbuilder-12345678" in env_content
-                assert "NEO4J_PORT=30000" in env_content
-                assert "NEO4J_HTTP_PORT=30001" in env_content
-                assert "NATS_PORT=30002" in env_content
-                assert "NATS_HTTP_PORT=30003" in env_content
-                assert "CORE_API_PORT=30008" in env_content
+            assert f"SIMBUILDER_SESSION_ID={test_uuid}" in env_content
+            assert "SIMBUILDER_SESSION_SHORT=12345678" in env_content
+            assert "COMPOSE_PROJECT_NAME=simbuilder-12345678" in env_content
+            assert "NEO4J_PORT=30000" in env_content
+            assert "NEO4J_HTTP_PORT=30001" in env_content
+            assert "NATS_PORT=30002" in env_content
+            assert "NATS_HTTP_PORT=30003" in env_content
+            assert "CORE_API_PORT=30008" in env_content
 
-                # Verify session metadata file was created
-                session_dir = session_manager.sessions_dir / str(test_uuid)
-                metadata_file = session_dir / "metadata.json"
-                assert metadata_file.exists()
+            # Verify session metadata file was created
+            session_dir = session_manager.sessions_dir / str(test_uuid)
+            metadata_file = session_dir / "metadata.json"
+            assert metadata_file.exists()
 
-                with open(metadata_file, encoding='utf-8') as f:
-                    metadata = json.load(f)
+            with open(metadata_file, encoding='utf-8') as f:
+                metadata = json.load(f)
 
-                assert metadata["session_id"] == str(test_uuid)
-                assert metadata["compose_project_name"] == "simbuilder-12345678"
+            assert metadata["session_id"] == str(test_uuid)
+            assert metadata["compose_project_name"] == "simbuilder-12345678"
 
     @patch('uuid.uuid4')
     @patch.object(PortManager, 'get_port')
@@ -122,41 +122,41 @@ class TestSessionManager:
 
     def test_list_sessions_empty(self):
         """Test list_sessions returns empty list when no sessions exist."""
-        with tempfile.TemporaryDirectory() as temp_dir:
-            with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
-                session_manager = SessionManager()
-                sessions = session_manager.list_sessions()
+        with tempfile.TemporaryDirectory() as temp_dir, \
+             patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
+            session_manager = SessionManager()
+            sessions = session_manager.list_sessions()
 
-                assert sessions == []
+            assert sessions == []
 
     def test_list_sessions_with_sessions(self):
         """Test list_sessions returns list of sessions."""
-        with tempfile.TemporaryDirectory() as temp_dir:
-            with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
-                session_manager = SessionManager()
+        with tempfile.TemporaryDirectory() as temp_dir, \
+             patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
+            session_manager = SessionManager()
 
-                # Create a test session directory and metadata
-                session_id = "test-session-1"
-                session_dir = session_manager.sessions_dir / session_id
-                session_dir.mkdir(parents=True)
+            # Create a test session directory and metadata
+            session_id = "test-session-1"
+            session_dir = session_manager.sessions_dir / session_id
+            session_dir.mkdir(parents=True)
 
-                metadata = {
-                    "session_id": session_id,
-                    "session_short": "test1234",
-                    "compose_project_name": "simbuilder-test1234",
-                    "created_at": "2024-01-01T00:00:00",
-                    "services": ["service1", "service2"]
-                }
+            metadata = {
+                "session_id": session_id,
+                "session_short": "test1234",
+                "compose_project_name": "simbuilder-test1234",
+                "created_at": "2024-01-01T00:00:00",
+                "services": ["service1", "service2"]
+            }
 
-                metadata_file = session_dir / "metadata.json"
-                with open(metadata_file, 'w', encoding='utf-8') as f:
-                    json.dump(metadata, f)
+            metadata_file = session_dir / "metadata.json"
+            with open(metadata_file, 'w', encoding='utf-8') as f:
+                json.dump(metadata, f)
 
-                sessions = session_manager.list_sessions()
+            sessions = session_manager.list_sessions()
 
-                assert len(sessions) == 1
-                assert sessions[0]["session_id"] == session_id
-                assert sessions[0]["compose_project_name"] == "simbuilder-test1234"
+            assert len(sessions) == 1
+            assert sessions[0]["session_id"] == session_id
+            assert sessions[0]["compose_project_name"] == "simbuilder-test1234"
 
     def test_get_session_status_nonexistent(self):
         """Test get_session_status returns None for nonexistent session."""
