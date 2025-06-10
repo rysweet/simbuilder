@@ -1,0 +1,4 @@
+This is a stub file to enable creation of a placeholder PR for fix/tenant-config-env-missing.
+
+Purpose: Satisfy GitHub PR requirement for a non-empty diff.
+Do not remove until actual fix is implemented for https://github.com/rysweet/simbuilder/issues/24.
