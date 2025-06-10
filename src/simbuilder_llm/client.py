@@ -34,7 +34,7 @@ class AzureOpenAIClient:
 
     def __init__(self, settings: Any | None = None) -> None:
         """Initialize the Azure OpenAI client.
-        
+
         Args:
             settings: Application settings (defaults to global settings)
         """
@@ -78,7 +78,7 @@ class AzureOpenAIClient:
         **kwargs: Any,
     ) -> ChatCompletion | AsyncGenerator[ChatCompletionChunk, None]:
         """Create a chat completion.
-        
+
         Args:
             messages: List of chat messages
             model: Model to use (defaults to chat model from settings)
@@ -86,10 +86,10 @@ class AzureOpenAIClient:
             max_tokens: Maximum tokens to generate
             stream: Whether to stream the response
             **kwargs: Additional parameters for the API call
-            
+
         Returns:
             Chat completion response or async generator for streaming
-            
+
         Raises:
             LLMError: If the API call fails
         """
@@ -123,16 +123,16 @@ class AzureOpenAIClient:
 
         except Exception as e:
             logger.error(f"Chat completion failed: {e}")
-            raise LLMError(f"Failed to create chat completion: {str(e)}", original_error=e)
+            raise LLMError(f"Failed to create chat completion: {str(e)}", original_error=e) from e
 
     async def _stream_chat_completion(
         self, response: Any
     ) -> AsyncGenerator[ChatCompletionChunk, None]:
         """Stream chat completion chunks.
-        
+
         Args:
             response: Streaming response from OpenAI
-            
+
         Yields:
             Chat completion chunks
         """
@@ -141,7 +141,7 @@ class AzureOpenAIClient:
                 yield chunk
         except Exception as e:
             logger.error(f"Streaming chat completion failed: {e}")
-            raise LLMError(f"Failed to stream chat completion: {str(e)}", original_error=e)
+            raise LLMError(f"Failed to stream chat completion: {str(e)}", original_error=e) from e
 
     @retry(
         stop=stop_after_attempt(3),
@@ -156,15 +156,15 @@ class AzureOpenAIClient:
         **kwargs: Any,
     ) -> CreateEmbeddingResponse:
         """Create embeddings for the given text.
-        
+
         Args:
             input_text: Text or list of texts to embed
             model: Model to use (defaults to embedding model from settings)
             **kwargs: Additional parameters for the API call
-            
+
         Returns:
             Embedding response
-            
+
         Raises:
             LLMError: If the API call fails
         """
@@ -185,11 +185,11 @@ class AzureOpenAIClient:
 
         except Exception as e:
             logger.error(f"Embedding creation failed: {e}")
-            raise LLMError(f"Failed to create embeddings: {str(e)}", original_error=e)
+            raise LLMError(f"Failed to create embeddings: {str(e)}", original_error=e) from e
 
     async def check_health(self) -> dict[str, Any]:
         """Check the health of the OpenAI connection.
-        
+
         Returns:
             Health status information
         """
@@ -224,10 +224,10 @@ class AzureOpenAIClient:
 
     async def get_models(self) -> list[str]:
         """Get available models.
-        
+
         Returns:
             List of available model names
-            
+
         Raises:
             LLMError: If the API call fails
         """
@@ -236,7 +236,7 @@ class AzureOpenAIClient:
             return [model.id for model in models.data]
         except Exception as e:
             logger.error(f"Failed to get models: {e}")
-            raise LLMError(f"Failed to get available models: {str(e)}", original_error=e)
+            raise LLMError(f"Failed to get available models: {str(e)}", original_error=e) from e
 
     async def close(self) -> None:
         """Close the client connection."""

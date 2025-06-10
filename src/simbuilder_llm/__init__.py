@@ -1,7 +1,7 @@
 """
 SimBuilder LLM Integration - Azure OpenAI client and prompt rendering system.
 
-This package provides a shared, fully-testable Azure OpenAI client and prompt-rendering 
+This package provides a shared, fully-testable Azure OpenAI client and prompt-rendering
 layer for downstream discovery and simulation logic.
 """
 

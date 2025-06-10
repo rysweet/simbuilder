@@ -181,7 +181,7 @@ class TestGitRepository:
 
     def test_authenticated_url_with_token(self, temp_local_path):
         """Test authenticated URL generation with token."""
-        os.environ["SPEC_REPO_TOKEN"] = "test_token"
+        os.environ["SPEC_REPO_TOKEN"] = "test_token"  # noqa: S105
         try:
             repo = GitRepository("https://github.com/test/repo.git", local_path=temp_local_path)
             auth_url = repo._get_authenticated_url()
@@ -199,7 +199,7 @@ class TestGitRepository:
 
     def test_authenticated_url_non_github(self, temp_local_path):
         """Test authenticated URL with non-GitHub URL."""
-        os.environ["SPEC_REPO_TOKEN"] = "test_token"
+        os.environ["SPEC_REPO_TOKEN"] = "test_token"  # noqa: S105
         try:
             repo = GitRepository("https://gitlab.com/test/repo.git", local_path=temp_local_path)
             auth_url = repo._get_authenticated_url()

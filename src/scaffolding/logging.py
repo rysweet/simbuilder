@@ -88,7 +88,7 @@ def log_error_with_context(
 ) -> None:
     """
     Log an error with additional context.
-    
+
     Args:
         logger: Logger instance
         error: Exception that occurred

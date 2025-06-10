@@ -5,14 +5,12 @@ This module provides functionality to load and render Jinja2/Liquid templates
 for LLM prompts with variable validation and caching.
 """
 
+import functools
 import logging
 import re
 from functools import lru_cache
 from pathlib import Path
 from typing import Any
-from typing import Dict
-from typing import List
-from typing import Set
 
 from liquid import Environment
 from liquid import FileSystemLoader
@@ -30,7 +28,7 @@ class PromptLoader:
 
     def __init__(self, template_dir: Path | None = None) -> None:
         """Initialize the prompt loader.
-        
+
         Args:
             template_dir: Directory containing prompt templates (defaults to prompts/ in this package)
         """
@@ -40,16 +38,15 @@ class PromptLoader:
         self.template_dir = template_dir
         self._env = Environment(loader=FileSystemLoader(str(template_dir)))
 
-    @lru_cache(maxsize=128)
     def load_template(self, name: str) -> Template:
         """Load a template by name with caching.
-        
+
         Args:
             name: Template name (with or without extension)
-            
+
         Returns:
             Loaded template
-            
+
         Raises:
             PromptRenderError: If template cannot be found or loaded
         """
@@ -66,11 +63,11 @@ class PromptLoader:
             except LiquidSyntaxError as e:
                 raise PromptRenderError(
                     name, f"Template has syntax errors: {str(e)}"
-                )
+                ) from e
             except Exception as e:
                 raise PromptRenderError(
                     name, f"Failed to load template: {str(e)}"
-                )
+                ) from e
 
         raise PromptRenderError(
             name, f"Template not found in {self.template_dir}"
@@ -78,15 +75,15 @@ class PromptLoader:
 
     def extract_variables(self, template_name: str) -> set[str]:
         """Extract variable names from a template.
-        
+
         Args:
             template_name: Name of the template
-            
+
         Returns:
             Set of variable names used in the template
         """
         try:
-            template = self.load_template(template_name)
+            self.load_template(template_name)
 
             # Get the raw template source and extract variables using regex
             # Read the template file directly since liquid template parsing is complex
@@ -118,15 +115,15 @@ class PromptLoader:
         validate_variables: bool = True,
     ) -> str:
         """Render a template with the provided variables.
-        
+
         Args:
             template_name: Name of the template to render
             variables: Variables to use in rendering
             validate_variables: Whether to validate required variables
-            
+
         Returns:
             Rendered template content
-            
+
         Raises:
             PromptRenderError: If rendering fails or variables are missing
         """
@@ -154,11 +151,11 @@ class PromptLoader:
         except Exception as e:
             raise PromptRenderError(
                 template_name, f"Failed to render template: {str(e)}"
-            )
+            ) from e
 
     def list_templates(self) -> list[str]:
         """List all available templates.
-        
+
         Returns:
             List of template names
         """
@@ -187,10 +184,10 @@ def get_prompt_loader() -> PromptLoader:
 
 def load_prompt(name: str) -> Template:
     """Load a prompt template by name.
-    
+
     Args:
         name: Template name
-        
+
     Returns:
         Loaded template
     """
@@ -199,12 +196,12 @@ def load_prompt(name: str) -> Template:
 
 def render_prompt(name: str, variables: dict[str, Any], validate_variables: bool = True) -> str:
     """Render a prompt template with variables.
-    
+
     Args:
         name: Template name
         variables: Variables for rendering
         validate_variables: Whether to validate required variables
-        
+
     Returns:
         Rendered prompt content
     """
@@ -213,7 +210,7 @@ def render_prompt(name: str, variables: dict[str, Any], validate_variables: bool
 
 def list_prompts() -> list[str]:
     """List all available prompt templates.
-    
+
     Returns:
         List of template names
     """

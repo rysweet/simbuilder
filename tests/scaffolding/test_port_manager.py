@@ -146,7 +146,7 @@ class TestPortManager:
 
             assert file_path.exists()
 
-            with open(file_path, encoding='utf-8') as f:
+            with file_path.open(encoding='utf-8') as f:
                 data = json.load(f)
 
             expected_data = {
@@ -170,7 +170,7 @@ class TestPortManager:
                 "used_ports": [35000]
             }
 
-            with open(file_path, 'w', encoding='utf-8') as f:
+            with file_path.open('w', encoding='utf-8') as f:
                 json.dump(data, f)
 
             port_manager = PortManager()

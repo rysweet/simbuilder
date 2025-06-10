@@ -196,5 +196,5 @@ SPEC_REPO_BRANCH=main
 SPEC_REPO_TOKEN=  # Optional: Git access token for private repositories
 """
 
-    with open(template_path, "w", encoding="utf-8") as f:
+    with template_path.open("w", encoding="utf-8") as f:
         f.write(template_content.strip())

@@ -8,7 +8,7 @@ class LLMError(Exception):
 
     def __init__(self, message: str, original_error: Exception | None = None) -> None:
         """Initialize LLM error.
-        
+
         Args:
             message: Human-readable error message
             original_error: Original exception that caused this error
@@ -29,7 +29,7 @@ class PromptRenderError(Exception):
 
     def __init__(self, prompt_name: str, message: str, missing_variables: list[str] | None = None) -> None:
         """Initialize prompt render error.
-        
+
         Args:
             prompt_name: Name of the prompt that failed to render
             message: Human-readable error message

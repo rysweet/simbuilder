@@ -66,7 +66,7 @@ def info() -> None:
 
     except Exception as e:
         console.print(f"[red]✗[/red] Error getting Service Bus info: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @app.command()
@@ -90,7 +90,7 @@ def health() -> None:
 
     except Exception as e:
         console.print(f"[red]✗[/red] Health check failed: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @app.command()
@@ -118,7 +118,7 @@ def setup_topics() -> None:
 
     except Exception as e:
         console.print(f"[red]✗[/red] Failed to setup topics: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @app.command()
@@ -136,7 +136,7 @@ def publish(
                 message_data = json.loads(data)
             except json.JSONDecodeError as e:
                 console.print(f"[red]Invalid JSON data: {e}[/red]")
-                raise typer.Exit(1)
+                raise typer.Exit(1) from e
 
             # Create message
             message = MessageSchema(
@@ -155,7 +155,7 @@ def publish(
 
     except Exception as e:
         console.print(f"[red]✗[/red] Failed to publish message: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @app.command()
@@ -212,7 +212,7 @@ def subscribe(
 
     except Exception as e:
         console.print(f"[red]✗[/red] Subscription failed: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @app.command()
@@ -260,7 +260,7 @@ def demo_progress(
 
     except Exception as e:
         console.print(f"[red]✗[/red] Progress demo failed: {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 if __name__ == "__main__":

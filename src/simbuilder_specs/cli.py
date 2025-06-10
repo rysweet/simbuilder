@@ -3,18 +3,27 @@ CLI interface for SimBuilder Specs Library.
 """
 
 import json
+import types
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import typer
 import yaml  # type: ignore
 from rich.console import Console
 from rich.table import Table
 
+from src.scaffolding.config import get_settings
+
+from .git_repository import GitRepository
+from .git_repository import GitRepositoryError
+from .models import TemplateRenderRequest
+from .spec_validator import SpecValidator
+from .template_loader import TemplateLoader
+from .template_loader import TemplateLoaderError
+
 
 def resolve_str_for_cli(val):
     """Robustly unwrap nested Mocks/callables for CLI output and test compatibility."""
-    import types
-    from unittest.mock import MagicMock
 
     tried = 0
     max_tries = 5
@@ -35,7 +44,7 @@ def resolve_str_for_cli(val):
                     result = value_if_called
                     tried += 1
                     continue
-            except Exception:
+            except Exception:  # noqa: S110
                 pass
             return ""
         elif callable(result) and not isinstance(result, type):
@@ -52,7 +61,7 @@ def resolve_str_for_cli(val):
                 return ""
         else:
             break
-    if isinstance(result, (MagicMock, types.FunctionType)) or callable(result):
+    if isinstance(result, MagicMock | types.FunctionType) or callable(result):
         return ""
     return str(result) if result is not None else ""
 
@@ -61,20 +70,9 @@ def path_exists(path):
         return path.exists()
     except AttributeError:
         # For MagicMock etc., let the test control the outcome
-        if hasattr(path, "exists"):
-            return True
-        return False
+        return hasattr(path, "exists")
     except Exception:
         return False
-
-from src.scaffolding.config import get_settings
-
-from .git_repository import GitRepository
-from .git_repository import GitRepositoryError
-from .models import TemplateRenderRequest
-from .spec_validator import SpecValidator
-from .template_loader import TemplateLoader
-from .template_loader import TemplateLoaderError
 
 console = Console()
 cli = typer.Typer(no_args_is_help=True, name="specs", help="SimBuilder Specs Library management")
@@ -143,7 +141,7 @@ def info(
         raise typer.Exit(code=0 if repo_available else 1)
     except Exception as e:
         console.print(f"[red]Error: {e}[/red]")
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from e
 
 
 @app.command("pull")
@@ -157,7 +155,7 @@ def pull() -> None:
             repo_info = repo.clone_or_pull()
         except GitRepositoryError as e:
             console.print(f"[red]Failed to update repository: {e}[/red]")
-            raise typer.Exit(code=1)
+            raise typer.Exit(code=1) from e
         loader._clear_cache()
         branch = getattr(repo_info, "branch", None) or getattr(repo, "branch", "main")
         commit = getattr(repo_info, "commit_hash", "") or ""
@@ -172,7 +170,7 @@ def pull() -> None:
         raise
     except Exception as e:
         console.print(f"[red]Error: {e}[/red]")
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1) from e
 
 @app.command("validate")
 def validate(
@@ -189,10 +187,7 @@ def validate(
                 console.print(f"[red]Context file not found: {context_file}[/red]")
                 raise SystemExit(1)
             with context_file.open(encoding="utf-8") as f:
-                if str(context_file).endswith(".json"):
-                    context = json.load(f)
-                else:
-                    context = yaml.safe_load(f)
+                context = json.load(f) if str(context_file).endswith(".json") else yaml.safe_load(f)
         if template_name:
             res = validator.validate_template(template_name, context)
             summary = validator.get_validation_summary([res])
@@ -219,7 +214,7 @@ def validate(
         raise SystemExit(exit_code)
     except Exception as e:
         console.print(f"[red]Error: {e}[/red]")
-        raise SystemExit(1)
+        raise SystemExit(1) from e
 
 @app.command("render")
 def render(
@@ -237,10 +232,7 @@ def render(
                 console.print(f"[red]Context file not found: {context_file}[/red]")
                 raise SystemExit(1)
             with context_file.open(encoding="utf-8") as f:
-                if str(context_file).endswith(".json"):
-                    context = json.load(f)
-                else:
-                    context = yaml.safe_load(f)
+                context = json.load(f) if str(context_file).endswith(".json") else yaml.safe_load(f)
         req = TemplateRenderRequest(template_name=template_name, context=context, strict_variables=strict)
         res = loader.render_with_metadata(req)
         if res.success:
@@ -259,9 +251,9 @@ def render(
             raise SystemExit(1)
     except TemplateLoaderError as e:
         console.print(f"[red]Template error: {e}[/red]")
-        raise SystemExit(1)
+        raise SystemExit(1) from e
     except Exception as e:
         console.print(f"[red]Error: {e}[/red]")
-        raise SystemExit(1)
+        raise SystemExit(1) from e
 
 __all__ = ["cli", "app"]

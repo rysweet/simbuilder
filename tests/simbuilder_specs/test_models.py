@@ -218,7 +218,7 @@ class TestGitRepositoryInfo:
 
         json_data = json.loads(info.model_dump_json())
         assert json_data["last_updated"] == "2024-01-01T12:00:00"
-        assert json_data["local_path"] == "/tmp/repo"
+        assert json_data["local_path"] == "/tmp/repo"  # noqa: S108
 
 
 class TestValidationResult:

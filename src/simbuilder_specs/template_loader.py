@@ -1,6 +1,7 @@
 """
 Liquid template loader and renderer for SimBuilder Specs Library.
 """
+import contextlib
 import functools
 import time
 from typing import TYPE_CHECKING
@@ -75,13 +76,11 @@ class TemplateLoader:
                 self.get_template_meta.cache_clear = lambda: None  # type: ignore[attr-defined]
             # Then propagate classmethod logic (real, lru_cache-wrapped) if available
             self.get_template_meta.cache_clear = self.__class__.get_template_meta.cache_clear  # type: ignore[attr-defined]
-        except Exception:
+        except Exception:  # noqa: S110
             # Allow missing attribute for pure python mocks in tests
             pass
-        try:
+        with contextlib.suppress(Exception):
             self.get_template_meta.cache_clear = lambda: None  # type: ignore[attr-defined]
-        except Exception:
-            pass
         self.get_template_meta = self.get_template_meta
         # Force patchable cache_clear for test mocks without lru_cache
         if not hasattr(self.get_template_meta, "cache_clear"):
@@ -122,7 +121,6 @@ class TemplateLoader:
         self._template_cache.clear()
         self._env = None
 
-    @functools.lru_cache(maxsize=256)
     def get_template_meta(self, template_name: str) -> TemplateMeta:
         """Get metadata for a template (LRU cached per-instance).
 

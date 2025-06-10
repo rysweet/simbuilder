@@ -57,13 +57,13 @@ class TopicManager:
     @classmethod
     def get_topic(cls, name: str) -> TopicDefinition:
         """Get a topic definition by name.
-        
+
         Args:
             name: Topic name
-            
+
         Returns:
             Topic definition
-            
+
         Raises:
             KeyError: If topic not found
         """
@@ -74,7 +74,7 @@ class TopicManager:
     @classmethod
     def get_all_topics(cls) -> list[TopicDefinition]:
         """Get all topic definitions.
-        
+
         Returns:
             List of all topic definitions
         """
@@ -83,11 +83,11 @@ class TopicManager:
     @classmethod
     def get_subject_for_discovery(cls, session_id: str, event_type: str) -> str:
         """Generate a subject for tenant discovery events.
-        
+
         Args:
             session_id: Discovery session ID
             event_type: Type of discovery event (start, progress, complete, error)
-            
+
         Returns:
             NATS subject string
         """
@@ -96,11 +96,11 @@ class TopicManager:
     @classmethod
     def get_subject_for_simulation(cls, simulation_id: str, event_type: str) -> str:
         """Generate a subject for simulation events.
-        
+
         Args:
             simulation_id: Simulation ID
             event_type: Type of simulation event
-            
+
         Returns:
             NATS subject string
         """
@@ -109,11 +109,11 @@ class TopicManager:
     @classmethod
     def get_subject_for_system(cls, component: str, event_type: str) -> str:
         """Generate a subject for system events.
-        
+
         Args:
             component: System component name
             event_type: Type of system event
-            
+
         Returns:
             NATS subject string
         """
@@ -122,7 +122,7 @@ class TopicManager:
     @classmethod
     def add_custom_topic(cls, topic: TopicDefinition) -> None:
         """Add a custom topic definition.
-        
+
         Args:
             topic: Topic definition to add
         """
@@ -131,10 +131,10 @@ class TopicManager:
     @classmethod
     def remove_topic(cls, name: str) -> bool:
         """Remove a topic definition.
-        
+
         Args:
             name: Topic name to remove
-            
+
         Returns:
             True if topic was removed, False if not found
         """
@@ -146,10 +146,10 @@ class TopicManager:
     @classmethod
     def validate_subject(cls, subject: str) -> bool:
         """Validate that a subject matches a known topic pattern.
-        
+
         Args:
             subject: NATS subject to validate
-            
+
         Returns:
             True if subject matches a known topic pattern
         """
@@ -163,10 +163,10 @@ class TopicManager:
     @classmethod
     def get_topic_for_subject(cls, subject: str) -> TopicDefinition | None:
         """Find the topic definition that matches a subject.
-        
+
         Args:
             subject: NATS subject
-            
+
         Returns:
             Matching topic definition, or None if no match
         """

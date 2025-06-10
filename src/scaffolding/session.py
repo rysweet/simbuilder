@@ -44,10 +44,10 @@ class SessionManager(LoggingMixin):
     def create_session(self, services: list[str] | None = None) -> dict[str, str]:
         """
         Create a new session with unique ID and allocated ports.
-        
+
         Args:
             services: List of services to allocate ports for, defaults to DEFAULT_SERVICES
-            
+
         Returns:
             Dictionary containing session information
         """
@@ -129,7 +129,7 @@ class SessionManager(LoggingMixin):
     def list_sessions(self) -> list[dict[str, str]]:
         """
         List all existing sessions.
-        
+
         Returns:
             List of session information dictionaries
         """
@@ -160,10 +160,10 @@ class SessionManager(LoggingMixin):
     def get_session_status(self, session_id: str) -> dict[str, str] | None:
         """
         Get status information for a specific session.
-        
+
         Args:
             session_id: Session ID to get status for
-            
+
         Returns:
             Session information if found, None otherwise
         """
@@ -199,10 +199,10 @@ class SessionManager(LoggingMixin):
     def cleanup_session(self, session_id: str) -> bool:
         """
         Clean up a session by stopping containers and removing files.
-        
+
         Args:
             session_id: Session ID to clean up
-            
+
         Returns:
             True if cleanup successful, False otherwise
         """
@@ -332,11 +332,11 @@ class SessionManager(LoggingMixin):
     def compose_up(self, detached: bool = True, profile: str | None = None) -> bool:
         """
         Start Docker Compose services using the current session environment.
-        
+
         Args:
             detached: Whether to run in detached mode
             profile: Optional profile to activate (e.g., 'full')
-            
+
         Returns:
             True if successful, False otherwise
         """
@@ -412,10 +412,10 @@ class SessionManager(LoggingMixin):
     def compose_down(self, remove_volumes: bool = False) -> bool:
         """
         Stop Docker Compose services using the current session environment.
-        
+
         Args:
             remove_volumes: Whether to remove volumes when stopping
-            
+
         Returns:
             True if successful, False otherwise
         """

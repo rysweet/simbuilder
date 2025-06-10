@@ -7,7 +7,7 @@ from datetime import datetime
 from typing import Any
 
 import nats
-from nats.aio.client import Client as NATS
+from nats.aio.client import Client as NatsClient
 from nats.js import JetStreamContext
 from nats.js.api import ConsumerConfig
 from nats.js.api import StreamConfig
@@ -28,7 +28,7 @@ class ServiceBusClient(LoggingMixin):
 
     def __init__(self, connection_config: ConnectionConfig | None = None):
         """Initialize the Service Bus client.
-        
+
         Args:
             connection_config: Optional connection configuration.
                               If None, loads from scaffolding settings.
@@ -46,7 +46,7 @@ class ServiceBusClient(LoggingMixin):
                 client_id=f"simbuilder-{uuid.uuid4().hex[:8]}",
             )
 
-        self._nats: NATS | None = None
+        self._nats: NatsClient | None = None
         self._js: JetStreamContext | None = None
         self._connected = False
         self._subscriptions: dict[str, Any] = {}
@@ -112,10 +112,10 @@ class ServiceBusClient(LoggingMixin):
 
     async def create_stream(self, topic: TopicDefinition) -> StreamInfo:
         """Create or update a JetStream stream for a topic.
-        
+
         Args:
             topic: Topic definition with stream configuration
-            
+
         Returns:
             Stream information
         """
@@ -157,12 +157,12 @@ class ServiceBusClient(LoggingMixin):
         timeout: float = 10.0
     ) -> str:
         """Publish a message to a subject.
-        
+
         Args:
             subject: NATS subject to publish to
             message: Message to publish
             timeout: Publish timeout in seconds
-            
+
         Returns:
             Message ID from JetStream acknowledgment
         """
@@ -213,12 +213,12 @@ class ServiceBusClient(LoggingMixin):
         error_handler: Callable[[Exception], None] | None = None
     ) -> str:
         """Subscribe to messages on a topic.
-        
+
         Args:
             config: Subscription configuration
             message_handler: Callback function for processing messages
             error_handler: Optional error handling callback
-            
+
         Returns:
             Subscription ID
         """
@@ -297,7 +297,7 @@ class ServiceBusClient(LoggingMixin):
 
     async def unsubscribe(self, subscription_id: str) -> None:
         """Unsubscribe from a topic.
-        
+
         Args:
             subscription_id: Subscription ID returned from subscribe()
         """
@@ -317,7 +317,7 @@ class ServiceBusClient(LoggingMixin):
 
     async def health_check(self) -> dict[str, Any]:
         """Perform health check on the connection.
-        
+
         Returns:
             Health check status information
         """

@@ -183,7 +183,7 @@ class TestAPICLI:
 
         result = runner.invoke(app, [
             "run",
-            "--host", "0.0.0.0",
+            "--host", "0.0.0.0",  # noqa: S104
             "--port", "8080",
             "--reload",
             "--workers", "4"
@@ -194,7 +194,7 @@ class TestAPICLI:
         # Verify uvicorn.run was called with custom parameters
         mock_uvicorn_run.assert_called_once_with(
             "simbuilder_api.main:app",
-            host="0.0.0.0",
+            host="0.0.0.0",  # noqa: S104
             port=8080,
             reload=True,
             workers=4,

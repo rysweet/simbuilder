@@ -419,7 +419,7 @@ class TestSpecsRender:
             assert f"Rendered content written to {output_file}" in result.stdout
 
             # Check file content
-            with open(output_file) as f:
+            with output_file.open() as f:
                 content = f.read()
             assert content == "Hello Jane!"
 

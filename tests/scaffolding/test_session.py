@@ -78,7 +78,7 @@ class TestSessionManager:
             assert env_file.exists()
 
             # Check env file content
-            with open(env_file, encoding='utf-8') as f:
+            with env_file.open(encoding='utf-8') as f:
                 env_content = f.read()
 
             assert f"SIMBUILDER_SESSION_ID={test_uuid}" in env_content
@@ -95,7 +95,7 @@ class TestSessionManager:
             metadata_file = session_dir / "metadata.json"
             assert metadata_file.exists()
 
-            with open(metadata_file, encoding='utf-8') as f:
+            with metadata_file.open(encoding='utf-8') as f:
                 metadata = json.load(f)
 
             assert metadata["session_id"] == str(test_uuid)
@@ -150,7 +150,7 @@ class TestSessionManager:
             }
 
             metadata_file = session_dir / "metadata.json"
-            with open(metadata_file, 'w', encoding='utf-8') as f:
+            with metadata_file.open('w', encoding='utf-8') as f:
                 json.dump(metadata, f)
 
             sessions = session_manager.list_sessions()
@@ -194,7 +194,7 @@ class TestSessionManager:
             }
 
             metadata_file = session_dir / "metadata.json"
-            with open(metadata_file, 'w', encoding='utf-8') as f:
+            with metadata_file.open('w', encoding='utf-8') as f:
                 json.dump(metadata, f)
 
             status = session_manager.get_session_status(session_id)
@@ -237,7 +237,7 @@ class TestSessionManager:
                 }
 
                 metadata_file = session_dir / "metadata.json"
-                with open(metadata_file, 'w', encoding='utf-8') as f:
+                with metadata_file.open('w', encoding='utf-8') as f:
                     json.dump(metadata, f)
 
                 result = session_manager.cleanup_session(session_id)
@@ -264,7 +264,7 @@ class TestSessionManager:
 
                 assert env_file_path.exists()
 
-                with open(env_file_path, encoding='utf-8') as f:
+                with env_file_path.open(encoding='utf-8') as f:
                     content = f.read()
 
                 assert "SIMBUILDER_SESSION_ID=test-session" in content
@@ -288,7 +288,7 @@ class TestSessionManager:
 
                 assert metadata_file.exists()
 
-                with open(metadata_file, encoding='utf-8') as f:
+                with metadata_file.open(encoding='utf-8') as f:
                     loaded_data = json.load(f)
 
                 assert loaded_data == session_info
@@ -305,7 +305,7 @@ class TestSessionManager:
                 }
 
                 metadata_file = Path(temp_dir) / "metadata.json"
-                with open(metadata_file, 'w', encoding='utf-8') as f:
+                with metadata_file.open('w', encoding='utf-8') as f:
                     json.dump(session_info, f)
 
                 loaded_data = session_manager._read_session_metadata(metadata_file)

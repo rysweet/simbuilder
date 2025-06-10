@@ -46,14 +46,14 @@ def chat_command(
             prompt_vars = json.loads(variables)
         except json.JSONDecodeError as e:
             console.print(f"[red]Error:[/red] Invalid JSON in variables: {e}")
-            raise typer.Exit(1)
+            raise typer.Exit(1) from e
 
         # Render the prompt
         try:
             rendered_prompt = render_prompt(prompt, prompt_vars)
         except PromptRenderError as e:
             console.print(f"[red]Error:[/red] {e}")
-            raise typer.Exit(1)
+            raise typer.Exit(1) from e
 
         # Create chat message
         messages = [ChatMessage(role="user", content=rendered_prompt)]
@@ -65,7 +65,7 @@ def chat_command(
 
     except Exception as e:
         console.print(f"[red]Error:[/red] {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 async def _send_chat_completion(
@@ -110,7 +110,7 @@ async def _send_chat_completion(
 
     except LLMError as e:
         console.print(f"[red]LLM Error:[/red] {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
     finally:
         await client.close()
 
@@ -155,7 +155,7 @@ async def _create_embeddings(text: str, model: str | None, output_format: str) -
 
     except LLMError as e:
         console.print(f"[red]LLM Error:[/red] {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
     finally:
         await client.close()
 
@@ -196,7 +196,7 @@ def info_command() -> None:
 
     except Exception as e:
         console.print(f"[red]Error:[/red] {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @app.command("check")
@@ -230,7 +230,7 @@ def check_command() -> None:
 
     except Exception as e:
         console.print(f"[red]Error:[/red] {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 def _check_configuration(settings: Any) -> list[tuple[str, bool, str]]:

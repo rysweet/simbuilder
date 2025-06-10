@@ -91,9 +91,8 @@ class TestTemplateLoader:
 
     def test_init_without_liquid_raises_error(self, mock_repository):
         """Test that TemplateLoader raises error when liquid is not available."""
-        with patch('src.simbuilder_specs.template_loader.LIQUID_AVAILABLE', False):
-            with pytest.raises(TemplateLoaderError, match="liquid package is required"):
-                TemplateLoader(mock_repository)
+        with patch('src.simbuilder_specs.template_loader.LIQUID_AVAILABLE', False), pytest.raises(TemplateLoaderError, match="liquid package is required"):
+            TemplateLoader(mock_repository)
 
     @patch('src.simbuilder_specs.template_loader.LIQUID_AVAILABLE', True)
     def test_init_with_liquid_succeeds(self, mock_repository):

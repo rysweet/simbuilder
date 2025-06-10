@@ -19,7 +19,7 @@ class ProgressNotifier(LoggingMixin):
                  operation: str,
                  client: ServiceBusClient | None = None):
         """Initialize progress notifier.
-        
+
         Args:
             session_id: Session identifier for the operation
             operation: Name of the operation being tracked
@@ -51,7 +51,7 @@ class ProgressNotifier(LoggingMixin):
 
     async def start_operation(self, total_steps: int | None = None) -> None:
         """Signal the start of an operation.
-        
+
         Args:
             total_steps: Total number of steps in the operation
         """
@@ -79,7 +79,7 @@ class ProgressNotifier(LoggingMixin):
                             step_number: int | None = None,
                             details: str | None = None) -> None:
         """Update operation progress.
-        
+
         Args:
             progress_percentage: Completion percentage (0-100)
             current_step: Description of current step
@@ -122,7 +122,7 @@ class ProgressNotifier(LoggingMixin):
                           step_description: str,
                           details: str | None = None) -> None:
         """Advance to the next step and update progress.
-        
+
         Args:
             step_description: Description of the new current step
             details: Additional details about the step
@@ -142,7 +142,7 @@ class ProgressNotifier(LoggingMixin):
 
     async def complete_operation(self, details: str | None = None) -> None:
         """Signal the completion of an operation.
-        
+
         Args:
             details: Additional completion details
         """
@@ -174,7 +174,7 @@ class ProgressNotifier(LoggingMixin):
                            current_step: str | None = None,
                            details: str | None = None) -> None:
         """Signal that an error occurred during the operation.
-        
+
         Args:
             error: The error that occurred
             current_step: Step where error occurred
@@ -202,7 +202,7 @@ class ProgressNotifier(LoggingMixin):
                                    estimated_completion: datetime | None = None,
                                    details: str | None = None) -> None:
         """Send a progress message via Service Bus.
-        
+
         Args:
             progress_percentage: Completion percentage (None for errors)
             current_step: Current step description
@@ -240,7 +240,7 @@ class ProgressNotifier(LoggingMixin):
 
     def get_elapsed_time(self) -> timedelta:
         """Get elapsed time since operation start.
-        
+
         Returns:
             Time elapsed since operation started
         """
@@ -248,7 +248,7 @@ class ProgressNotifier(LoggingMixin):
 
     def get_time_since_last_update(self) -> timedelta:
         """Get time since last progress update.
-        
+
         Returns:
             Time since last progress update
         """
@@ -277,12 +277,12 @@ async def track_progress(session_id: str,
                         operation: str,
                         total_steps: int | None = None) -> ProgressNotifier:
     """Create and initialize a progress notifier.
-    
+
     Args:
         session_id: Session identifier
         operation: Operation name
         total_steps: Total number of steps
-        
+
     Returns:
         Initialized progress notifier
     """

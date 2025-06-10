@@ -19,7 +19,7 @@ class PortManager(LoggingMixin):
     def __init__(self, port_range_start: int = 30000, port_range_end: int = 40000):
         """
         Initialize the PortManager.
-        
+
         Args:
             port_range_start: Start of port range to scan
             port_range_end: End of port range to scan
@@ -46,10 +46,10 @@ class PortManager(LoggingMixin):
     def _is_port_available(self, port: int) -> bool:
         """
         Check if a port is available for binding.
-        
+
         Args:
             port: Port number to check
-            
+
         Returns:
             True if port is available, False otherwise
         """
@@ -63,10 +63,10 @@ class PortManager(LoggingMixin):
     def _find_free_port(self) -> int:
         """
         Find the next available port in the configured range.
-        
+
         Returns:
             Available port number
-            
+
         Raises:
             ConfigurationError: If no free ports available in range
         """
@@ -84,10 +84,10 @@ class PortManager(LoggingMixin):
     def get_port(self, service_name: str) -> int:
         """
         Get a port for the specified service, allocating one if needed.
-        
+
         Args:
             service_name: Name of the service requesting a port
-            
+
         Returns:
             Port number allocated to the service
         """
@@ -110,7 +110,7 @@ class PortManager(LoggingMixin):
     def release_port(self, service_name: str) -> None:
         """
         Release a port allocated to a service.
-        
+
         Args:
             service_name: Name of the service to release port for
         """
@@ -128,7 +128,7 @@ class PortManager(LoggingMixin):
     def get_allocated_ports(self) -> dict[str, int]:
         """
         Get all currently allocated ports.
-        
+
         Returns:
             Dictionary mapping service names to allocated ports
         """
@@ -137,7 +137,7 @@ class PortManager(LoggingMixin):
     def save_to_file(self, file_path: Path) -> None:
         """
         Save allocated ports to a JSON file.
-        
+
         Args:
             file_path: Path to save the port allocation data
         """
@@ -160,7 +160,7 @@ class PortManager(LoggingMixin):
     def load_from_file(self, file_path: Path) -> None:
         """
         Load allocated ports from a JSON file.
-        
+
         Args:
             file_path: Path to load the port allocation data from
         """
@@ -208,9 +208,8 @@ class PortManager(LoggingMixin):
     def _save_global_state(self) -> None:
         """Persist global port usage to disk under a file lock."""
         try:
-            with FileLock(str(self.lock_file), timeout=10):
-                with self.global_file.open("w", encoding="utf-8") as f:
-                    json.dump({"used_ports": list(self.used_ports)}, f, indent=2)
+            with FileLock(str(self.lock_file), timeout=10), self.global_file.open("w", encoding="utf-8") as f:
+                json.dump({"used_ports": list(self.used_ports)}, f, indent=2)
         except Exception as e:
             self.log_error(e, {"operation": "save_global_state", "file": str(self.global_file)})
 
