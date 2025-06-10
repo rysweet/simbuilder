@@ -188,7 +188,7 @@ def validate(
             if not context_file.exists():
                 console.print(f"[red]Context file not found: {context_file}[/red]")
                 raise SystemExit(1)
-            with open(context_file, encoding="utf-8") as f:
+            with context_file.open(encoding="utf-8") as f:
                 if str(context_file).endswith(".json"):
                     context = json.load(f)
                 else:
@@ -236,7 +236,7 @@ def render(
             if not context_file.exists():
                 console.print(f"[red]Context file not found: {context_file}[/red]")
                 raise SystemExit(1)
-            with open(context_file, encoding="utf-8") as f:
+            with context_file.open(encoding="utf-8") as f:
                 if str(context_file).endswith(".json"):
                     context = json.load(f)
                 else:
@@ -245,7 +245,7 @@ def render(
         res = loader.render_with_metadata(req)
         if res.success:
             if output:
-                with open(output, "w", encoding="utf-8") as f:
+                with output.open("w", encoding="utf-8") as f:
                     f.write(res.rendered_content)
                 console.print(f"[green]Rendered content written to {output}[/green]")
             else:
