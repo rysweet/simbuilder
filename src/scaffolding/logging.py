@@ -15,7 +15,6 @@ from .config import get_settings
 def setup_logging() -> FilteringBoundLogger:
     """
     Configure structured logging with JSON output.
-    
     Returns:
         Configured structlog logger instance
     """
@@ -55,10 +54,8 @@ def setup_logging() -> FilteringBoundLogger:
 def get_logger(name: str = "simbuilder") -> FilteringBoundLogger:
     """
     Get a named logger instance.
-    
     Args:
         name: Logger name, defaults to "simbuilder"
-        
     Returns:
         Configured structlog logger instance
     """
@@ -72,7 +69,6 @@ def log_function_call(
 ) -> None:
     """
     Log a function call with parameters.
-    
     Args:
         logger: Logger instance
         function_name: Name of the function being called
