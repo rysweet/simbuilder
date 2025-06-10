@@ -24,8 +24,8 @@ except ImportError:
     class Environment:  # type: ignore
         pass
 
-    LiquidSyntaxError = Exception  # type: ignore
-    LiquidTypeError = Exception  # type: ignore
+    LiquidSyntaxError = Exception
+    LiquidTypeError = Exception
     LIQUID_AVAILABLE = False
 
 from .models import ValidationResult
