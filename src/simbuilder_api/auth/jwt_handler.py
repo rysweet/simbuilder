@@ -34,11 +34,7 @@ class JWTHandler:
         self.issuer = issuer
         self.algorithm = "HS256"
 
-    def encode_token(
-        self,
-        subject: str,
-        expires_delta: timedelta | None = None
-    ) -> str:
+    def encode_token(self, subject: str, expires_delta: timedelta | None = None) -> str:
         """Encode a JWT token.
 
         Args:
@@ -58,7 +54,7 @@ class JWTHandler:
             "sub": subject,
             "iss": self.issuer,
             "iat": int(now.timestamp()),
-            "exp": int(expire.timestamp())
+            "exp": int(expire.timestamp()),
         }
 
         return jwt.encode(payload, self.secret, algorithm=self.algorithm)
@@ -77,10 +73,7 @@ class JWTHandler:
         """
         try:
             payload = jwt.decode(
-                token,
-                self.secret,
-                algorithms=[self.algorithm],
-                issuer=self.issuer
+                token, self.secret, algorithms=[self.algorithm], issuer=self.issuer
             )
             return TokenData(**payload)
         except JWTError as e:

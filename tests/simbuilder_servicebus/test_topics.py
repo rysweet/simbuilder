@@ -129,7 +129,7 @@ class TestCustomTopics:
             description="Custom test topic",
             message_types=[MessageType.SYSTEM_STATUS],
             max_age_seconds=600,
-            max_messages=1000
+            max_messages=1000,
         )
 
         # Store original topics for cleanup
@@ -156,7 +156,7 @@ class TestCustomTopics:
             name="removable_topic",
             subject_pattern="removable.*",
             description="Topic to be removed",
-            message_types=[MessageType.SYSTEM_STATUS]
+            message_types=[MessageType.SYSTEM_STATUS],
         )
 
         original_topics = TopicManager.TOPICS.copy()

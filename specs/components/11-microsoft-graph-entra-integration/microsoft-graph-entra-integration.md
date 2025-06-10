@@ -2,29 +2,44 @@
 
 ## Purpose / Overview
 
-The Microsoft Graph Entra Integration component provides comprehensive identity management capabilities for SimBuilder simulation environments. It manages synthetic user accounts, organizational structures, group memberships, application registrations, and authentication flows within Azure Active Directory. This component enables realistic simulation of enterprise identity scenarios for attack testing while maintaining proper isolation and security.
+The Microsoft Graph Entra Integration component provides comprehensive identity management
+capabilities for SimBuilder simulation environments. It manages synthetic user accounts,
+organizational structures, group memberships, application registrations, and authentication flows
+within Azure Active Directory. This component enables realistic simulation of enterprise identity
+scenarios for attack testing while maintaining proper isolation and security.
 
 ## Functional Requirements / User Stories
 
-- As a **DataSeeder Agent**, I need to create realistic organizational hierarchies with users, groups, and roles for attack simulations
-- As a **Security Researcher**, I need synthetic identities with realistic permissions and group memberships to test attack paths
-- As a **Red Team Member**, I need service principals and application registrations to simulate application-based attacks
-- As a **Planner Agent**, I need to understand available identity services and their configuration options for simulation planning
-- As a **Validator Agent**, I need to verify that identity configurations match attack scenario requirements
-- As a **Compliance Officer**, I need audit trails of all identity operations within simulation environments
-- As a **Operations Team**, I need automated cleanup of synthetic identities when simulations are decommissioned
-- As a **Attack Researcher**, I need realistic privilege escalation paths and delegation scenarios within tenant structures
+- As a **DataSeeder Agent**, I need to create realistic organizational hierarchies with users,
+  groups, and roles for attack simulations
+- As a **Security Researcher**, I need synthetic identities with realistic permissions and group
+  memberships to test attack paths
+- As a **Red Team Member**, I need service principals and application registrations to simulate
+  application-based attacks
+- As a **Planner Agent**, I need to understand available identity services and their configuration
+  options for simulation planning
+- As a **Validator Agent**, I need to verify that identity configurations match attack scenario
+  requirements
+- As a **Compliance Officer**, I need audit trails of all identity operations within simulation
+  environments
+- As a **Operations Team**, I need automated cleanup of synthetic identities when simulations are
+  decommissioned
+- As a **Attack Researcher**, I need realistic privilege escalation paths and delegation scenarios
+  within tenant structures
 
 ## Interfaces / APIs
 
 ### Inputs
-- **IdentitySpec objects**: Specifications for users, groups, applications, and organizational structures
+
+- **IdentitySpec objects**: Specifications for users, groups, applications, and organizational
+  structures
 - **PermissionMatrix objects**: Role assignments and access control configurations
 - **TenantConfiguration**: Tenant-specific identity settings and policies
 - **CleanupRequests**: Instructions for identity resource decommissioning
 - **AuthFlowSpecs**: Authentication and authorization flow configurations
 
 ### Outputs
+
 - **IdentityProvisioningResults**: Created identity resources with IDs and credentials
 - **OrganizationalGraph**: Complete organizational structure for simulation
 - **PermissionMappings**: Actual permission assignments and access levels
@@ -32,6 +47,7 @@ The Microsoft Graph Entra Integration component provides comprehensive identity 
 - **AuditLogs**: Identity operations audit trail for compliance
 
 ### Public Endpoints / CLI Commands
+
 ```
 POST /identity/users - Create user accounts with specified roles
 POST /identity/groups - Create groups and organizational units
@@ -47,16 +63,23 @@ GET /identity/audit/{simulation_id} - Retrieve identity audit logs
 - **Configuration Service**: For centralized configuration management and environment settings
 
 - **Microsoft Graph API**: For identity management operations
+
 - **Azure Active Directory**: Core identity and directory services
+
 - **Core API Service**: For authentication and request coordination
+
 - **DataSeeder Agent**: For coordinated identity and data population
+
 - **Graph Database Service**: For storing identity relationship metadata
+
 - **Service Bus**: For asynchronous identity operation coordination
+
 - **Azure Key Vault**: For secure storage of service principal credentials
 
 ## Data Contracts / Schemas
 
 ### IdentitySpec Schema
+
 ```yaml
 IdentitySpec:
   tenant_id: string
@@ -90,6 +113,7 @@ OrganizationalStructure:
 ```
 
 ### Permission Matrix Schema
+
 ```yaml
 PermissionMatrix:
   role_assignments:
@@ -120,6 +144,7 @@ PermissionMatrix:
 ## Testing Strategy
 
 ### Unit Tests
+
 - User and group creation with various configurations
 - Application registration and service principal management
 - Permission assignment and role delegation logic
@@ -128,6 +153,7 @@ PermissionMatrix:
 - Input validation and error handling
 
 ### Integration Tests
+
 - **Live Azure AD integration** - no mocking of Microsoft Graph APIs
 - Complete organizational structure creation and verification
 - Complex permission scenarios with nested groups and roles
@@ -136,6 +162,7 @@ PermissionMatrix:
 - Large-scale identity population performance testing
 
 ### End-to-End Acceptance Tests
+
 - Full simulation identity lifecycle from creation to cleanup
 - Complex attack scenario identity requirements validation
 - Integration with other SimBuilder components requiring identity services

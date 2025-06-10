@@ -14,6 +14,7 @@ try:
     from liquid import Template
     from liquid.exceptions import LiquidSyntaxError
     from liquid.exceptions import LiquidTypeError
+
     LIQUID_AVAILABLE = True
 except ImportError:
     # Create placeholder classes for when liquid is not available
@@ -48,7 +49,9 @@ class SpecValidator:
 
         self.template_loader = template_loader
 
-    def validate_template(self, template_name: str, context: dict[str, Any] | None = None) -> ValidationResult:
+    def validate_template(
+        self, template_name: str, context: dict[str, Any] | None = None
+    ) -> ValidationResult:
         """Validate a Liquid template.
 
         Args:
@@ -84,7 +87,9 @@ class SpecValidator:
                 missing_variables = [var for var in meta.variables if var not in context]
 
                 if missing_variables:
-                    warnings.append(f"Variables not provided in context: {', '.join(missing_variables)}")
+                    warnings.append(
+                        f"Variables not provided in context: {', '.join(missing_variables)}"
+                    )
 
                 # Generate suggestions for common variable names
                 suggestions.extend(self._generate_variable_suggestions(missing_variables))
@@ -115,10 +120,12 @@ class SpecValidator:
             syntax_errors=syntax_errors,
             missing_variables=missing_variables,
             warnings=warnings,
-            suggestions=suggestions
+            suggestions=suggestions,
         )
 
-    def validate_all_templates(self, context: dict[str, Any] | None = None) -> list[ValidationResult]:
+    def validate_all_templates(
+        self, context: dict[str, Any] | None = None
+    ) -> list[ValidationResult]:
         """Validate all templates in the repository.
 
         Args:
@@ -138,14 +145,16 @@ class SpecValidator:
 
         except Exception as e:
             # Return a single error result if we can't list templates
-            results.append(ValidationResult(
-                template_name="<unknown>",
-                is_valid=False,
-                syntax_errors=[f"Failed to list templates: {str(e)}"],
-                missing_variables=[],
-                warnings=[],
-                suggestions=[]
-            ))
+            results.append(
+                ValidationResult(
+                    template_name="<unknown>",
+                    is_valid=False,
+                    syntax_errors=[f"Failed to list templates: {str(e)}"],
+                    missing_variables=[],
+                    warnings=[],
+                    suggestions=[],
+                )
+            )
 
         return results
 
@@ -162,11 +171,11 @@ class SpecValidator:
 
         # Common variable name patterns
         common_patterns = {
-            'user': ['username', 'user_id', 'user_name'],
-            'tenant': ['tenant_id', 'tenant_name'],
-            'resource': ['resource_id', 'resource_name'],
-            'config': ['configuration', 'settings'],
-            'env': ['environment', 'env_name'],
+            "user": ["username", "user_id", "user_name"],
+            "tenant": ["tenant_id", "tenant_name"],
+            "resource": ["resource_id", "resource_name"],
+            "config": ["configuration", "settings"],
+            "env": ["environment", "env_name"],
         }
 
         for var in missing_variables:
@@ -195,19 +204,19 @@ class SpecValidator:
             return suggestions
 
         # Check for comments
-        if '{%' in content and not ('comment' in content or '#' in content):
+        if "{%" in content and not ("comment" in content or "#" in content):
             suggestions.append("Consider adding comments to explain complex logic.")
 
         # Check for error handling
-        if '{% if' in content and 'else' not in content:
+        if "{% if" in content and "else" not in content:
             suggestions.append("Consider adding else conditions for better error handling.")
 
         # Check for whitespace control
-        if '{%-' not in content and '-%}' not in content and '\n\n' in content:
+        if "{%-" not in content and "-%}" not in content and "\n\n" in content:
             suggestions.append("Consider using whitespace control ({%- -%}) for cleaner output.")
 
         # Check for security
-        if '| raw' in content:
+        if "| raw" in content:
             suggestions.append("Be cautious with 'raw' filter as it bypasses HTML escaping.")
 
         return suggestions
@@ -235,11 +244,13 @@ class SpecValidator:
             "success_rate": (valid / total * 100) if total > 0 else 0,
             "total_errors": total_errors,
             "total_warnings": total_warnings,
-            "templates_with_missing_vars": sum(1 for r in results if r.missing_variables)
+            "templates_with_missing_vars": sum(1 for r in results if r.missing_variables),
         }
 
 
-def validate_repo(repo_url: str, branch: str = "main", context: dict[str, Any] | None = None) -> list[ValidationResult]:
+def validate_repo(
+    repo_url: str, branch: str = "main", context: dict[str, Any] | None = None
+) -> list[ValidationResult]:
     """Validate all templates in a repository.
 
     Exported convenience function for repository validation.
@@ -261,8 +272,7 @@ def validate_repo(repo_url: str, branch: str = "main", context: dict[str, Any] |
 
     if not LIQUID_AVAILABLE:
         raise ValueError(
-            "liquid package is required for template validation. "
-            "Install with: pip install liquid"
+            "liquid package is required for template validation. Install with: pip install liquid"
         )
 
     # Create repository and template loader

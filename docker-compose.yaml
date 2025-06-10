@@ -35,8 +35,8 @@ services:
       - "${NATS_HTTP_PORT:-8222}:8222"  # Management UI
       - "${NATS_CLUSTER_PORT:-6222}:6222"  # Cluster connections
     command: [
-      "--jetstream", 
-      "--store_dir=/data", 
+      "--jetstream",
+      "--store_dir=/data",
       "--http_port=8222",
       "--cluster_name=${COMPOSE_PROJECT_NAME:-simbuilder}-cluster"
     ]
@@ -61,11 +61,11 @@ services:
       - azurite_data:/data
     # Uses default network automatically created by Docker Compose
     command: >
-      azurite 
-      --blobHost 0.0.0.0 
-      --queueHost 0.0.0.0 
-      --tableHost 0.0.0.0 
-      --location /data 
+      azurite
+      --blobHost 0.0.0.0
+      --queueHost 0.0.0.0
+      --tableHost 0.0.0.0
+      --location /data
       --debug /data/debug.log
     healthcheck:
       test: ["CMD", "nc", "-z", "localhost", "10000"]

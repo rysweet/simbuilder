@@ -48,7 +48,5 @@ class Simulation(BaseModel):
 
     class Config:
         """Pydantic configuration."""
-        json_encoders = {
-            datetime: lambda v: v.isoformat(),
-            UUID: str
-        }
+
+        json_encoders = {datetime: lambda v: v.isoformat(), UUID: str}

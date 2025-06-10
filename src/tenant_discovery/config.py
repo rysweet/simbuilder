@@ -23,34 +23,17 @@ class LogLevel(str, Enum):
 class TenantDiscoverySettings(BaseSettings):
     """Configuration settings for Tenant Discovery service."""
 
-    azure_tenant_id: str = Field(
-        ...,
-        description="Azure tenant ID for authentication"
-    )
-    azure_client_id: str = Field(
-        ...,
-        description="Azure client ID for authentication"
-    )
-    azure_client_secret: str = Field(
-        ...,
-        description="Azure client secret for authentication"
-    )
-    subscription_id: str = Field(
-        ...,
-        description="Azure subscription ID for resource discovery"
-    )
+    azure_tenant_id: str = Field(..., description="Azure tenant ID for authentication")
+    azure_client_id: str = Field(..., description="Azure client ID for authentication")
+    azure_client_secret: str = Field(..., description="Azure client secret for authentication")
+    subscription_id: str = Field(..., description="Azure subscription ID for resource discovery")
     graph_db_url: str = Field(
-        default="bolt://localhost:30000",
-        description="Neo4j graph database connection URL"
+        default="bolt://localhost:30000", description="Neo4j graph database connection URL"
     )
     service_bus_url: str = Field(
-        default="nats://localhost:30002",
-        description="NATS service bus connection URL"
+        default="nats://localhost:30002", description="NATS service bus connection URL"
     )
-    log_level: LogLevel = Field(
-        default=LogLevel.INFO,
-        description="Logging level for the service"
-    )
+    log_level: LogLevel = Field(default=LogLevel.INFO, description="Logging level for the service")
 
     model_config = {
         "env_prefix": "TD_",
@@ -65,8 +48,7 @@ class TenantDiscoverySettings(BaseSettings):
     def validate_uuid_format(cls, v: str, info: ValidationInfo) -> str:
         """Validate that the field follows UUID format."""
         uuid_pattern = re.compile(
-            r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
-            re.IGNORECASE
+            r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.IGNORECASE
         )
         if not uuid_pattern.match(v):
             raise ValueError(f"{info.field_name} must be a valid UUID format")

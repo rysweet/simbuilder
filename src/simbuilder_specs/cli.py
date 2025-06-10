@@ -67,6 +67,7 @@ def resolve_str_for_cli(val: object) -> str:
         return ""
     return str(result) if result is not None else ""
 
+
 def path_exists(path: object) -> bool:
     """Return True if path-like object exists, False otherwise."""
     try:
@@ -87,11 +88,13 @@ def path_exists(path: object) -> bool:
     except Exception:
         return False
 
+
 console = Console()
 cli = typer.Typer(no_args_is_help=True, name="specs", help="SimBuilder Specs Library management")
 app = cli  # app and cli are the same Typer instance; use either for legacy or test compatibility
 
 # === SimBuilder CLI commands (info, pull, validate, render, etc.) follow ===
+
 
 def _get_template_loader(repo: GitRepository | None = None) -> TemplateLoader:
     """Return a TemplateLoader instance; for tests, repo argument is necessary."""
@@ -100,11 +103,15 @@ def _get_template_loader(repo: GitRepository | None = None) -> TemplateLoader:
     # TemplateLoader now requires explicit repository; raise at test time if misused.
     raise TypeError("TemplateLoader now requires a repository argument (not None)")
 
+
 # --- CLI Commands ---
+
 
 @app.command("info")
 def info(
-    refresh: bool = typer.Option(False, "--refresh", help="Update specs repository before showing info"),
+    refresh: bool = typer.Option(
+        False, "--refresh", help="Update specs repository before showing info"
+    ),
 ) -> None:
     """Show repository status, branch, and available templates."""
     try:
@@ -150,7 +157,10 @@ def info(
         if not repo_available:
             table.add_row("Note", "Repository not available. Run `specs pull`.")
         template_count = len(templates)
-        table.add_row(f"Available Templates ({template_count})", ", ".join(t.name for t in templates) or "None")
+        table.add_row(
+            f"Available Templates ({template_count})",
+            ", ".join(t.name for t in templates) or "None",
+        )
         console.print(table)
         raise typer.Exit(code=0 if repo_available else 1)
     except Exception as e:
@@ -186,14 +196,19 @@ def pull() -> None:
         console.print(f"[red]Error: {e}[/red]")
         raise typer.Exit(code=1) from e
 
+
 @app.command("validate")
 def validate(
     template_name: str = typer.Argument(None, help="Validate one template by name (optional)"),
-    context_file: Path = typer.Option(None, "--context-file", help="YAML/JSON file with template variables"),
+    context_file: Path = typer.Option(
+        None, "--context-file", help="YAML/JSON file with template variables"
+    ),
 ) -> None:
     """Validate templates or a single template."""
     try:
-        loader = _get_template_loader(GitRepository(get_settings().spec_repo_url, get_settings().spec_repo_branch))
+        loader = _get_template_loader(
+            GitRepository(get_settings().spec_repo_url, get_settings().spec_repo_branch)
+        )
         validator = SpecValidator(loader)
         context = {}
         if context_file:
@@ -218,7 +233,9 @@ def validate(
                 for err in res.syntax_errors:
                     console.print(f"[red]Syntax error: {err}[/red]")
                 if res.missing_variables:
-                    console.print(f"[yellow]Missing variables: {', '.join(res.missing_variables)}[/yellow]")
+                    console.print(
+                        f"[yellow]Missing variables: {', '.join(res.missing_variables)}[/yellow]"
+                    )
                 for warn in res.warnings:
                     console.print(f"[yellow]Warning: {warn}[/yellow]")
                 for sugg in res.suggestions:
@@ -230,16 +247,21 @@ def validate(
         console.print(f"[red]Error: {e}[/red]")
         raise SystemExit(1) from e
 
+
 @app.command("render")
 def render(
     template_name: str = typer.Argument(..., help="Template name to render"),
-    context_file: Path = typer.Option(None, "--context-file", help="YAML/JSON file with template variables"),
+    context_file: Path = typer.Option(
+        None, "--context-file", help="YAML/JSON file with template variables"
+    ),
     output: Path = typer.Option(None, "--output", help="Write rendered output to file"),
     strict: bool = typer.Option(False, "--strict", help="Enable strict variable checking"),
 ) -> None:
     """Render a template with (optionally) a context file and/or output."""
     try:
-        loader = _get_template_loader(GitRepository(get_settings().spec_repo_url, get_settings().spec_repo_branch))
+        loader = _get_template_loader(
+            GitRepository(get_settings().spec_repo_url, get_settings().spec_repo_branch)
+        )
         context = {}
         if context_file:
             if not context_file.exists():
@@ -247,7 +269,9 @@ def render(
                 raise SystemExit(1)
             with context_file.open(encoding="utf-8") as f:
                 context = json.load(f) if str(context_file).endswith(".json") else yaml.safe_load(f)
-        req = TemplateRenderRequest(template_name=template_name, context=context, strict_variables=strict)
+        req = TemplateRenderRequest(
+            template_name=template_name, context=context, strict_variables=strict
+        )
         res = loader.render_with_metadata(req)
         if res.success:
             if output:
@@ -261,7 +285,9 @@ def render(
         else:
             console.print(f"[red]Rendering failed: {res.error_message}[/red]")
             if res.variables_missing:
-                console.print(f"[yellow]Missing required variables: {', '.join(res.variables_missing)}[/yellow]")
+                console.print(
+                    f"[yellow]Missing required variables: {', '.join(res.variables_missing)}[/yellow]"
+                )
             raise SystemExit(1)
     except TemplateLoaderError as e:
         console.print(f"[red]Template error: {e}[/red]")
@@ -269,5 +295,6 @@ def render(
     except Exception as e:
         console.print(f"[red]Error: {e}[/red]")
         raise SystemExit(1) from e
+
 
 __all__ = ["cli", "app"]

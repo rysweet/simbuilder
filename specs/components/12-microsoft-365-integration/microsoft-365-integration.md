@@ -2,29 +2,46 @@
 
 ## Purpose / Overview
 
-The Microsoft 365 Integration component populates simulation environments with realistic Microsoft 365 content including emails, documents, SharePoint sites, Teams channels, and calendar entries. It creates authentic workplace scenarios that enable comprehensive testing of productivity suite-based attacks while maintaining data privacy and security isolation. This component supports sophisticated attack simulations involving phishing, document-based malware, and collaboration platform exploitation.
+The Microsoft 365 Integration component populates simulation environments with realistic Microsoft
+365 content including emails, documents, SharePoint sites, Teams channels, and calendar entries. It
+creates authentic workplace scenarios that enable comprehensive testing of productivity suite-based
+attacks while maintaining data privacy and security isolation. This component supports sophisticated
+attack simulations involving phishing, document-based malware, and collaboration platform
+exploitation.
 
 ## Functional Requirements / User Stories
 
-- As a **DataSeeder Agent**, I need to populate mailboxes with realistic email conversations and attachments for phishing simulations
-- As a **Security Researcher**, I need SharePoint sites with realistic document libraries and permission structures for testing access control vulnerabilities
-- As a **Red Team Member**, I need Teams channels with realistic conversations and file sharing to simulate collaboration-based attacks
-- As a **Attack Analyst**, I need calendar entries and meeting structures to test calendar-based social engineering scenarios
-- As a **Compliance Officer**, I need synthetic M365 data that mimics real organizational patterns without exposing sensitive information
-- As a **Planner Agent**, I need to understand M365 service dependencies and configuration requirements for simulation planning
-- As a **Validator Agent**, I need to verify that M365 content matches attack scenario requirements and telemetry expectations
-- As a **Operations Team**, I need automated cleanup of M365 content when simulations are decommissioned
+- As a **DataSeeder Agent**, I need to populate mailboxes with realistic email conversations and
+  attachments for phishing simulations
+- As a **Security Researcher**, I need SharePoint sites with realistic document libraries and
+  permission structures for testing access control vulnerabilities
+- As a **Red Team Member**, I need Teams channels with realistic conversations and file sharing to
+  simulate collaboration-based attacks
+- As a **Attack Analyst**, I need calendar entries and meeting structures to test calendar-based
+  social engineering scenarios
+- As a **Compliance Officer**, I need synthetic M365 data that mimics real organizational patterns
+  without exposing sensitive information
+- As a **Planner Agent**, I need to understand M365 service dependencies and configuration
+  requirements for simulation planning
+- As a **Validator Agent**, I need to verify that M365 content matches attack scenario requirements
+  and telemetry expectations
+- As a **Operations Team**, I need automated cleanup of M365 content when simulations are
+  decommissioned
 
 ## Interfaces / APIs
 
 ### Inputs
-- **M365ContentSpec objects**: Specifications for emails, documents, sites, and collaboration content
-- **OrganizationalContext**: Company structure and department information for realistic content generation
+
+- **M365ContentSpec objects**: Specifications for emails, documents, sites, and collaboration
+  content
+- **OrganizationalContext**: Company structure and department information for realistic content
+  generation
 - **AttackScenarios**: Specific attack requirements driving content creation needs
 - **ContentTemplates**: Reusable templates for common content types and scenarios
 - **CleanupRequests**: Instructions for M365 content decommissioning
 
 ### Outputs
+
 - **ContentInventory**: Complete inventory of created M365 content with metadata
 - **PermissionMappings**: Access control settings for all created content
 - **TelemetryEndpoints**: Monitoring configuration for M365 activity logging
@@ -32,6 +49,7 @@ The Microsoft 365 Integration component populates simulation environments with r
 - **SyntheticDataReport**: Summary of generated content for validation and audit
 
 ### Public Endpoints / CLI Commands
+
 ```
 POST /m365/email - Create email conversations and mailbox content
 POST /m365/sharepoint - Create SharePoint sites and document libraries
@@ -48,17 +66,25 @@ GET /m365/telemetry/{simulation_id} - Retrieve M365 activity logs
 - **Configuration Service**: For centralized configuration management and environment settings
 
 - **Microsoft Graph API**: For M365 content creation and management
+
 - **Exchange Online**: For email and calendar functionality
+
 - **SharePoint Online**: For document libraries and collaboration sites
+
 - **Microsoft Teams**: For team channels and chat content
+
 - **Microsoft Graph Entra Integration**: For identity context and permissions
+
 - **Core API Service**: For authentication and request orchestration
+
 - **DataSeeder Agent**: For coordinated content and identity population
+
 - **Graph Database Service**: For storing content relationship metadata
 
 ## Data Contracts / Schemas
 
 ### M365ContentSpec Schema
+
 ```yaml
 M365ContentSpec:
   tenant_id: string
@@ -107,6 +133,7 @@ DocumentLibrary:
 ```
 
 ### Content Telemetry Schema
+
 ```yaml
 M365TelemetryConfig:
   audit_logs:
@@ -136,6 +163,7 @@ M365TelemetryConfig:
 ## Testing Strategy
 
 ### Unit Tests
+
 - Email thread generation with realistic conversation patterns
 - Document creation with various file types and metadata
 - SharePoint site provisioning and permission configuration
@@ -144,6 +172,7 @@ M365TelemetryConfig:
 - Content template processing and customization
 
 ### Integration Tests
+
 - **Live M365 tenant integration** - no mocking of Microsoft 365 APIs
 - End-to-end content provisioning across all M365 workloads
 - Permission inheritance and access control validation
@@ -152,6 +181,7 @@ M365TelemetryConfig:
 - Telemetry configuration and data flow verification
 
 ### End-to-End Acceptance Tests
+
 - Complete M365 simulation environment preparation
 - Attack scenario content requirements validation
 - Integration with identity management and security monitoring
@@ -160,7 +190,8 @@ M365TelemetryConfig:
 
 ## Acceptance Criteria
 
-- **Content Realism**: Generate workplace content indistinguishable from real organizational patterns
+- **Content Realism**: Generate workplace content indistinguishable from real organizational
+  patterns
 - **Scale**: Support creation of 10,000+ emails, 1,000+ documents, 100+ sites per simulation
 - **Performance**: Complete M365 content provisioning within 15 minutes for standard simulations
 - **Relationship Accuracy**: Maintain realistic relationships between users, content, and activities

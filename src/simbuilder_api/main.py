@@ -37,7 +37,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         "SimBuilder API starting up",
         environment=settings.environment,
         port=settings.core_api_port,
-        debug=settings.debug_mode
+        debug=settings.debug_mode,
     )
 
     # TODO: Initialize database connections
@@ -67,14 +67,11 @@ def create_app() -> FastAPI:
         description="Core API service for SimBuilder tenant discovery and simulation platform",
         version="1.0.0",
         lifespan=lifespan,
-        debug=settings.debug_mode
+        debug=settings.debug_mode,
     )
 
     # Add middleware
-    app.add_middleware(
-        ErrorHandlerMiddleware,
-        debug=settings.debug_mode
-    )
+    app.add_middleware(ErrorHandlerMiddleware, debug=settings.debug_mode)
     app.add_middleware(SessionContextMiddleware)
 
     # Include routers
@@ -102,6 +99,6 @@ async def root() -> dict[str, Any]:
             "tenant_discovery": "/tenant-discovery",
             "simulations": "/simulations",
             "docs": "/docs",
-            "openapi": "/openapi.json"
-        }
+            "openapi": "/openapi.json",
+        },
     }

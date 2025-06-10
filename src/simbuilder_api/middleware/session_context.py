@@ -25,7 +25,9 @@ class SessionContextMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.session_header = session_header
 
-    async def dispatch(self, request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
         """Process request and inject session context.
 
         Args:

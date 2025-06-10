@@ -36,7 +36,7 @@ def chat_command(
     variables: str = typer.Option(
         "{}",
         "--variables",
-        help="JSON string with variables for the prompt (e.g., '{\"question\":\"hello\"}')",
+        help='JSON string with variables for the prompt (e.g., \'{"question":"hello"}\')',
     ),
     model: str | None = typer.Option(None, "--model", help="Model to use (overrides config)"),
     temperature: float = typer.Option(0.7, "--temperature", help="Sampling temperature"),
@@ -63,9 +63,7 @@ def chat_command(
         messages = [ChatMessage(role="user", content=rendered_prompt)]
 
         # Send to LLM
-        asyncio.run(
-            _send_chat_completion(messages, model, temperature, max_tokens, stream)
-        )
+        asyncio.run(_send_chat_completion(messages, model, temperature, max_tokens, stream))
 
     except Exception as e:
         console.print(f"[red]Error:[/red] {e}")
@@ -129,7 +127,9 @@ async def _send_chat_completion(
 def embed_command(
     text: str = typer.Option(..., "--text", help="Text to embed"),
     model: str | None = typer.Option(None, "--model", help="Model to use (overrides config)"),
-    output_format: str = typer.Option("summary", "--format", help="Output format: summary, json, or values"),
+    output_format: str = typer.Option(
+        "summary", "--format", help="Output format: summary, json, or values"
+    ),
 ) -> None:
     """Generate embeddings for text."""
     asyncio.run(_create_embeddings(text, model, output_format))
@@ -156,7 +156,9 @@ async def _create_embeddings(text: str, model: str | None, output_format: str) -
             table.add_column("Value", style="white")
 
             table.add_row("Model", response.model or "Unknown")
-            table.add_row("Usage (Tokens)", str(response.usage.total_tokens) if response.usage else "Unknown")
+            table.add_row(
+                "Usage (Tokens)", str(response.usage.total_tokens) if response.usage else "Unknown"
+            )
             if response.data:
                 table.add_row("Embedding Dimensions", str(len(response.data[0].embedding)))
                 table.add_row("Input Text Length", str(len(text)))
@@ -248,29 +250,45 @@ def _check_configuration(settings: Any) -> list[tuple[str, bool, str]]:
     checks = []
 
     # Check required settings
-    checks.append((
-        "Azure OpenAI Endpoint",
-        bool(settings.azure_openai_endpoint),
-        settings.azure_openai_endpoint if settings.azure_openai_endpoint else "Not configured"
-    ))
+    checks.append(
+        (
+            "Azure OpenAI Endpoint",
+            bool(settings.azure_openai_endpoint),
+            settings.azure_openai_endpoint if settings.azure_openai_endpoint else "Not configured",
+        )
+    )
 
-    checks.append((
-        "Azure OpenAI API Key",
-        bool(settings.azure_openai_key),
-        "Configured" if settings.azure_openai_key else "Not configured"
-    ))
+    checks.append(
+        (
+            "Azure OpenAI API Key",
+            bool(settings.azure_openai_key),
+            "Configured" if settings.azure_openai_key else "Not configured",
+        )
+    )
 
-    checks.append((
-        "API Version",
-        bool(settings.azure_openai_api_version),
-        settings.azure_openai_api_version if settings.azure_openai_api_version else "Not configured"
-    ))
+    checks.append(
+        (
+            "API Version",
+            bool(settings.azure_openai_api_version),
+            (
+                settings.azure_openai_api_version
+                if settings.azure_openai_api_version
+                else "Not configured"
+            ),
+        )
+    )
 
-    checks.append((
-        "Chat Model",
-        bool(settings.azure_openai_model_chat),
-        settings.azure_openai_model_chat if settings.azure_openai_model_chat else "Not configured"
-    ))
+    checks.append(
+        (
+            "Chat Model",
+            bool(settings.azure_openai_model_chat),
+            (
+                settings.azure_openai_model_chat
+                if settings.azure_openai_model_chat
+                else "Not configured"
+            ),
+        )
+    )
 
     return checks
 
@@ -284,24 +302,24 @@ async def _check_connectivity() -> list[tuple[str, bool, str]]:
         health_info = await client.check_health()
 
         if health_info["status"] == "healthy":
-            checks.append((
-                "Azure OpenAI Connectivity",
-                True,
-                f"Connected (Response ID: {health_info.get('response_id', 'N/A')})"
-            ))
+            checks.append(
+                (
+                    "Azure OpenAI Connectivity",
+                    True,
+                    f"Connected (Response ID: {health_info.get('response_id', 'N/A')})",
+                )
+            )
         else:
-            checks.append((
-                "Azure OpenAI Connectivity",
-                False,
-                f"Failed: {health_info.get('error', 'Unknown error')}"
-            ))
+            checks.append(
+                (
+                    "Azure OpenAI Connectivity",
+                    False,
+                    f"Failed: {health_info.get('error', 'Unknown error')}",
+                )
+            )
 
     except Exception as e:
-        checks.append((
-            "Azure OpenAI Connectivity",
-            False,
-            f"Connection failed: {str(e)}"
-        ))
+        checks.append(("Azure OpenAI Connectivity", False, f"Connection failed: {str(e)}"))
     finally:
         await client.close()
 

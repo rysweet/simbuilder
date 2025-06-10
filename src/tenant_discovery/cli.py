@@ -36,14 +36,28 @@ def info() -> None:
         table.add_column("Description", style="green")
 
         # Mask sensitive values
-        masked_secret = "***" + settings.azure_client_secret[-4:] if len(settings.azure_client_secret) > 4 else "***"
+        masked_secret = (
+            "***" + settings.azure_client_secret[-4:]
+            if len(settings.azure_client_secret) > 4
+            else "***"
+        )
 
-        table.add_row("Azure Tenant ID", settings.azure_tenant_id, "Azure tenant ID for authentication")
-        table.add_row("Azure Client ID", settings.azure_client_id, "Azure client ID for authentication")
+        table.add_row(
+            "Azure Tenant ID", settings.azure_tenant_id, "Azure tenant ID for authentication"
+        )
+        table.add_row(
+            "Azure Client ID", settings.azure_client_id, "Azure client ID for authentication"
+        )
         table.add_row("Azure Client Secret", masked_secret, "Azure client secret (masked)")
-        table.add_row("Subscription ID", settings.subscription_id, "Azure subscription ID for resource discovery")
+        table.add_row(
+            "Subscription ID",
+            settings.subscription_id,
+            "Azure subscription ID for resource discovery",
+        )
         table.add_row("Graph DB URL", settings.graph_db_url, "Neo4j graph database connection URL")
-        table.add_row("Service Bus URL", settings.service_bus_url, "NATS service bus connection URL")
+        table.add_row(
+            "Service Bus URL", settings.service_bus_url, "NATS service bus connection URL"
+        )
         table.add_row("Log Level", settings.log_level.value, "Logging level for the service")
 
         console.print(table)
@@ -102,8 +116,6 @@ def check() -> None:
     except Exception as e:
         console.print(f"[red]✗[/red] Error validating configuration: {e}")
         sys.exit(1)
-
-
 
 
 if __name__ == "__main__":

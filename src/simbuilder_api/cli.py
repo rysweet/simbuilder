@@ -2,7 +2,6 @@
 CLI commands for SimBuilder API service.
 """
 
-
 import typer
 import uvicorn
 from rich.console import Console
@@ -21,7 +20,7 @@ def run(
     host: str = typer.Option("localhost", help="Host to bind to"),
     port: int | None = typer.Option(None, help="Port to bind to (defaults to config)"),
     reload: bool = typer.Option(False, help="Enable auto-reload for development"),
-    workers: int = typer.Option(1, help="Number of worker processes")
+    workers: int = typer.Option(1, help="Number of worker processes"),
 ) -> None:
     """Run the SimBuilder API server."""
     settings = get_settings()
@@ -43,7 +42,7 @@ def run(
             port=port,
             reload=reload,
             workers=workers,
-            log_level=settings.log_level.lower()
+            log_level=settings.log_level.lower(),
         )
     except KeyboardInterrupt:
         console.print("\n[yellow]Server stopped by user[/yellow]")
@@ -106,6 +105,7 @@ def check() -> None:
 
     # Check dependencies
     import importlib.util
+
     missing_deps = []
     for dep in ["fastapi", "jose", "uvicorn"]:
         if importlib.util.find_spec(dep) is None:

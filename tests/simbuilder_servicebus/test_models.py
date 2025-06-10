@@ -27,7 +27,7 @@ class TestMessageType:
             "discovery_start",
             "discovery_complete",
             "discovery_error",
-            "system_status"
+            "system_status",
         }
 
         actual_types = {mt.value for mt in MessageType}
@@ -63,7 +63,7 @@ class TestMessageSchema:
             message_id="test-123",
             message_type=MessageType.SYSTEM_STATUS,
             source="test_service",
-            data={"key": "value"}
+            data={"key": "value"},
         )
 
         assert message.message_id == "test-123"
@@ -82,7 +82,7 @@ class TestMessageSchema:
             message_type=MessageType.DISCOVERY_START,
             session_id=session_id,
             source="discovery_agent",
-            priority=MessagePriority.HIGH
+            priority=MessagePriority.HIGH,
         )
 
         assert message.session_id == session_id
@@ -109,7 +109,7 @@ class TestMessageSchema:
             message_type=MessageType.PROGRESS_UPDATE,
             source="test_service",
             timestamp=timestamp,
-            data={"progress": 50}
+            data={"progress": 50},
         )
 
         json_data = message.model_dump_json()
@@ -133,7 +133,7 @@ class TestProgressMessage:
             source="discovery_engine",
             operation="tenant_discovery",
             progress_percentage=75.5,
-            current_step="Analyzing relationships"
+            current_step="Analyzing relationships",
         )
 
         assert message.message_type == MessageType.PROGRESS_UPDATE
@@ -151,7 +151,7 @@ class TestProgressMessage:
             progress_percentage=40.0,
             current_step="Enumerating storage accounts",
             total_steps=10,
-            current_step_number=4
+            current_step_number=4,
         )
 
         assert message.total_steps == 10
@@ -165,7 +165,7 @@ class TestProgressMessage:
             source="test",
             operation="test",
             progress_percentage=50.0,
-            current_step="test"
+            current_step="test",
         )
         assert message.progress_percentage == 50.0
 
@@ -176,7 +176,7 @@ class TestProgressMessage:
                 source="test",
                 operation="test",
                 progress_percentage=-10.0,
-                current_step="test"
+                current_step="test",
             )
 
         # Invalid percentage - too high
@@ -186,7 +186,7 @@ class TestProgressMessage:
                 source="test",
                 operation="test",
                 progress_percentage=150.0,
-                current_step="test"
+                current_step="test",
             )
 
 
@@ -204,7 +204,7 @@ class TestDiscoveryStatusMessage:
             resources_discovered=150,
             relationships_mapped=75,
             errors_encountered=2,
-            status="in_progress"
+            status="in_progress",
         )
 
         assert message.tenant_id == "tenant-789"
@@ -220,7 +220,7 @@ class TestDiscoveryStatusMessage:
             message_id="status-456",
             source="discovery_agent",
             tenant_id="tenant-789",
-            status="starting"
+            status="starting",
         )
 
         assert message.resources_discovered == 0
@@ -240,7 +240,7 @@ class TestTopicDefinition:
             description="Test topic for unit tests",
             message_types=[MessageType.SYSTEM_STATUS, MessageType.PROGRESS_UPDATE],
             max_age_seconds=1800,
-            max_messages=5000
+            max_messages=5000,
         )
 
         assert topic.name == "test_topic"
@@ -258,7 +258,7 @@ class TestTopicDefinition:
             name="minimal_topic",
             subject_pattern="minimal.*",
             description="Minimal topic",
-            message_types=[MessageType.SYSTEM_STATUS]
+            message_types=[MessageType.SYSTEM_STATUS],
         )
 
         assert topic.retention_policy == "workqueue"
@@ -280,7 +280,7 @@ class TestSubscriptionConfig:
             durable=True,
             auto_ack=False,
             max_pending=500,
-            ack_wait_seconds=60
+            ack_wait_seconds=60,
         )
 
         assert config.name == "test_subscription"
@@ -294,10 +294,7 @@ class TestSubscriptionConfig:
 
     def test_subscription_config_defaults(self):
         """Test SubscriptionConfig with default values."""
-        config = SubscriptionConfig(
-            name="default_subscription",
-            topic="default_topic"
-        )
+        config = SubscriptionConfig(name="default_subscription", topic="default_topic")
 
         assert config.subject_filter is None
         assert config.queue_group is None
@@ -318,7 +315,7 @@ class TestConnectionConfig:
             client_id="test_client",
             max_reconnect_attempts=5,
             reconnect_time_wait=3,
-            ping_interval=60
+            ping_interval=60,
         )
 
         assert config.servers == ["nats://localhost:4222", "nats://backup:4222"]
@@ -331,9 +328,7 @@ class TestConnectionConfig:
     def test_connection_config_defaults(self):
         """Test ConnectionConfig with default values."""
         config = ConnectionConfig(
-            servers=["nats://localhost:4222"],
-            cluster_id="test_cluster",
-            client_id="test_client"
+            servers=["nats://localhost:4222"], cluster_id="test_cluster", client_id="test_client"
         )
 
         assert config.max_reconnect_attempts == 10
@@ -345,9 +340,7 @@ class TestConnectionConfig:
         """Test ConnectionConfig validation."""
         # Test assignment validation is enabled
         config = ConnectionConfig(
-            servers=["nats://localhost:4222"],
-            cluster_id="test_cluster",
-            client_id="test_client"
+            servers=["nats://localhost:4222"], cluster_id="test_cluster", client_id="test_client"
         )
 
         # Should allow updating valid values

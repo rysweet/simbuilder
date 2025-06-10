@@ -35,8 +35,8 @@ def mock_settings():
 class TestChatCommand:
     """Tests for the chat command."""
 
-    @patch('src.simbuilder_llm.cli.render_prompt')
-    @patch('src.simbuilder_llm.cli.AzureOpenAIClient')
+    @patch("src.simbuilder_llm.cli.render_prompt")
+    @patch("src.simbuilder_llm.cli.AzureOpenAIClient")
     def test_chat_success(self, mock_client_class, mock_render_prompt, runner):
         """Test successful chat command."""
         # Mock prompt rendering
@@ -51,11 +51,9 @@ class TestChatCommand:
         mock_client.close = AsyncMock()
         mock_client_class.return_value = mock_client
 
-        result = runner.invoke(app, [
-            "chat",
-            "--prompt", "base_prompt",
-            "--variables", '{"question": "Hello"}'
-        ])
+        result = runner.invoke(
+            app, ["chat", "--prompt", "base_prompt", "--variables", '{"question": "Hello"}']
+        )
 
         assert result.exit_code == 0
         assert "I'm here to help!" in result.stdout
@@ -63,31 +61,27 @@ class TestChatCommand:
 
     def test_chat_invalid_json(self, runner):
         """Test chat command with invalid JSON variables."""
-        result = runner.invoke(app, [
-            "chat",
-            "--prompt", "base_prompt",
-            "--variables", '{"invalid": json}'
-        ])
+        result = runner.invoke(
+            app, ["chat", "--prompt", "base_prompt", "--variables", '{"invalid": json}']
+        )
 
         assert result.exit_code == 1
         assert "Invalid JSON in variables" in result.stdout
 
-    @patch('src.simbuilder_llm.cli.render_prompt')
+    @patch("src.simbuilder_llm.cli.render_prompt")
     def test_chat_prompt_render_error(self, mock_render_prompt, runner):
         """Test chat command with prompt rendering error."""
-        mock_render_prompt.side_effect = PromptRenderError("base_prompt", "Missing variables", ["question"])
+        mock_render_prompt.side_effect = PromptRenderError(
+            "base_prompt", "Missing variables", ["question"]
+        )
 
-        result = runner.invoke(app, [
-            "chat",
-            "--prompt", "base_prompt",
-            "--variables", '{}'
-        ])
+        result = runner.invoke(app, ["chat", "--prompt", "base_prompt", "--variables", "{}"])
 
         assert result.exit_code == 1
         assert "Failed to render prompt" in result.stdout
 
-    @patch('src.simbuilder_llm.cli.render_prompt')
-    @patch('src.simbuilder_llm.cli.AzureOpenAIClient')
+    @patch("src.simbuilder_llm.cli.render_prompt")
+    @patch("src.simbuilder_llm.cli.AzureOpenAIClient")
     def test_chat_with_streaming(self, mock_client_class, mock_render_prompt, runner):
         """Test chat command with streaming enabled."""
         mock_render_prompt.return_value = "Hello"
@@ -109,18 +103,16 @@ class TestChatCommand:
         mock_client.close = AsyncMock()
         mock_client_class.return_value = mock_client
 
-        result = runner.invoke(app, [
-            "chat",
-            "--prompt", "base_prompt",
-            "--variables", '{"question": "Hello"}',
-            "--stream"
-        ])
+        result = runner.invoke(
+            app,
+            ["chat", "--prompt", "base_prompt", "--variables", '{"question": "Hello"}', "--stream"],
+        )
 
         assert result.exit_code == 0
         assert "Streaming response" in result.stdout
 
-    @patch('src.simbuilder_llm.cli.render_prompt')
-    @patch('src.simbuilder_llm.cli.AzureOpenAIClient')
+    @patch("src.simbuilder_llm.cli.render_prompt")
+    @patch("src.simbuilder_llm.cli.AzureOpenAIClient")
     def test_chat_llm_error(self, mock_client_class, mock_render_prompt, runner):
         """Test chat command with LLM error."""
         mock_render_prompt.return_value = "Hello"
@@ -130,17 +122,15 @@ class TestChatCommand:
         mock_client.close = AsyncMock()
         mock_client_class.return_value = mock_client
 
-        result = runner.invoke(app, [
-            "chat",
-            "--prompt", "base_prompt",
-            "--variables", '{"question": "Hello"}'
-        ])
+        result = runner.invoke(
+            app, ["chat", "--prompt", "base_prompt", "--variables", '{"question": "Hello"}']
+        )
 
         assert result.exit_code == 1
         assert "LLM Error" in result.stdout
 
-    @patch('src.simbuilder_llm.cli.render_prompt')
-    @patch('src.simbuilder_llm.cli.AzureOpenAIClient')
+    @patch("src.simbuilder_llm.cli.render_prompt")
+    @patch("src.simbuilder_llm.cli.AzureOpenAIClient")
     def test_chat_with_custom_options(self, mock_client_class, mock_render_prompt, runner):
         """Test chat command with custom options."""
         mock_render_prompt.return_value = "Hello"
@@ -153,14 +143,22 @@ class TestChatCommand:
         mock_client.close = AsyncMock()
         mock_client_class.return_value = mock_client
 
-        result = runner.invoke(app, [
-            "chat",
-            "--prompt", "base_prompt",
-            "--variables", '{"question": "Hello"}',
-            "--model", "custom-model",
-            "--temperature", "0.5",
-            "--max-tokens", "100"
-        ])
+        result = runner.invoke(
+            app,
+            [
+                "chat",
+                "--prompt",
+                "base_prompt",
+                "--variables",
+                '{"question": "Hello"}',
+                "--model",
+                "custom-model",
+                "--temperature",
+                "0.5",
+                "--max-tokens",
+                "100",
+            ],
+        )
 
         assert result.exit_code == 0
         mock_client.create_chat_completion.assert_called_once()
@@ -173,7 +171,7 @@ class TestChatCommand:
 class TestEmbedCommand:
     """Tests for the embed command."""
 
-    @patch('src.simbuilder_llm.cli.AzureOpenAIClient')
+    @patch("src.simbuilder_llm.cli.AzureOpenAIClient")
     def test_embed_summary_format(self, mock_client_class, runner):
         """Test embed command with summary format."""
         mock_client = AsyncMock()
@@ -186,17 +184,13 @@ class TestEmbedCommand:
         mock_client.close = AsyncMock()
         mock_client_class.return_value = mock_client
 
-        result = runner.invoke(app, [
-            "embed",
-            "--text", "Hello world",
-            "--format", "summary"
-        ])
+        result = runner.invoke(app, ["embed", "--text", "Hello world", "--format", "summary"])
 
         assert result.exit_code == 0
         assert "Embedding Summary" in result.stdout
         assert "gpt-4o" in result.stdout
 
-    @patch('src.simbuilder_llm.cli.AzureOpenAIClient')
+    @patch("src.simbuilder_llm.cli.AzureOpenAIClient")
     def test_embed_json_format(self, mock_client_class, runner):
         """Test embed command with JSON format."""
         mock_client = AsyncMock()
@@ -206,17 +200,13 @@ class TestEmbedCommand:
         mock_client.close = AsyncMock()
         mock_client_class.return_value = mock_client
 
-        result = runner.invoke(app, [
-            "embed",
-            "--text", "Hello world",
-            "--format", "json"
-        ])
+        result = runner.invoke(app, ["embed", "--text", "Hello world", "--format", "json"])
 
         assert result.exit_code == 0
         # Should contain JSON output
         assert "{" in result.stdout
 
-    @patch('src.simbuilder_llm.cli.AzureOpenAIClient')
+    @patch("src.simbuilder_llm.cli.AzureOpenAIClient")
     def test_embed_values_format(self, mock_client_class, runner):
         """Test embed command with values format."""
         mock_client = AsyncMock()
@@ -227,17 +217,13 @@ class TestEmbedCommand:
         mock_client.close = AsyncMock()
         mock_client_class.return_value = mock_client
 
-        result = runner.invoke(app, [
-            "embed",
-            "--text", "Hello world",
-            "--format", "values"
-        ])
+        result = runner.invoke(app, ["embed", "--text", "Hello world", "--format", "values"])
 
         assert result.exit_code == 0
         # Should contain the embedding values
         assert "0.1" in result.stdout
 
-    @patch('src.simbuilder_llm.cli.AzureOpenAIClient')
+    @patch("src.simbuilder_llm.cli.AzureOpenAIClient")
     def test_embed_llm_error(self, mock_client_class, runner):
         """Test embed command with LLM error."""
         mock_client = AsyncMock()
@@ -245,10 +231,7 @@ class TestEmbedCommand:
         mock_client.close = AsyncMock()
         mock_client_class.return_value = mock_client
 
-        result = runner.invoke(app, [
-            "embed",
-            "--text", "Hello world"
-        ])
+        result = runner.invoke(app, ["embed", "--text", "Hello world"])
 
         assert result.exit_code == 1
         assert "LLM Error" in result.stdout
@@ -257,8 +240,8 @@ class TestEmbedCommand:
 class TestInfoCommand:
     """Tests for the info command."""
 
-    @patch('src.simbuilder_llm.cli.get_settings')
-    @patch('src.simbuilder_llm.cli.list_prompts')
+    @patch("src.simbuilder_llm.cli.get_settings")
+    @patch("src.simbuilder_llm.cli.list_prompts")
     def test_info_success(self, mock_list_prompts, mock_get_settings, runner):
         """Test successful info command."""
         mock_get_settings.return_value = MagicMock(
@@ -266,7 +249,7 @@ class TestInfoCommand:
             azure_openai_api_version="2024-02-15-preview",
             azure_openai_model_chat="gpt-4o",
             azure_openai_model_reasoning="gpt-4o",
-            azure_openai_key="test-key"
+            azure_openai_key="test-key",
         )
         mock_list_prompts.return_value = ["base_prompt", "custom_prompt"]
 
@@ -278,8 +261,8 @@ class TestInfoCommand:
         assert "Available Prompts" in result.stdout
         assert "base_prompt" in result.stdout
 
-    @patch('src.simbuilder_llm.cli.get_settings')
-    @patch('src.simbuilder_llm.cli.list_prompts')
+    @patch("src.simbuilder_llm.cli.get_settings")
+    @patch("src.simbuilder_llm.cli.list_prompts")
     def test_info_no_api_key(self, mock_list_prompts, mock_get_settings, runner):
         """Test info command with no API key."""
         mock_settings = MagicMock()
@@ -296,8 +279,8 @@ class TestInfoCommand:
         assert result.exit_code == 0
         assert "Not Set" in result.stdout
 
-    @patch('src.simbuilder_llm.cli.get_settings')
-    @patch('src.simbuilder_llm.cli.list_prompts')
+    @patch("src.simbuilder_llm.cli.get_settings")
+    @patch("src.simbuilder_llm.cli.list_prompts")
     def test_info_no_prompts(self, mock_list_prompts, mock_get_settings, runner):
         """Test info command with no prompts."""
         mock_settings = MagicMock()
@@ -314,7 +297,7 @@ class TestInfoCommand:
         assert result.exit_code == 0
         assert "No prompt templates found" in result.stdout
 
-    @patch('src.simbuilder_llm.cli.get_settings')
+    @patch("src.simbuilder_llm.cli.get_settings")
     def test_info_error(self, mock_get_settings, runner):
         """Test info command with error."""
         mock_get_settings.side_effect = Exception("Config error")
@@ -328,10 +311,12 @@ class TestInfoCommand:
 class TestCheckCommand:
     """Tests for the check command."""
 
-    @patch('src.simbuilder_llm.cli.get_settings')
-    @patch('src.simbuilder_llm.cli._check_connectivity')
-    @patch('src.simbuilder_llm.cli._check_configuration')
-    def test_check_all_pass(self, mock_check_config, mock_check_connectivity, mock_get_settings, runner):
+    @patch("src.simbuilder_llm.cli.get_settings")
+    @patch("src.simbuilder_llm.cli._check_connectivity")
+    @patch("src.simbuilder_llm.cli._check_configuration")
+    def test_check_all_pass(
+        self, mock_check_config, mock_check_connectivity, mock_get_settings, runner
+    ):
         """Test check command with all checks passing."""
         mock_get_settings.return_value = MagicMock()
         mock_check_config.return_value = [
@@ -347,10 +332,12 @@ class TestCheckCommand:
         assert "LLM Health Check" in result.stdout
         assert "✓ PASS" in result.stdout
 
-    @patch('src.simbuilder_llm.cli.get_settings')
-    @patch('src.simbuilder_llm.cli._check_connectivity')
-    @patch('src.simbuilder_llm.cli._check_configuration')
-    def test_check_some_fail(self, mock_check_config, mock_check_connectivity, mock_get_settings, runner):
+    @patch("src.simbuilder_llm.cli.get_settings")
+    @patch("src.simbuilder_llm.cli._check_connectivity")
+    @patch("src.simbuilder_llm.cli._check_configuration")
+    def test_check_some_fail(
+        self, mock_check_config, mock_check_connectivity, mock_get_settings, runner
+    ):
         """Test check command with some checks failing."""
         mock_get_settings.return_value = MagicMock()
         mock_check_config.return_value = [
@@ -364,7 +351,7 @@ class TestCheckCommand:
         assert result.exit_code == 1
         assert "✗ FAIL" in result.stdout
 
-    @patch('src.simbuilder_llm.cli.get_settings')
+    @patch("src.simbuilder_llm.cli.get_settings")
     def test_check_error(self, mock_get_settings, runner):
         """Test check command with error."""
         mock_get_settings.side_effect = Exception("Config error")
@@ -405,16 +392,13 @@ class TestCheckHelpers:
         assert not any(status for _, status, _ in checks)
 
     @pytest.mark.asyncio
-    @patch('src.simbuilder_llm.cli.AzureOpenAIClient')
+    @patch("src.simbuilder_llm.cli.AzureOpenAIClient")
     async def test_check_connectivity_success(self, mock_client_class):
         """Test successful connectivity check."""
         from src.simbuilder_llm.cli import _check_connectivity
 
         mock_client = AsyncMock()
-        mock_client.check_health.return_value = {
-            "status": "healthy",
-            "response_id": "test-id"
-        }
+        mock_client.check_health.return_value = {"status": "healthy", "response_id": "test-id"}
         mock_client.close = AsyncMock()
         mock_client_class.return_value = mock_client
 
@@ -427,7 +411,7 @@ class TestCheckHelpers:
         assert "test-id" in details
 
     @pytest.mark.asyncio
-    @patch('src.simbuilder_llm.cli.AzureOpenAIClient')
+    @patch("src.simbuilder_llm.cli.AzureOpenAIClient")
     async def test_check_connectivity_failure(self, mock_client_class):
         """Test failed connectivity check."""
         from src.simbuilder_llm.cli import _check_connectivity
@@ -435,7 +419,7 @@ class TestCheckHelpers:
         mock_client = AsyncMock()
         mock_client.check_health.return_value = {
             "status": "unhealthy",
-            "error": "Connection failed"
+            "error": "Connection failed",
         }
         mock_client.close = AsyncMock()
         mock_client_class.return_value = mock_client
@@ -449,7 +433,7 @@ class TestCheckHelpers:
         assert "Connection failed" in details
 
     @pytest.mark.asyncio
-    @patch('src.simbuilder_llm.cli.AzureOpenAIClient')
+    @patch("src.simbuilder_llm.cli.AzureOpenAIClient")
     async def test_check_connectivity_exception(self, mock_client_class):
         """Test connectivity check with exception."""
         from src.simbuilder_llm.cli import _check_connectivity

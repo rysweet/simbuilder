@@ -40,7 +40,7 @@ class PortManager(LoggingMixin):
         self.logger.info(
             "PortManager initialized",
             port_range_start=port_range_start,
-            port_range_end=port_range_end
+            port_range_end=port_range_end,
         )
 
     def _is_port_available(self, port: int) -> bool:
@@ -55,7 +55,7 @@ class PortManager(LoggingMixin):
         """
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-                sock.bind(('localhost', port))
+                sock.bind(("localhost", port))
                 return True
         except OSError:
             return False
@@ -99,11 +99,7 @@ class PortManager(LoggingMixin):
         port = self._find_free_port()
         self.allocated_ports[service_name] = port
 
-        self.logger.info(
-            "Allocated new port",
-            service=service_name,
-            port=port
-        )
+        self.logger.info("Allocated new port", service=service_name, port=port)
 
         return port
 
@@ -119,11 +115,7 @@ class PortManager(LoggingMixin):
             self.used_ports.discard(port)
             self._save_global_state()
 
-            self.logger.info(
-                "Released port",
-                service=service_name,
-                port=port
-            )
+            self.logger.info("Released port", service=service_name, port=port)
 
     def get_allocated_ports(self) -> dict[str, int]:
         """
@@ -145,11 +137,11 @@ class PortManager(LoggingMixin):
             "port_range_start": self.port_range_start,
             "port_range_end": self.port_range_end,
             "allocated_ports": self.allocated_ports,
-            "used_ports": list(self.used_ports)
+            "used_ports": list(self.used_ports),
         }
 
         try:
-            with file_path.open('w', encoding='utf-8') as f:
+            with file_path.open("w", encoding="utf-8") as f:
                 json.dump(port_data, f, indent=2)
 
             self.logger.info("Saved port data to file", file_path=str(file_path))
@@ -165,7 +157,7 @@ class PortManager(LoggingMixin):
             file_path: Path to load the port allocation data from
         """
         try:
-            with file_path.open(encoding='utf-8') as f:
+            with file_path.open(encoding="utf-8") as f:
                 port_data = json.load(f)
 
             self.port_range_start = port_data.get("port_range_start", self.port_range_start)
@@ -176,7 +168,7 @@ class PortManager(LoggingMixin):
             self.logger.info(
                 "Loaded port data from file",
                 file_path=str(file_path),
-                allocated_count=len(self.allocated_ports)
+                allocated_count=len(self.allocated_ports),
             )
         except FileNotFoundError:
             self.logger.info("Port data file not found, starting fresh", file_path=str(file_path))
@@ -192,6 +184,7 @@ class PortManager(LoggingMixin):
         """Load global port usage from disk under a file lock."""
         # In unit tests, don't load global state to keep tests isolated
         import sys
+
         if "pytest" in sys.modules:
             return
 
@@ -208,7 +201,10 @@ class PortManager(LoggingMixin):
     def _save_global_state(self) -> None:
         """Persist global port usage to disk under a file lock."""
         try:
-            with FileLock(str(self.lock_file), timeout=10), self.global_file.open("w", encoding="utf-8") as f:
+            with (
+                FileLock(str(self.lock_file), timeout=10),
+                self.global_file.open("w", encoding="utf-8") as f,
+            ):
                 json.dump({"used_ports": list(self.used_ports)}, f, indent=2)
         except Exception as e:
             self.log_error(e, {"operation": "save_global_state", "file": str(self.global_file)})

@@ -26,6 +26,7 @@ logger = logging.getLogger(__name__)
 
 class ChatMessage(BaseModel):
     """Chat message model."""
+
     role: str
     content: str
 
@@ -97,7 +98,10 @@ class AzureOpenAIClient:
         try:
             # Convert ChatMessage objects to dicts if needed
             if messages and isinstance(messages[0], ChatMessage):
-                message_dicts = [{"role": msg.role, "content": msg.content} for msg in cast(list[ChatMessage], messages)]
+                message_dicts = [
+                    {"role": msg.role, "content": msg.content}
+                    for msg in cast(list[ChatMessage], messages)
+                ]
             else:
                 message_dicts = cast(list[dict[str, Any]], messages)
 

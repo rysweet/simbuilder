@@ -21,10 +21,7 @@ class TestTemplateMeta:
 
     def test_minimal_template_meta(self):
         """Test TemplateMeta with minimal required fields."""
-        meta = TemplateMeta(
-            name="test_template",
-            path="templates/test_template.liquid"
-        )
+        meta = TemplateMeta(name="test_template", path="templates/test_template.liquid")
 
         assert meta.name == "test_template"
         assert meta.path == "templates/test_template.liquid"
@@ -48,7 +45,7 @@ class TestTemplateMeta:
             tags=["user", "profile"],
             version="1.0.0",
             created_at=created,
-            modified_at=modified
+            modified_at=modified,
         )
 
         assert meta.name == "full_template"
@@ -65,9 +62,7 @@ class TestTemplateMeta:
         created = datetime(2024, 1, 1, 12, 0, 0)
 
         meta = TemplateMeta(
-            name="json_template",
-            path="templates/json_template.liquid",
-            created_at=created
+            name="json_template", path="templates/json_template.liquid", created_at=created
         )
 
         json_data = json.loads(meta.model_dump_json())
@@ -90,7 +85,7 @@ class TestTemplateRenderRequest:
         request = TemplateRenderRequest(
             template_name="full_template",
             context={"name": "John", "age": 30},
-            strict_variables=True
+            strict_variables=True,
         )
 
         assert request.template_name == "full_template"
@@ -100,11 +95,7 @@ class TestTemplateRenderRequest:
     def test_render_request_forbids_extra_fields(self):
         """Test that TemplateRenderRequest forbids extra fields."""
         with pytest.raises(ValidationError) as exc_info:
-            TemplateRenderRequest(
-                template_name="test",
-                context={},
-                extra_field="not_allowed"
-            )
+            TemplateRenderRequest(template_name="test", context={}, extra_field="not_allowed")
 
         error = exc_info.value.errors()[0]
         assert error["type"] == "extra_forbidden"
@@ -123,7 +114,7 @@ class TestTemplateRenderResult:
             variables_missing=[],
             render_time_ms=25.5,
             success=True,
-            error_message=None
+            error_message=None,
         )
 
         assert result.rendered_content == "Hello John!"
@@ -145,7 +136,7 @@ class TestTemplateRenderResult:
             variables_missing=["name"],
             render_time_ms=5.0,
             success=False,
-            error_message="Missing required variable: name"
+            error_message="Missing required variable: name",
         )
 
         assert result.rendered_content == ""
@@ -166,7 +157,7 @@ class TestTemplateRenderResult:
                 context_used={},
                 render_time_ms=1.0,
                 success=True,
-                extra_field="not_allowed"
+                extra_field="not_allowed",
             )
 
         error = exc_info.value.errors()[0]
@@ -196,7 +187,7 @@ class TestGitRepositoryInfo:
             branch="develop",
             commit_hash="abc123",
             last_updated=updated,
-            local_path=local_path
+            local_path=local_path,
         )
 
         assert info.url == "https://github.com/test/repo.git"
@@ -211,9 +202,7 @@ class TestGitRepositoryInfo:
         local_path = Path("/tmp/repo")  # noqa: S108
 
         info = GitRepositoryInfo(
-            url="https://github.com/test/repo.git",
-            last_updated=updated,
-            local_path=local_path
+            url="https://github.com/test/repo.git", last_updated=updated, local_path=local_path
         )
 
         json_data = json.loads(info.model_dump_json())
@@ -232,7 +221,7 @@ class TestValidationResult:
             syntax_errors=[],
             missing_variables=[],
             warnings=[],
-            suggestions=[]
+            suggestions=[],
         )
 
         assert result.template_name == "valid_template"
@@ -250,7 +239,7 @@ class TestValidationResult:
             syntax_errors=["Syntax error on line 1"],
             missing_variables=["name", "age"],
             warnings=["Unused variable: email"],
-            suggestions=["Consider adding error handling"]
+            suggestions=["Consider adding error handling"],
         )
 
         assert result.template_name == "invalid_template"
@@ -263,11 +252,7 @@ class TestValidationResult:
     def test_validation_result_forbids_extra_fields(self):
         """Test that ValidationResult forbids extra fields."""
         with pytest.raises(ValidationError) as exc_info:
-            ValidationResult(
-                template_name="test",
-                is_valid=True,
-                extra_field="not_allowed"
-            )
+            ValidationResult(template_name="test", is_valid=True, extra_field="not_allowed")
 
         error = exc_info.value.errors()[0]
         assert error["type"] == "extra_forbidden"
