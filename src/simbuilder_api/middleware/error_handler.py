@@ -30,7 +30,9 @@ class ErrorHandlerMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.debug = debug
 
-    async def dispatch(self, request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
+    async def dispatch(
+        self, request: Request, call_next: Callable[[Request], Awaitable[Response]]
+    ) -> Response:
         """Process request with global error handling.
 
         Args:
@@ -55,7 +57,7 @@ class ErrorHandlerMiddleware(BaseHTTPMiddleware):
                 session_id=session_id,
                 path=request.url.path,
                 method=request.method,
-                exc_info=True
+                exc_info=True,
             )
 
             # Prepare error response
@@ -63,17 +65,11 @@ class ErrorHandlerMiddleware(BaseHTTPMiddleware):
                 "error": "Internal server error",
                 "session_id": session_id,
                 "path": request.url.path,
-                "method": request.method
+                "method": request.method,
             }
 
             # Include debug information if enabled
             if self.debug:
-                error_detail.update({
-                    "exception": str(exc),
-                    "traceback": traceback.format_exc()
-                })
+                error_detail.update({"exception": str(exc), "traceback": traceback.format_exc()})
 
-            return JSONResponse(
-                status_code=500,
-                content=error_detail
-            )
+            return JSONResponse(status_code=500, content=error_detail)

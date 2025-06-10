@@ -2,9 +2,12 @@
 
 ## Session ID Handling and Dynamic Port Allocation
 
-The REST API Gateway supports multi-instance deployment through session-aware configuration and dynamic port allocation, enabling multiple SimBuilder instances to operate concurrently without conflicts.
+The REST API Gateway supports multi-instance deployment through session-aware configuration and
+dynamic port allocation, enabling multiple SimBuilder instances to operate concurrently without
+conflicts.
 
 ### Session-Aware Features
+
 - **Dynamic Port Binding**: Uses `API_GATEWAY_PORT` environment variable for runtime port allocation
 - **Session Context Headers**: Automatically includes session ID in all downstream service requests
 - **Service Discovery**: Routes to session-specific backend services using allocated ports
@@ -12,6 +15,7 @@ The REST API Gateway supports multi-instance deployment through session-aware co
 - **Load Balancing**: Session-isolated request routing and load distribution
 
 ### Environment Configuration
+
 ```bash
 # Session identification and networking
 SIMBUILDER_SESSION_ID=a1b2c3d4-e5f6-7890-abcd-ef1234567890
@@ -25,6 +29,7 @@ NATS_MANAGEMENT_URL=http://localhost:${NATS_HTTP_PORT}
 ```
 
 ### Container Configuration
+
 ```yaml
 api-gateway:
   container_name: ${COMPOSE_PROJECT_NAME}-api-gateway
@@ -39,22 +44,36 @@ api-gateway:
 
 ## Purpose / Overview
 
-The REST API Gateway component provides a unified external API interface for third-party integrations and external systems to interact with SimBuilder. It handles authentication, authorization, rate limiting, API versioning, and request routing while maintaining security isolation between external clients and internal SimBuilder components. This gateway enables enterprise integration scenarios and supports automated CI/CD pipelines that need to interact with simulation environments.
+The REST API Gateway component provides a unified external API interface for third-party
+integrations and external systems to interact with SimBuilder. It handles authentication,
+authorization, rate limiting, API versioning, and request routing while maintaining security
+isolation between external clients and internal SimBuilder components. This gateway enables
+enterprise integration scenarios and supports automated CI/CD pipelines that need to interact with
+simulation environments.
 
 ## Functional Requirements / User Stories
 
-- As an **External Developer**, I need a stable REST API to integrate SimBuilder with third-party security tools and workflows
-- As a **DevOps Engineer**, I need API endpoints to automate simulation creation and management in CI/CD pipelines
-- As an **Enterprise Architect**, I need standardized API patterns for integrating SimBuilder with enterprise security orchestration platforms
-- As a **Security Operations Center**, I need API access to trigger simulations based on threat intelligence feeds
-- As a **Compliance Officer**, I need API audit trails and access controls for external system interactions
-- As a **Partner Organization**, I need secure API access to leverage SimBuilder capabilities in my own security products
-- As a **API Consumer**, I need comprehensive API documentation, examples, and SDKs for rapid integration
-- As a **System Administrator**, I need rate limiting and access controls to prevent API abuse and ensure system stability
+- As an **External Developer**, I need a stable REST API to integrate SimBuilder with third-party
+  security tools and workflows
+- As a **DevOps Engineer**, I need API endpoints to automate simulation creation and management in
+  CI/CD pipelines
+- As an **Enterprise Architect**, I need standardized API patterns for integrating SimBuilder with
+  enterprise security orchestration platforms
+- As a **Security Operations Center**, I need API access to trigger simulations based on threat
+  intelligence feeds
+- As a **Compliance Officer**, I need API audit trails and access controls for external system
+  interactions
+- As a **Partner Organization**, I need secure API access to leverage SimBuilder capabilities in my
+  own security products
+- As a **API Consumer**, I need comprehensive API documentation, examples, and SDKs for rapid
+  integration
+- As a **System Administrator**, I need rate limiting and access controls to prevent API abuse and
+  ensure system stability
 
 ## Interfaces / APIs
 
 ### Inputs
+
 - **External API Requests**: RESTful HTTP requests from third-party clients and integrations
 - **Authentication Tokens**: OAuth 2.0, API keys, and JWT tokens for client authentication
 - **Authorization Policies**: Role-based access control and permission configurations
@@ -62,6 +81,7 @@ The REST API Gateway component provides a unified external API interface for thi
 - **Integration Specifications**: Third-party system integration requirements and mappings
 
 ### Outputs
+
 - **Standardized API Responses**: JSON responses following OpenAPI 3.0 specifications
 - **Authentication Results**: Token validation and user authorization status
 - **API Metrics**: Usage analytics, performance metrics, and rate limiting statistics
@@ -69,6 +89,7 @@ The REST API Gateway component provides a unified external API interface for thi
 - **Integration Status**: Health and connectivity status for external system integrations
 
 ### Public Endpoints / CLI Commands
+
 ```
 # Simulation Management
 POST /api/v1/simulations - Create new simulation environment
@@ -109,6 +130,7 @@ GET /api/v1/audit - Retrieve API access audit logs
 ## Data Contracts / Schemas
 
 ### API Request/Response Schema
+
 ```yaml
 SimulationRequest:
   simulation_name: string
@@ -142,6 +164,7 @@ SimulationResponse:
 ```
 
 ### Authentication Schema
+
 ```yaml
 AuthenticationRequest:
   grant_type: enum [client_credentials, authorization_code, refresh_token]
@@ -165,6 +188,7 @@ Permission:
 ```
 
 ### Rate Limiting Schema
+
 ```yaml
 RateLimitPolicy:
   client_id: string
@@ -192,6 +216,7 @@ RateLimitPolicy:
 ## Testing Strategy
 
 ### Unit Tests
+
 - API endpoint routing and request validation
 - Authentication and authorization logic
 - Rate limiting and throttling mechanisms
@@ -200,6 +225,7 @@ RateLimitPolicy:
 - API versioning and backward compatibility
 
 ### Integration Tests
+
 - **Live external system integration** - no mocking of third-party services
 - Complete API workflow testing with real authentication providers
 - Rate limiting enforcement with actual traffic simulation
@@ -208,6 +234,7 @@ RateLimitPolicy:
 - Cross-component integration with Core API Service
 
 ### End-to-End Acceptance Tests
+
 - Full external integration scenarios with realistic API consumers
 - Complex simulation lifecycle management via API
 - Authentication and authorization across multiple client types

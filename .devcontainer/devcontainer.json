@@ -1,7 +1,7 @@
 {
     "name": "SimBuilder Development",
     "image": "mcr.microsoft.com/devcontainers/python:3.11",
-    
+
     // Features to add to the dev container
     "features": {
         "ghcr.io/devcontainers/features/docker-in-docker:2": {

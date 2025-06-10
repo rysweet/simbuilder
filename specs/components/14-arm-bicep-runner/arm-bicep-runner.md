@@ -2,22 +2,36 @@
 
 ## Purpose / Overview
 
-The ARM/Bicep Runner component executes Azure Resource Manager (ARM) templates and Bicep infrastructure-as-code configurations for SimBuilder simulation environments. It provides native Azure deployment capabilities with advanced template management, parameter handling, deployment validation, and rollback mechanisms. This component specializes in Azure-native infrastructure deployment patterns and integrates deeply with Azure Resource Manager APIs for optimal performance and feature coverage.
+The ARM/Bicep Runner component executes Azure Resource Manager (ARM) templates and Bicep
+infrastructure-as-code configurations for SimBuilder simulation environments. It provides native
+Azure deployment capabilities with advanced template management, parameter handling, deployment
+validation, and rollback mechanisms. This component specializes in Azure-native infrastructure
+deployment patterns and integrates deeply with Azure Resource Manager APIs for optimal performance
+and feature coverage.
 
 ## Functional Requirements / User Stories
 
-- As an **Orchestrator Agent**, I need to deploy Azure infrastructure using ARM and Bicep templates with comprehensive parameter management
-- As a **Planner Agent**, I need to validate ARM/Bicep templates and perform cost estimation before deployment
-- As an **InfraSynthesis Agent**, I need to execute generated Bicep templates with proper dependency ordering and error handling
-- As an **Operations Team**, I need reliable deployment monitoring with real-time progress tracking and detailed logging
-- As a **Security Officer**, I need policy validation and compliance checking integrated into deployment workflows
-- As a **Cost Manager**, I need accurate cost projections and budget enforcement during resource provisioning
-- As a **Developer**, I need template debugging capabilities and detailed error diagnostics for failed deployments
-- As a **Compliance Officer**, I need audit trails of all ARM deployments and resource group operations
+- As an **Orchestrator Agent**, I need to deploy Azure infrastructure using ARM and Bicep templates
+  with comprehensive parameter management
+- As a **Planner Agent**, I need to validate ARM/Bicep templates and perform cost estimation before
+  deployment
+- As an **InfraSynthesis Agent**, I need to execute generated Bicep templates with proper dependency
+  ordering and error handling
+- As an **Operations Team**, I need reliable deployment monitoring with real-time progress tracking
+  and detailed logging
+- As a **Security Officer**, I need policy validation and compliance checking integrated into
+  deployment workflows
+- As a **Cost Manager**, I need accurate cost projections and budget enforcement during resource
+  provisioning
+- As a **Developer**, I need template debugging capabilities and detailed error diagnostics for
+  failed deployments
+- As a **Compliance Officer**, I need audit trails of all ARM deployments and resource group
+  operations
 
 ## Interfaces / APIs
 
 ### Inputs
+
 - **BicepSpec objects**: Bicep template configurations with parameters and deployment metadata
 - **ARMTemplate objects**: ARM JSON templates with parameter files and deployment scope
 - **DeploymentScope**: Resource group, subscription, or management group deployment targets
@@ -25,6 +39,7 @@ The ARM/Bicep Runner component executes Azure Resource Manager (ARM) templates a
 - **RollbackRequests**: Instructions for resource cleanup and deployment cancellation
 
 ### Outputs
+
 - **DeploymentResults**: Azure deployment status with resource details and outputs
 - **ResourceGroups**: Created resource groups with metadata and resource inventories
 - **PolicyCompliance**: Compliance validation results and policy violation reports
@@ -32,6 +47,7 @@ The ARM/Bicep Runner component executes Azure Resource Manager (ARM) templates a
 - **TemplateValidation**: Template syntax and dependency validation results
 
 ### Public Endpoints / CLI Commands
+
 ```
 POST /arm/validate - Validate ARM/Bicep template syntax and dependencies
 POST /arm/deploy - Execute ARM/Bicep deployment
@@ -48,18 +64,27 @@ GET /arm/audit/{simulation_id} - Retrieve deployment audit logs
 - **Configuration Service**: For centralized configuration management and environment settings
 
 - **Azure CLI**: For ARM template deployment and management operations
+
 - **Bicep CLI**: For Bicep template compilation and validation
+
 - **Azure Resource Manager APIs**: For direct deployment and resource management
+
 - **Azure Policy**: For governance and compliance validation
+
 - **Orchestrator Agent**: For deployment coordination and workflow integration
+
 - **Core API Service**: For authentication and request processing
+
 - **Graph Database Service**: For storing deployment metadata and resource relationships
+
 - **FinOps Alerting**: For cost monitoring and budget enforcement
+
 - **Azure Monitor**: For deployment telemetry and performance monitoring
 
 ## Data Contracts / Schemas
 
 ### BicepSpec Schema
+
 ```yaml
 BicepSpec:
   template_name: string
@@ -95,6 +120,7 @@ ARMTemplate:
 ```
 
 ### Deployment Results Schema
+
 ```yaml
 DeploymentResult:
   deployment_id: string
@@ -139,6 +165,7 @@ PolicyValidationResult:
 ## Testing Strategy
 
 ### Unit Tests
+
 - Bicep template compilation and validation logic
 - ARM template parameter processing and validation
 - Deployment status monitoring and progress tracking
@@ -147,6 +174,7 @@ PolicyValidationResult:
 - Cost estimation algorithms and calculation accuracy
 
 ### Integration Tests
+
 - **Live Azure deployment** - no mocking of Azure Resource Manager APIs
 - Complete infrastructure deployment lifecycle with real Azure resources
 - Complex template dependency resolution and deployment ordering
@@ -155,6 +183,7 @@ PolicyValidationResult:
 - Concurrent deployment scenarios with resource conflicts
 
 ### End-to-End Acceptance Tests
+
 - Full simulation infrastructure deployment from Bicep/ARM specifications
 - Integration with cost monitoring and governance enforcement systems
 - Complex multi-tier application deployment with interdependent resources

@@ -1,6 +1,7 @@
 """
 Liquid template loader and renderer for SimBuilder Specs Library.
 """
+
 import functools
 import time
 from typing import TYPE_CHECKING
@@ -17,6 +18,7 @@ try:
     from liquid import Template
     from liquid.exceptions import LiquidSyntaxError
     from liquid.exceptions import LiquidTypeError
+
     LIQUID_AVAILABLE = True
 except ImportError:
     # Create placeholder classes for when liquid is not available
@@ -41,6 +43,7 @@ from .models import TemplateRenderResult
 
 class TemplateLoaderError(Exception):
     """Exception raised for template loading operations."""
+
     pass
 
 
@@ -49,9 +52,7 @@ class TemplateLoader:
 
     @classmethod
     @functools.lru_cache(maxsize=1)
-    def get_repository(
-        cls, *args: Any, **kwargs: Any
-    ) -> "GitRepository":
+    def get_repository(cls, *args: Any, **kwargs: Any) -> "GitRepository":
         """Return a cached GitRepository instance. Used for testability/reset."""
         return GitRepository(*args, **kwargs)
 
@@ -68,11 +69,115 @@ class TemplateLoader:
             )
 
         self.repository = repository
-        self._env: Environment | None = None
+        self._env: "Environment | None" = None
         self._template_cache: dict[str, Any] = {}
-        # Remove all dynamic cache_clear assignment and self.get_template_meta wrapper logic.
-        # Tests should patch class-level methods directly if needed.
+        # Add cache_clear for compatibility with tests that patch the method
+        from contextlib import suppress
 
+        with suppress(Exception):
+            self.get_template_meta.cache_clear = type(self).get_template_meta.cache_clear
+
+    @staticmethod
+    @functools.lru_cache(maxsize=32)
+    def _get_template_meta_cached(repo_path: str, template_name: str) -> TemplateMeta:
+        """LRU-cached retrieval of template metadata."""
+        from .git_repository import GitRepository
+        from .models import TemplateMeta
+
+        if not template_name.endswith(".liquid"):
+            template_name += ".liquid"
+        repository = GitRepository(repo_path)
+        template_files = repository.list_templates()
+        template_path = None
+        for file_path in template_files:
+            if file_path.name == template_name:
+                template_path = file_path
+                break
+        if template_path is None:
+            raise TemplateLoaderError(f"Template not found: {template_name}")
+        try:
+            content = repository.get_file_content(str(template_path))
+            instance = TemplateLoader(repository)
+            variables = instance._extract_variables(content)
+        except Exception as e:
+            raise TemplateLoaderError(f"Failed to analyze template {template_name}: {e}") from e
+        full_path = repository.get_file_path(str(template_path))
+        full_path.stat()
+        return TemplateMeta(
+            name=template_path.stem,
+            path=str(template_path),
+            description=None,
+            variables=variables,
+            version=None,
+            created_at=None,
+            modified_at=None,
+        )
+
+    @property
+    def get_template_meta(self):
+        """Return a callable behaving like a classic lru_cache-wrapped func, and patchable in tests.
+
+        Ensures instance-level memoization of the wrapper function, so .cache_clear can be monkeypatched.
+        """
+        if not hasattr(self, "_get_template_meta_closure"):
+
+            def _call(template_name: str):
+                return type(self)._get_template_meta_cached(
+                    str(self.repository.local_path), template_name
+                )
+
+            _call.cache_clear = type(self)._get_template_meta_cached.cache_clear
+            self._get_template_meta_closure = _call
+        return self._get_template_meta_closure
+
+    @get_template_meta.setter
+    def get_template_meta(self, value):
+        self._get_template_meta_closure = value
+
+    def _extract_variables(self, content: str) -> list[str]:
+        """Extract variable names from template content.
+
+        Args:
+            content: Template content
+
+        Returns:
+            List of variable names used in template
+
+        """
+        import re
+
+        # Find variables in {{ variable }} and {% if variable %} patterns
+        variable_patterns = [
+            r"\{\{\s*(\w+)",  # {{ variable }}
+            r"\{\%\s*if\s+(\w+)",  # {% if variable %}
+            r"\{\%\s*for\s+\w+\s+in\s+(\w+)",  # {% for item in items %}
+            r"\{\%\s*assign\s+\w+\s*=\s*(\w+)",  # {% assign x = variable %}
+        ]
+
+        variables = set()
+        for pattern in variable_patterns:
+            matches = re.findall(pattern, content)
+            variables.update(matches)
+
+        # Remove Liquid built-ins, keywords, and local variables
+        builtins = {
+            "forloop",
+            "tablerow",
+            "cycle",
+            "unless",
+            "else",
+            "elseif",
+            "endif",
+            "endfor",
+            "item",
+            "greeting",
+        }
+        # Also remove variables that are assigned within the template (they're local, not inputs)
+        assign_pattern = r"\{\%\s*assign\s+(\w+)"
+        assigned_vars = set(re.findall(assign_pattern, content))
+        variables = variables - builtins - assigned_vars
+
+        return sorted(variables)
 
     def _get_environment(self) -> "Environment":
         """Get or create Liquid environment."""
@@ -90,87 +195,6 @@ class TemplateLoader:
         self._template_cache.clear()
         self._env = None
 
-    def get_template_meta(self, template_name: str) -> TemplateMeta:
-        """Get metadata for a template (LRU cached per-instance).
-
-        Args:
-            template_name: Name of template (with or without .liquid extension)
-
-        Returns:
-            TemplateMeta: Template metadata
-
-        Raises:
-            TemplateLoaderError: If template not found
-        """
-        # Ensure .liquid extension
-        if not template_name.endswith('.liquid'):
-            template_name += '.liquid'
-
-        # Find template file in repository
-        template_files = self.repository.list_templates()
-        template_path = None
-
-        for file_path in template_files:
-            if file_path.name == template_name:
-                template_path = file_path
-                break
-
-        if template_path is None:
-            raise TemplateLoaderError(f"Template not found: {template_name}")
-
-        try:
-            content = self.repository.get_file_content(str(template_path))
-            variables = self._extract_variables(content)
-        except Exception as e:
-            raise TemplateLoaderError(f"Failed to analyze template {template_name}: {e}") from e
-
-        # Get file stats
-        full_path = self.repository.get_file_path(str(template_path))
-        full_path.stat()
-
-        return TemplateMeta(
-            name=template_path.stem,
-            path=str(template_path),
-            description=None,
-            variables=variables,
-            version=None,
-            created_at=None,
-            modified_at=None,
-        )
-
-    def _extract_variables(self, content: str) -> list[str]:
-        """Extract variable names from template content.
-
-        Args:
-            content: Template content
-
-        Returns:
-            List of variable names used in template
-        """
-        import re
-
-        # Find variables in {{ variable }} and {% if variable %} patterns
-        variable_patterns = [
-            r'\{\{\s*(\w+)',          # {{ variable }}
-            r'\{\%\s*if\s+(\w+)',     # {% if variable %}
-            r'\{\%\s*for\s+\w+\s+in\s+(\w+)',  # {% for item in items %}
-            r'\{\%\s*assign\s+\w+\s*=\s*(\w+)', # {% assign x = variable %}
-        ]
-
-        variables = set()
-        for pattern in variable_patterns:
-            matches = re.findall(pattern, content)
-            variables.update(matches)
-
-        # Remove Liquid built-ins, keywords, and local variables
-        builtins = {'forloop', 'tablerow', 'cycle', 'unless', 'else', 'elseif', 'endif', 'endfor', 'item', 'greeting'}
-        # Also remove variables that are assigned within the template (they're local, not inputs)
-        assign_pattern = r'\{\%\s*assign\s+(\w+)'
-        assigned_vars = set(re.findall(assign_pattern, content))
-        variables = variables - builtins - assigned_vars
-
-        return sorted(variables)
-
     def load_template(self, template_name: str) -> Any:
         """Load and compile a Liquid template.
 
@@ -184,8 +208,8 @@ class TemplateLoader:
             TemplateLoaderError: If template loading fails
         """
         # Ensure .liquid extension
-        if not template_name.endswith('.liquid'):
-            template_name += '.liquid'
+        if not template_name.endswith(".liquid"):
+            template_name += ".liquid"
 
         # Check cache first
         if template_name in self._template_cache:
@@ -252,7 +276,7 @@ class TemplateLoader:
                         variables_missing=missing_vars,
                         render_time_ms=(time.time() - start_time) * 1000,
                         success=False,
-                        error_message=f"Missing required variables: {', '.join(missing_vars)}"
+                        error_message=f"Missing required variables: {', '.join(missing_vars)}",
                     )
 
             # Render template
@@ -266,7 +290,7 @@ class TemplateLoader:
                 variables_missing=missing_vars,
                 render_time_ms=(time.time() - start_time) * 1000,
                 success=True,
-                error_message=None
+                error_message=None,
             )
 
         except Exception as e:
@@ -278,7 +302,7 @@ class TemplateLoader:
                 variables_missing=[],
                 render_time_ms=(time.time() - start_time) * 1000,
                 success=False,
-                error_message=str(e)
+                error_message=str(e),
             )
 
     def list_templates(self) -> list[TemplateMeta]:
@@ -312,3 +336,6 @@ class TemplateLoader:
         if callable(meta_cache_clear):
             meta_cache_clear()
 
+
+# Attach .cache_clear to allow cache clearing and monkeypatching in tests.
+# (no longer needed - now handled in instance property getter)

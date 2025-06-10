@@ -2,27 +2,40 @@
 
 ## Purpose / Overview
 
-The Planner Agent transforms structured attack specifications into concrete Azure resource plans with detailed dependency graphs, cost estimates, and deployment strategies. Using Microsoft's Autogen Core framework and Azure OpenAI, it leverages deep Azure expertise to design optimal cloud architectures that support attack scenarios while maintaining security, scalability, and cost efficiency. The agent serves as the architectural brain that bridges attack requirements to deployable infrastructure.
+The Planner Agent transforms structured attack specifications into concrete Azure resource plans
+with detailed dependency graphs, cost estimates, and deployment strategies. Using Microsoft's
+Autogen Core framework and Azure OpenAI, it leverages deep Azure expertise to design optimal cloud
+architectures that support attack scenarios while maintaining security, scalability, and cost
+efficiency. The agent serves as the architectural brain that bridges attack requirements to
+deployable infrastructure.
 
 ## Functional Requirements / User Stories
 
-- As an **InfraSynthesis Agent**, I need detailed resource plans with explicit dependencies for IaC generation
-- As a **Security Researcher**, I need cost-effective infrastructure that accurately simulates production environments
-- As a **FinOps Team**, I need upfront cost estimates and budget compliance validation for all planned resources
+- As an **InfraSynthesis Agent**, I need detailed resource plans with explicit dependencies for IaC
+  generation
+- As a **Security Researcher**, I need cost-effective infrastructure that accurately simulates
+  production environments
+- As a **FinOps Team**, I need upfront cost estimates and budget compliance validation for all
+  planned resources
 - As an **Orchestrator Agent**, I need deployment ordering and dependency resolution strategies
-- As a **Compliance Officer**, I need assurance that planned resources meet security and regulatory requirements
-- As a **System Administrator**, I need resource plans that include monitoring, logging, and operational considerations
+- As a **Compliance Officer**, I need assurance that planned resources meet security and regulatory
+  requirements
+- As a **System Administrator**, I need resource plans that include monitoring, logging, and
+  operational considerations
 
 ## Interfaces / APIs
 
 ### Inputs
+
 - **Attack Specifications**: Complete attack specs from Clarifier Agent with all requirements
-- **Budget Constraints**: Maximum spend limits, cost optimization preferences, and billing requirements
+- **Budget Constraints**: Maximum spend limits, cost optimization preferences, and billing
+  requirements
 - **Compliance Requirements**: Security policies, data residency, and regulatory constraints
 - **Template Library**: Reference architectures and proven resource patterns
 - **Azure Service Catalog**: Current service availability, pricing, and regional capabilities
 
 ### Outputs
+
 - **Resource Plans**: Detailed infrastructure specifications with dependencies and configurations
 - **Cost Estimates**: Comprehensive cost breakdowns with optimization recommendations
 - **Deployment Strategies**: Sequencing, rollback plans, and risk mitigation approaches
@@ -30,6 +43,7 @@ The Planner Agent transforms structured attack specifications into concrete Azur
 - **Architecture Diagrams**: Visual representations of planned infrastructure topology
 
 ### Public REST / gRPC / CLI commands
+
 ```
 POST /planner/plans - Create resource plan from attack specification
 GET /planner/plans/{id} - Retrieve complete resource plan
@@ -50,11 +64,13 @@ POST /planner/plans/{id}/validate - Validate plan against constraints and polici
 - **Azure Cost Management API**: Real-time pricing and cost estimation
 - **Azure Resource Graph**: Service availability and regional capability queries
 - **Liquid Template Engine**: Runtime loading of prompts from `prompts/planner/*.liquid` files
-- **Prompt Templates**: External Liquid templates for resource analysis, plan generation, and cost estimation (no hard-coded prompts allowed)
+- **Prompt Templates**: External Liquid templates for resource analysis, plan generation, and cost
+  estimation (no hard-coded prompts allowed)
 
 ## Data Contracts / Schemas
 
 ### Resource Planning Data
+
 ```python
 class ResourcePlan(BaseModel):
     plan_id: str
@@ -67,6 +83,7 @@ class ResourcePlan(BaseModel):
     dependencies: DependencyGraph
     compliance_status: ComplianceReport
 
+
 class ResourceGroup(BaseModel):
     name: str
     region: str
@@ -74,6 +91,7 @@ class ResourceGroup(BaseModel):
     resources: List[AzureResource]
     estimated_cost: CostEstimate
     deployment_order: int
+
 
 class AzureResource(BaseModel):
     resource_id: str
@@ -85,11 +103,13 @@ class AzureResource(BaseModel):
     security_configuration: SecurityConfig
     monitoring_requirements: MonitoringConfig
 
+
 class DependencyGraph(BaseModel):
     nodes: List[DependencyNode]
     edges: List[DependencyEdge]
     deployment_phases: List[DeploymentPhase]
     critical_path: List[str]
+
 
 class CostEstimate(BaseModel):
     monthly_estimate: float
@@ -100,6 +120,7 @@ class CostEstimate(BaseModel):
 ```
 
 ### Planning Configuration
+
 ```python
 class PlannerConfig(BaseModel):
     cost_optimization_level: CostOptimizationLevel
@@ -109,10 +130,11 @@ class PlannerConfig(BaseModel):
     service_preferences: Dict[str, Any]
     compliance_frameworks: List[str]
 
+
 class CostOptimizationLevel(str, Enum):
     AGGRESSIVE = "aggressive"  # Minimal viable resources
-    BALANCED = "balanced"     # Cost-performance balance
-    PREMIUM = "premium"       # Performance over cost
+    BALANCED = "balanced"  # Cost-performance balance
+    PREMIUM = "premium"  # Performance over cost
 ```
 
 ## Documentation to Produce
@@ -121,14 +143,18 @@ class CostOptimizationLevel(str, Enum):
 - **Cost Optimization Strategies**: Techniques for balancing cost, performance, and security
 - **Dependency Resolution Algorithms**: How complex resource dependencies are managed
 - **Compliance Validation Procedures**: Ensuring plans meet security and regulatory requirements
-- **Liquid Template Documentation**: Template variable definitions and usage patterns for `prompts/planner/*.liquid` files
-- **Prompt Template Guidelines**: Standards for creating, testing, and maintaining external Liquid prompt templates
-- **Template Variable Schema**: Complete specification of all variables used across planner prompt templates
+- **Liquid Template Documentation**: Template variable definitions and usage patterns for
+  `prompts/planner/*.liquid` files
+- **Prompt Template Guidelines**: Standards for creating, testing, and maintaining external Liquid
+  prompt templates
+- **Template Variable Schema**: Complete specification of all variables used across planner prompt
+  templates
 - **Performance Tuning Guide**: Optimizing plan generation speed and quality
 
 ## Testing Strategy
 
 ### Unit Tests
+
 - Resource dependency calculation and cycle detection
 - Cost estimation accuracy and edge case handling
 - Compliance validation rule engine
@@ -140,6 +166,7 @@ class CostOptimizationLevel(str, Enum):
 - Prompt template syntax validation and error handling
 
 ### Integration Tests
+
 - **Live Azure services required** - no mocking of Azure APIs for cost and service data
 - End-to-end planning from attack specifications to deployable plans
 - Cost estimation validation against actual Azure pricing
@@ -150,6 +177,7 @@ class CostOptimizationLevel(str, Enum):
 - Template variable injection and rendering accuracy
 
 ### Acceptance Tests
+
 - Complete resource plans for representative attack scenarios
 - Cost accuracy validation within 10% of actual deployment costs
 - Deployment success rates following generated plans and dependencies
@@ -167,9 +195,12 @@ class CostOptimizationLevel(str, Enum):
 - **Optimization**: Identify cost savings opportunities averaging 20%+ from baseline configurations
 - **Dependencies**: Generate deployment orders that prevent dependency conflicts
 - **Scalability**: Handle plans with 100+ resources across multiple regions and subscriptions
-- **Template Compliance**: All prompts MUST be loaded from external Liquid templates in `prompts/planner/` directory
-- **Template Quality**: All Liquid templates MUST pass CI/CD linting with valid syntax and complete variable definitions
-- **Runtime Loading**: Template loading failures MUST cause graceful agent initialization failure with clear error messages
+- **Template Compliance**: All prompts MUST be loaded from external Liquid templates in
+  `prompts/planner/` directory
+- **Template Quality**: All Liquid templates MUST pass CI/CD linting with valid syntax and complete
+  variable definitions
+- **Runtime Loading**: Template loading failures MUST cause graceful agent initialization failure
+  with clear error messages
 
 ## Open Questions
 

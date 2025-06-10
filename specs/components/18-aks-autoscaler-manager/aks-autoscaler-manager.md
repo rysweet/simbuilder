@@ -2,22 +2,36 @@
 
 ## Purpose / Overview
 
-The AKS Autoscaler Manager component provides intelligent autoscaling management for Azure Kubernetes Service clusters that host SimBuilder components and simulation workloads. It optimizes resource utilization, manages cost efficiency, handles dynamic scaling based on simulation demands, and ensures performance requirements are met during peak and off-peak usage periods. This component is essential for maintaining cost-effective and responsive Kubernetes infrastructure for simulation environments.
+The AKS Autoscaler Manager component provides intelligent autoscaling management for Azure
+Kubernetes Service clusters that host SimBuilder components and simulation workloads. It optimizes
+resource utilization, manages cost efficiency, handles dynamic scaling based on simulation demands,
+and ensures performance requirements are met during peak and off-peak usage periods. This component
+is essential for maintaining cost-effective and responsive Kubernetes infrastructure for simulation
+environments.
 
 ## Functional Requirements / User Stories
 
-- As a **Platform Operations Team**, I need intelligent AKS cluster autoscaling that responds to simulation workload demands
-- As a **Cost Manager**, I need optimization of Kubernetes resource costs through efficient scaling policies and node management
-- As a **Performance Engineer**, I need guaranteed performance SLAs through predictive scaling and resource reservation
-- As a **DevOps Engineer**, I need automated scaling that handles complex simulation deployment patterns and resource spikes
-- As a **Capacity Planner**, I need scaling analytics and forecasting to predict infrastructure requirements
-- As a **Finance Team**, I need cost attribution and optimization insights for Kubernetes resource consumption
-- As a **Security Officer**, I need secure scaling operations that maintain network isolation and compliance requirements
-- As a **Reliability Engineer**, I need resilient scaling that handles node failures and availability zone distribution
+- As a **Platform Operations Team**, I need intelligent AKS cluster autoscaling that responds to
+  simulation workload demands
+- As a **Cost Manager**, I need optimization of Kubernetes resource costs through efficient scaling
+  policies and node management
+- As a **Performance Engineer**, I need guaranteed performance SLAs through predictive scaling and
+  resource reservation
+- As a **DevOps Engineer**, I need automated scaling that handles complex simulation deployment
+  patterns and resource spikes
+- As a **Capacity Planner**, I need scaling analytics and forecasting to predict infrastructure
+  requirements
+- As a **Finance Team**, I need cost attribution and optimization insights for Kubernetes resource
+  consumption
+- As a **Security Officer**, I need secure scaling operations that maintain network isolation and
+  compliance requirements
+- As a **Reliability Engineer**, I need resilient scaling that handles node failures and
+  availability zone distribution
 
 ## Interfaces / APIs
 
 ### Inputs
+
 - **ScalingPolicies**: Cluster and pod autoscaling configurations with performance and cost targets
 - **SimulationWorkloads**: Resource requirements and scaling patterns for simulation deployments
 - **PerformanceMetrics**: CPU, memory, network, and storage utilization from Azure Monitor
@@ -25,6 +39,7 @@ The AKS Autoscaler Manager component provides intelligent autoscaling management
 - **CapacityForecasts**: Predicted resource demands based on simulation scheduling
 
 ### Outputs
+
 - **ScalingActions**: Executed cluster autoscaling decisions with node additions/removals
 - **ResourceOptimization**: Cost savings and efficiency improvements from scaling operations
 - **PerformanceReports**: SLA compliance and performance impact of scaling decisions
@@ -32,6 +47,7 @@ The AKS Autoscaler Manager component provides intelligent autoscaling management
 - **CostAttribution**: Detailed cost breakdowns by simulation and resource type
 
 ### Public Endpoints / CLI Commands
+
 ```
 POST /autoscaler/policies - Configure cluster and pod autoscaling policies
 GET /autoscaler/status/{cluster_id} - Retrieve current scaling status and metrics
@@ -48,17 +64,25 @@ GET /autoscaler/costs/{cluster_id} - Retrieve cluster cost attribution data
 - **Configuration Service**: For centralized configuration management and environment settings
 
 - **Azure Kubernetes Service**: Core container orchestration platform
+
 - **Azure Monitor**: For metrics collection and performance monitoring
+
 - **Azure Container Insights**: For container-level performance and scaling metrics
+
 - **Core API Service**: For authentication and integration coordination
+
 - **FinOps Alerting**: For cost monitoring and budget enforcement integration
+
 - **Graph Database Service**: For storing scaling relationships and performance metadata
+
 - **Azure Virtual Machine Scale Sets**: For node pool management and scaling
+
 - **Azure Cost Management**: For cost tracking and optimization insights
 
 ## Data Contracts / Schemas
 
 ### Scaling Policy Schema
+
 ```yaml
 ScalingPolicy:
   policy_id: string
@@ -108,6 +132,7 @@ ScalingEvent:
 ```
 
 ### Capacity Analytics Schema
+
 ```yaml
 CapacityAnalytics:
   analysis_id: string
@@ -155,7 +180,8 @@ ResourceForecast:
 
 - **AKS Autoscaling Architecture Guide**: Design patterns for efficient Kubernetes scaling
 - **Scaling Policy Configuration Manual**: Setting up cluster and pod autoscaling policies
-- **Cost Optimization Playbook**: Strategies for optimizing Kubernetes costs through intelligent scaling
+- **Cost Optimization Playbook**: Strategies for optimizing Kubernetes costs through intelligent
+  scaling
 - **Performance Tuning Guide**: Balancing performance and cost in autoscaling decisions
 - **Capacity Planning Manual**: Forecasting and planning Kubernetes infrastructure capacity
 - **Troubleshooting Guide**: Resolving scaling issues and performance problems
@@ -163,6 +189,7 @@ ResourceForecast:
 ## Testing Strategy
 
 ### Unit Tests
+
 - Scaling policy evaluation and decision logic
 - Cost calculation and optimization algorithms
 - Performance metric analysis and threshold detection
@@ -171,6 +198,7 @@ ResourceForecast:
 - Integration with Azure Monitor and Container Insights
 
 ### Integration Tests
+
 - **Live AKS cluster scaling** - no mocking of Kubernetes autoscaling APIs
 - Real-time scaling response to actual workload changes
 - Cross-integration with Azure Monitor and cost management systems
@@ -179,6 +207,7 @@ ResourceForecast:
 - Cost attribution accuracy with real Azure billing integration
 
 ### End-to-End Acceptance Tests
+
 - Complete simulation workload scaling lifecycle testing
 - Performance SLA validation under various scaling scenarios
 - Cost optimization effectiveness measurement and verification
@@ -202,8 +231,10 @@ ResourceForecast:
 - What machine learning models should we implement for predictive scaling and capacity forecasting?
 - How should we handle cross-cluster scaling coordination for distributed simulation workloads?
 - Should we implement custom metrics beyond CPU/memory for simulation-specific scaling decisions?
-- What approach should we use for optimizing mixed workload scaling (simulation vs. platform components)?
+- What approach should we use for optimizing mixed workload scaling (simulation vs. platform
+  components)?
 - How do we handle scaling for stateful workloads and persistent storage requirements?
 - Should we implement multi-cloud scaling policies for hybrid Kubernetes deployments?
 - What disaster recovery procedures should we implement for scaling service failures?
-- How do we balance spot instance utilization with reliability requirements for critical simulations?
+- How do we balance spot instance utilization with reliability requirements for critical
+  simulations?

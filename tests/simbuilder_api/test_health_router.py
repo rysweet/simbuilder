@@ -7,7 +7,6 @@ from unittest.mock import patch
 
 import pytest
 from fastapi.testclient import TestClient
-
 from simbuilder_api.main import create_app
 
 
@@ -25,14 +24,18 @@ def mock_settings():
 def client(mock_settings):
     """Create test client with mocked dependencies."""
     # Clear the LRU cache to ensure fresh settings
-    from scaffolding.config import get_settings as scaffolding_get_settings
     from simbuilder_api.dependencies import get_settings
+
+    from scaffolding.config import get_settings as scaffolding_get_settings
+
     get_settings.cache_clear()
     scaffolding_get_settings.cache_clear()
 
     # Patch both get_settings functions
-    with patch("simbuilder_api.dependencies.get_settings", return_value=mock_settings), \
-         patch("scaffolding.config.get_settings", return_value=mock_settings):
+    with (
+        patch("simbuilder_api.dependencies.get_settings", return_value=mock_settings),
+        patch("scaffolding.config.get_settings", return_value=mock_settings),
+    ):
         app = create_app()
         return TestClient(app)
 
@@ -87,10 +90,7 @@ class TestHealthRouter:
         """Test health check with session header."""
         session_id = "test-session-123"
 
-        response = client.get(
-            "/health/healthz",
-            headers={"X-Session-Id": session_id}
-        )
+        response = client.get("/health/healthz", headers={"X-Session-Id": session_id})
 
         assert response.status_code == 200
         assert response.headers["X-Session-Id"] == session_id
@@ -102,10 +102,7 @@ class TestHealthRouter:
         """Test readiness check with session header."""
         session_id = "test-session-456"
 
-        response = client.get(
-            "/health/readyz",
-            headers={"X-Session-Id": session_id}
-        )
+        response = client.get("/health/readyz", headers={"X-Session-Id": session_id})
 
         assert response.status_code == 200
         assert response.headers["X-Session-Id"] == session_id

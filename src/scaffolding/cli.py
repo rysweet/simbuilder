@@ -230,8 +230,7 @@ def _check_neo4j(settings: Any) -> tuple[str, str]:
         from neo4j import GraphDatabase
 
         driver = GraphDatabase.driver(
-            settings.neo4j_uri,
-            auth=(settings.neo4j_user, settings.neo4j_password)
+            settings.neo4j_uri, auth=(settings.neo4j_user, settings.neo4j_password)
         )
 
         with driver.session(database=settings.neo4j_database) as session:
@@ -284,21 +283,17 @@ def _check_nats(settings: Any) -> tuple[str, str]:
 
 @session_app.command()
 def create(
-    services: str | None = typer.Option(
-        None,
-        "--services",
-        help="Comma-separated list of services to allocate ports for"
+    services: str
+    | None = typer.Option(
+        None, "--services", help="Comma-separated list of services to allocate ports for"
     ),
     start_containers: bool = typer.Option(
-        False,
-        "--start-containers",
-        help="Start Docker Compose containers after creating session"
+        False, "--start-containers", help="Start Docker Compose containers after creating session"
     ),
-    profile: str | None = typer.Option(
-        None,
-        "--profile",
-        help="Docker Compose profile to use when starting containers"
-    )
+    profile: str
+    | None = typer.Option(
+        None, "--profile", help="Docker Compose profile to use when starting containers"
+    ),
 ) -> None:
     """Create a new SimBuilder session with dynamic port allocation."""
     try:
@@ -341,7 +336,9 @@ def create(
 
         console.print(ports_table)
 
-        console.print(f"\n[dim]Environment variables written to: {session_info['env_file_path']}[/dim]")
+        console.print(
+            f"\n[dim]Environment variables written to: {session_info['env_file_path']}[/dim]"
+        )
         console.print("[dim]Use 'source .env.session' to load environment variables[/dim]")
 
         # Start containers if requested
@@ -352,18 +349,22 @@ def create(
 
             if success:
                 console.print("[green]* Docker Compose services started successfully![/green]")
-                console.print(f"[dim]Use 'docker compose -p {session_info['compose_project_name']} logs' to view logs[/dim]")
+                console.print(
+                    f"[dim]Use 'docker compose -p {session_info['compose_project_name']} logs' to view logs[/dim]"
+                )
             else:
                 console.print("[red]X Failed to start Docker Compose services[/red]")
                 console.print("[dim]Check the logs above for more details[/dim]")
         else:
             console.print("\n[dim]To start containers manually, run:[/dim]")
-            console.print(f"[dim]  docker compose -p {session_info['compose_project_name']} --env-file .env.session up -d[/dim]")
+            console.print(
+                f"[dim]  docker compose -p {session_info['compose_project_name']} --env-file .env.session up -d[/dim]"
+            )
 
         logger.info(
             "Session creation completed via CLI",
             session_id=session_info["session_id"],
-            containers_started=start_containers
+            containers_started=start_containers,
         )
 
     except Exception as e:
@@ -409,7 +410,7 @@ def list() -> None:
                 session["session_short"],
                 session["compose_project_name"],
                 created_at,
-                f"{services_count} services"
+                f"{services_count} services",
             )
 
         console.print(sessions_table)
@@ -449,8 +450,12 @@ def status(session_id: str) -> None:
         status_table.add_row("Compose Project", session_info["compose_project_name"])
         status_table.add_row("Created At", session_info["created_at"])
         status_table.add_row("Environment File", session_info["env_file_path"])
-        status_table.add_row("Env File Exists", "* Yes" if session_info.get("env_file_exists") else "X No")
-        status_table.add_row("Containers Running", "* Yes" if session_info.get("containers_running") else "X No")
+        status_table.add_row(
+            "Env File Exists", "* Yes" if session_info.get("env_file_exists") else "X No"
+        )
+        status_table.add_row(
+            "Containers Running", "* Yes" if session_info.get("containers_running") else "X No"
+        )
 
         console.print(status_table)
 
@@ -467,10 +472,7 @@ def status(session_id: str) -> None:
 
             console.print(ports_table)
 
-        logger.info(
-            "Displayed session status via CLI",
-            session_id=session_id
-        )
+        logger.info("Displayed session status via CLI", session_id=session_id)
 
     except Exception as e:
         logger = setup_logging()
@@ -499,17 +501,16 @@ def cleanup(session_id: str) -> None:
 
         if success:
             console.print("[green]* Session cleanup completed successfully![/green]")
-            console.print(f"[dim]- Stopped containers for project: {session_info['compose_project_name']}[/dim]")
+            console.print(
+                f"[dim]- Stopped containers for project: {session_info['compose_project_name']}[/dim]"
+            )
             console.print("[dim]- Removed session files and directories[/dim]")
             console.print("[dim]- Freed allocated ports[/dim]")
         else:
             console.print("[red]X Session cleanup failed![/red]")
             raise typer.Exit(1)
 
-        logger.info(
-            "Session cleanup completed via CLI",
-            session_id=session_id
-        )
+        logger.info("Session cleanup completed via CLI", session_id=session_id)
 
     except Exception as e:
         logger = setup_logging()
@@ -537,16 +538,18 @@ def _get_current_session_id() -> str | None:
     try:
         env_session_path = get_project_root() / ".env.session"
         if env_session_path.exists():
-            with env_session_path.open(encoding='utf-8') as f:
+            with env_session_path.open(encoding="utf-8") as f:
                 for line in f:
                     if line.startswith("SIMBUILDER_SESSION_ID="):
                         return line.split("=", 1)[1].strip()
     except Exception as e:
         import logging
-        logging.getLogger("scaffolding.cli").warning(f"Could not read session ID from .env.session: {e}")
+
+        logging.getLogger("scaffolding.cli").warning(
+            f"Could not read session ID from .env.session: {e}"
+        )
 
     return None
-
 
 
 graph_app.command("info")(graph_info)

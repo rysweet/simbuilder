@@ -10,7 +10,6 @@ import pytest
 from fastapi import FastAPI
 from fastapi import Request
 from fastapi.testclient import TestClient
-
 from simbuilder_api.middleware.session_context import SessionContextMiddleware
 
 
@@ -22,10 +21,7 @@ def app_with_middleware():
 
     @app.get("/test")
     async def test_endpoint(request: Request):
-        return {
-            "session_id": getattr(request.state, "session_id", None),
-            "path": request.url.path
-        }
+        return {"session_id": getattr(request.state, "session_id", None), "path": request.url.path}
 
     return app
 

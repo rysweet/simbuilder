@@ -44,7 +44,7 @@ class TestSettings:
                 neo4j_password="test-password",  # noqa: S106
                 azure_openai_endpoint="https://test.openai.azure.com",
                 azure_openai_key="test-key",
-                _env_file=None  # Prevent loading from .env file
+                _env_file=None,  # Prevent loading from .env file
             )
 
             assert settings.neo4j_uri == "neo4j://localhost:7687"
@@ -64,7 +64,7 @@ class TestSettings:
             azure_tenant_id="test-tenant",
             neo4j_password="test-password",  # noqa: S106
             azure_openai_endpoint="https://test.openai.azure.com",  # No trailing slash
-            azure_openai_key="test-key"
+            azure_openai_key="test-key",
         )
 
         # Should add trailing slash
@@ -78,7 +78,7 @@ class TestSettings:
             neo4j_password="test-password",  # noqa: S106
             azure_openai_endpoint="https://test.openai.azure.com/",
             azure_openai_key="test-key",
-            log_level="DEBUG"
+            log_level="DEBUG",
         )
         assert settings.log_level == "DEBUG"
 
@@ -89,7 +89,7 @@ class TestSettings:
                 neo4j_password="test-password",  # noqa: S106
                 azure_openai_endpoint="https://test.openai.azure.com/",
                 azure_openai_key="test-key",
-                log_level="INVALID"
+                log_level="INVALID",
             )
 
         errors = exc_info.value.errors()
@@ -103,7 +103,7 @@ class TestSettings:
             neo4j_password="test-password",  # noqa: S106
             azure_openai_endpoint="https://test.openai.azure.com/",
             azure_openai_key="test-key",
-            core_api_port=8080
+            core_api_port=8080,
         )
         assert settings.core_api_port == 8080
 
@@ -114,11 +114,13 @@ class TestSettings:
                 neo4j_password="test-password",  # noqa: S106
                 azure_openai_endpoint="https://test.openai.azure.com/",
                 azure_openai_key="test-key",
-                core_api_port=80
+                core_api_port=80,
             )
 
         errors = exc_info.value.errors()
-        assert any("Port must be between 1024 and 65535" in str(error["ctx"]["reason"]) for error in errors)
+        assert any(
+            "Port must be between 1024 and 65535" in str(error["ctx"]["reason"]) for error in errors
+        )
 
     def test_environment_properties(self):
         """Test environment property methods."""
@@ -127,7 +129,7 @@ class TestSettings:
             neo4j_password="test-password",  # noqa: S106
             azure_openai_endpoint="https://test.openai.azure.com/",
             azure_openai_key="test-key",
-            environment="development"
+            environment="development",
         )
 
         assert dev_settings.is_development is True
@@ -138,7 +140,7 @@ class TestSettings:
             neo4j_password="test-password",  # noqa: S106
             azure_openai_endpoint="https://test.openai.azure.com/",
             azure_openai_key="test-key",
-            environment="production"
+            environment="production",
         )
 
         assert prod_settings.is_development is False
@@ -151,7 +153,7 @@ class TestSettings:
             neo4j_password="test-password",  # noqa: S106
             azure_openai_endpoint="https://test.openai.azure.com/",
             azure_openai_key="test-key",
-            environment="production"
+            environment="production",
         )
 
         # Should not raise an error for complete config
@@ -163,7 +165,7 @@ class TestSettings:
             neo4j_password="",  # Missing required field
             azure_openai_endpoint="https://test.openai.azure.com/",
             azure_openai_key="test-key",
-            environment="production"
+            environment="production",
         )
 
         with pytest.raises(ConfigurationError) as exc_info:
@@ -178,12 +180,15 @@ class TestConfigHelpers:
     def test_get_settings_caching(self):
         """Test that get_settings uses caching."""
         # Mock environment variables
-        with patch.dict(os.environ, {
-            "AZURE_TENANT_ID": "test-tenant",
-            "NEO4J_PASSWORD": "test-password",
-            "AZURE_OPENAI_ENDPOINT": "https://test.openai.azure.com/",
-            "AZURE_OPENAI_KEY": "test-key"
-        }):
+        with patch.dict(
+            os.environ,
+            {
+                "AZURE_TENANT_ID": "test-tenant",
+                "NEO4J_PASSWORD": "test-password",
+                "AZURE_OPENAI_ENDPOINT": "https://test.openai.azure.com/",
+                "AZURE_OPENAI_KEY": "test-key",
+            },
+        ):
             settings1 = get_settings()
             settings2 = get_settings()
 
@@ -195,6 +200,7 @@ class TestConfigHelpers:
         with patch.dict(os.environ, {}, clear=True):
             # Also clear the cache to ensure fresh Settings() creation
             from src.scaffolding.config import get_settings
+
             get_settings.cache_clear()
             # Mock Settings to not load from .env file
             with patch("src.scaffolding.config.Settings") as mock_settings:
@@ -206,7 +212,10 @@ class TestConfigHelpers:
 
     def test_create_env_template(self):
         """Test creation of .env.template file."""
-        with tempfile.TemporaryDirectory() as temp_dir, patch("src.scaffolding.config.get_project_root", return_value=Path(temp_dir)):
+        with (
+            tempfile.TemporaryDirectory() as temp_dir,
+            patch("src.scaffolding.config.get_project_root", return_value=Path(temp_dir)),
+        ):
             # Mock get_project_root to return temp directory
             create_env_template()
 
@@ -239,7 +248,7 @@ class TestEnvironmentVariableLoading:
             "LOG_LEVEL": "DEBUG",
             "ENVIRONMENT": "testing",
             "DEBUG_MODE": "true",
-            "CORE_API_PORT": "8080"
+            "CORE_API_PORT": "8080",
         }
 
         with patch.dict(os.environ, env_vars, clear=True):
@@ -260,7 +269,7 @@ class TestEnvironmentVariableLoading:
             "azure_tenant_id": "lowercase-tenant",  # lowercase
             "NEO4J_PASSWORD": "test-password",
             "AZURE_OPENAI_ENDPOINT": "https://test.openai.azure.com/",
-            "AZURE_OPENAI_KEY": "test-key"
+            "AZURE_OPENAI_KEY": "test-key",
         }
 
         with patch.dict(os.environ, env_vars, clear=True):

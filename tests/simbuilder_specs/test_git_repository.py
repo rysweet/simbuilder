@@ -21,9 +21,13 @@ def temp_git_repo():
         repo_path.mkdir()
 
         # Initialize git repo
-        subprocess.run(["git", "init", "--initial-branch=main"], cwd=repo_path, check=True, capture_output=True)
+        subprocess.run(
+            ["git", "init", "--initial-branch=main"], cwd=repo_path, check=True, capture_output=True
+        )
         subprocess.run(["git", "config", "user.name", "Test User"], cwd=repo_path, check=True)
-        subprocess.run(["git", "config", "user.email", "test@example.com"], cwd=repo_path, check=True)
+        subprocess.run(
+            ["git", "config", "user.email", "test@example.com"], cwd=repo_path, check=True
+        )
 
         # Create some test template files
         templates_dir = repo_path / "templates"
@@ -35,7 +39,8 @@ def temp_git_repo():
 
         # Complex template
         complex_template = templates_dir / "complex.liquid"
-        complex_template.write_text("""
+        complex_template.write_text(
+            """
 {% assign greeting = "Hello" %}
 {% if user %}
 {{ greeting }} {{ user.name }}!
@@ -43,7 +48,8 @@ Your email is: {{ user.email }}
 {% else %}
 {{ greeting }} Anonymous!
 {% endif %}
-""".strip())
+""".strip()
+        )
 
         # Add and commit files
         subprocess.run(["git", "add", "."], cwd=repo_path, check=True)
@@ -74,9 +80,7 @@ class TestGitRepository:
     def test_init_custom_values(self, temp_local_path):
         """Test GitRepository initialization with custom values."""
         repo = GitRepository(
-            "https://github.com/test/repo.git",
-            branch="develop",
-            local_path=temp_local_path
+            "https://github.com/test/repo.git", branch="develop", local_path=temp_local_path
         )
 
         assert repo.repo_url == "https://github.com/test/repo.git"
@@ -237,11 +241,11 @@ class TestGitRepository:
         repo_info = repo.clone_or_pull()
 
         # Verify all properties are set
-        assert hasattr(repo_info, 'url')
-        assert hasattr(repo_info, 'branch')
-        assert hasattr(repo_info, 'commit_hash')
-        assert hasattr(repo_info, 'last_updated')
-        assert hasattr(repo_info, 'local_path')
+        assert hasattr(repo_info, "url")
+        assert hasattr(repo_info, "branch")
+        assert hasattr(repo_info, "commit_hash")
+        assert hasattr(repo_info, "last_updated")
+        assert hasattr(repo_info, "local_path")
 
         # Verify values
         assert repo_info.url == f"file://{temp_git_repo}"

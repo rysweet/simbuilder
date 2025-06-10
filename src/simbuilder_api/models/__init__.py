@@ -15,5 +15,5 @@ __all__ = [
     "DiscoverySessionStatus",
     "Simulation",
     "SimulationCreate",
-    "SimulationStatus"
+    "SimulationStatus",
 ]

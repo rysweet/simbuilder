@@ -24,6 +24,7 @@ console = Console()
 def info() -> None:
     """Display Service Bus configuration and status."""
     try:
+
         async def _info() -> None:
             async with ServiceBusClient() as client:
                 health = await client.health_check()
@@ -40,7 +41,9 @@ def info() -> None:
                 if health["connected"]:
                     table.add_row("RTT", f"{health.get('rtt_ms', 'N/A')} ms")
                     table.add_row("Server Version", health.get("server_info", "N/A"))
-                    table.add_row("Active Subscriptions", str(health.get("active_subscriptions", 0)))
+                    table.add_row(
+                        "Active Subscriptions", str(health.get("active_subscriptions", 0))
+                    )
                     table.add_row("Active Streams", str(health.get("active_streams", 0)))
 
                 console.print(table)
@@ -58,7 +61,7 @@ def info() -> None:
                         topic.name,
                         topic.subject_pattern,
                         message_types,
-                        f"{topic.retention_policy} ({topic.max_age_seconds}s)"
+                        f"{topic.retention_policy} ({topic.max_age_seconds}s)",
                     )
 
                 console.print(topics_table)
@@ -74,6 +77,7 @@ def info() -> None:
 def health() -> None:
     """Perform health check on Service Bus connection."""
     try:
+
         async def _health() -> None:
             async with ServiceBusClient() as client:
                 health = await client.health_check()
@@ -98,6 +102,7 @@ def health() -> None:
 def setup_topics() -> None:
     """Create all predefined topics and streams."""
     try:
+
         async def _setup() -> None:
             async with ServiceBusClient() as client:
                 topics = TopicManager.get_all_topics()
@@ -131,6 +136,7 @@ def publish(
 ) -> None:
     """Publish a test message to a subject."""
     try:
+
         async def _publish() -> None:
             # Parse message data
             try:
@@ -146,7 +152,7 @@ def publish(
                 session_id=session_id,
                 source="cli",
                 data=message_data,
-                priority=MessagePriority.NORMAL
+                priority=MessagePriority.NORMAL,
             )
 
             async with ServiceBusClient() as client:
@@ -167,6 +173,7 @@ def subscribe(
 ) -> None:
     """Subscribe to messages and display them."""
     try:
+
         async def _subscribe() -> None:
             messages_received = 0
 
@@ -183,11 +190,12 @@ def subscribe(
                     f"Time: {message.timestamp}\n"
                     f"Data: {json.dumps(message.data, indent=2)}",
                     title=f"Subject: {subject_pattern}",
-                    border_style="green"
+                    border_style="green",
                 )
                 console.print(panel)
 
             from .models import SubscriptionConfig
+
             config = SubscriptionConfig(
                 name=f"cli-subscriber-{asyncio.get_event_loop().time()}",
                 topic="test",  # Will be overridden by subject_filter
@@ -196,11 +204,13 @@ def subscribe(
                 durable=False,
                 auto_ack=True,
                 max_pending=1000,
-                ack_wait_seconds=30
+                ack_wait_seconds=30,
             )
 
             async with ServiceBusClient() as client:
-                console.print(f"[yellow]Listening for messages on '{subject_pattern}' for {duration} seconds...[/yellow]")
+                console.print(
+                    f"[yellow]Listening for messages on '{subject_pattern}' for {duration} seconds...[/yellow]"
+                )
                 console.print("[dim]Press Ctrl+C to stop early[/dim]")
 
                 subscription_id = await client.subscribe(config, message_handler)
@@ -228,6 +238,7 @@ def demo_progress(
 ) -> None:
     """Demonstrate progress notifications."""
     try:
+
         async def _demo() -> None:
             async with ProgressNotifier(session_id, "demo_operation") as notifier:
                 await notifier.start_operation(total_steps=steps)
@@ -236,8 +247,7 @@ def demo_progress(
                     for i in range(steps):
                         step_desc = f"Processing step {i + 1} of {steps}"
                         await notifier.advance_step(
-                            step_desc,
-                            details=f"Demo step with {delay}s delay"
+                            step_desc, details=f"Demo step with {delay}s delay"
                         )
 
                         # Update live display
@@ -252,7 +262,7 @@ def demo_progress(
                             f"Elapsed: {elapsed.total_seconds():.1f}s\n"
                             f"Current: {step_desc}",
                             title="Progress Notification Demo",
-                            border_style="blue"
+                            border_style="blue",
                         )
                         live.update(progress_panel)
 

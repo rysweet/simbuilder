@@ -36,7 +36,7 @@ class SessionListResponse(BaseModel):
 async def create_discovery_session(
     session_data: DiscoverySessionCreate,
     request: Request,
-    settings: Settings = Depends(get_settings)
+    settings: Settings = Depends(get_settings),
 ) -> DiscoverySession:
     """Create a new tenant discovery session.
 
@@ -61,7 +61,7 @@ async def create_discovery_session(
         created_at=now,
         updated_at=now,
         completed_at=None,
-        error_message=None
+        error_message=None,
     )
 
     _sessions[session_id] = session
@@ -73,10 +73,7 @@ async def create_discovery_session(
 
 @router.get("/sessions", response_model=SessionListResponse)
 async def list_discovery_sessions(
-    request: Request,
-    limit: int = 50,
-    offset: int = 0,
-    settings: Settings = Depends(get_settings)
+    request: Request, limit: int = 50, offset: int = 0, settings: Settings = Depends(get_settings)
 ) -> SessionListResponse:
     """List discovery sessions.
 
@@ -93,19 +90,14 @@ async def list_discovery_sessions(
     total = len(sessions_list)
 
     # Apply pagination
-    paginated_sessions = sessions_list[offset:offset + limit]
+    paginated_sessions = sessions_list[offset : offset + limit]
 
-    return SessionListResponse(
-        sessions=paginated_sessions,
-        total=total
-    )
+    return SessionListResponse(sessions=paginated_sessions, total=total)
 
 
 @router.get("/sessions/{session_id}", response_model=DiscoverySession)
 async def get_discovery_session(
-    session_id: UUID,
-    request: Request,
-    settings: Settings = Depends(get_settings)
+    session_id: UUID, request: Request, settings: Settings = Depends(get_settings)
 ) -> DiscoverySession:
     """Get a specific discovery session.
 
@@ -128,9 +120,7 @@ async def get_discovery_session(
 
 @router.get("/sessions/{session_id}/status")
 async def get_session_status(
-    session_id: UUID,
-    request: Request,
-    settings: Settings = Depends(get_settings)
+    session_id: UUID, request: Request, settings: Settings = Depends(get_settings)
 ) -> dict:
     """Get discovery session status.
 
@@ -154,5 +144,5 @@ async def get_session_status(
         "session_id": session_id,
         "status": session.status,
         "updated_at": session.updated_at,
-        "progress": 0  # TODO: Calculate actual progress
+        "progress": 0,  # TODO: Calculate actual progress
     }

@@ -38,7 +38,7 @@ def bootstrap(ctx):
         "black>=23.10.0",
         "pre-commit>=3.5.0",
         "mdformat>=0.7.17",
-        "invoke>=2.2.0"
+        "invoke>=2.2.0",
     ]
     ctx.run(f"uv pip install {' '.join(dev_deps)}")
 
@@ -50,7 +50,9 @@ def bootstrap(ctx):
     env_file = Path(".env")
     if not env_file.exists():
         print("📝 Creating .env file from template...")
-        ctx.run("python -c \"from src.scaffolding.config import create_env_template; create_env_template()\"")
+        ctx.run(
+            'python -c "from src.scaffolding.config import create_env_template; create_env_template()"'
+        )
         print("⚠️  Please edit .env file with your configuration before running services!")
 
     print("✅ Bootstrap complete! Don't forget to:")
@@ -213,5 +215,7 @@ def scaffolding_check(ctx):
 def create_env_template(ctx):
     """Create .env.template file."""
     print("📝 Creating .env.template...")
-    ctx.run("uv run python -c \"from src.scaffolding.config import create_env_template; create_env_template()\"")
+    ctx.run(
+        'uv run python -c "from src.scaffolding.config import create_env_template; create_env_template()"'
+    )
     print("✅ .env.template created!")

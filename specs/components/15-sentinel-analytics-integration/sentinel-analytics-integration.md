@@ -2,29 +2,45 @@
 
 ## Purpose / Overview
 
-The Sentinel Analytics Integration component provides comprehensive security monitoring, telemetry collection, and attack detection validation for SimBuilder simulation environments. It configures Azure Sentinel workspaces, deploys detection rules, manages Log Analytics ingestion, and validates that security events are properly captured and analyzed. This component ensures that simulation environments generate realistic security telemetry for testing detection capabilities and validating security operations procedures.
+The Sentinel Analytics Integration component provides comprehensive security monitoring, telemetry
+collection, and attack detection validation for SimBuilder simulation environments. It configures
+Azure Sentinel workspaces, deploys detection rules, manages Log Analytics ingestion, and validates
+that security events are properly captured and analyzed. This component ensures that simulation
+environments generate realistic security telemetry for testing detection capabilities and validating
+security operations procedures.
 
 ## Functional Requirements / User Stories
 
-- As a **Security Operations Center**, I need comprehensive logging and monitoring of all simulation activities for attack detection validation
-- As a **Threat Hunter**, I need realistic security telemetry data to test hunting queries and detection logic
-- As a **Security Analyst**, I need validation that security events are properly captured and correlated in Sentinel
-- As a **Validator Agent**, I need confirmation that telemetry collection is working correctly before declaring environments ready
-- As a **Compliance Officer**, I need audit trails of all security events and monitoring configurations
-- As a **Red Team Member**, I need verification that attack activities generate expected security alerts and telemetry
-- As a **SIEM Engineer**, I need automated deployment of detection rules and analytics configurations
-- As a **Incident Responder**, I need realistic incident scenarios with complete telemetry chains for training
+- As a **Security Operations Center**, I need comprehensive logging and monitoring of all simulation
+  activities for attack detection validation
+- As a **Threat Hunter**, I need realistic security telemetry data to test hunting queries and
+  detection logic
+- As a **Security Analyst**, I need validation that security events are properly captured and
+  correlated in Sentinel
+- As a **Validator Agent**, I need confirmation that telemetry collection is working correctly
+  before declaring environments ready
+- As a **Compliance Officer**, I need audit trails of all security events and monitoring
+  configurations
+- As a **Red Team Member**, I need verification that attack activities generate expected security
+  alerts and telemetry
+- As a **SIEM Engineer**, I need automated deployment of detection rules and analytics
+  configurations
+- As a **Incident Responder**, I need realistic incident scenarios with complete telemetry chains
+  for training
 
 ## Interfaces / APIs
 
 ### Inputs
-- **TelemetrySpec objects**: Specifications for required logging, monitoring, and detection configurations
+
+- **TelemetrySpec objects**: Specifications for required logging, monitoring, and detection
+  configurations
 - **DetectionRules**: Sentinel analytics rules and KQL queries for attack detection
 - **LogAnalyticsConfig**: Workspace configuration and data ingestion settings
 - **WorkbookTemplates**: Sentinel workbook and dashboard configurations
 - **AlertConfiguration**: Incident creation and notification settings
 
 ### Outputs
+
 - **TelemetryValidation**: Confirmation of proper log ingestion and data flow
 - **DetectionResults**: Results of security rule validation and alert generation
 - **AnalyticsWorkspace**: Configured Log Analytics workspace with ingestion endpoints
@@ -32,6 +48,7 @@ The Sentinel Analytics Integration component provides comprehensive security mon
 - **IncidentReports**: Generated security incidents and investigation artifacts
 
 ### Public Endpoints / CLI Commands
+
 ```
 POST /sentinel/workspace - Create and configure Log Analytics workspace
 POST /sentinel/rules - Deploy analytics rules and detection logic
@@ -48,17 +65,25 @@ GET /sentinel/health - Sentinel integration health status
 - **Configuration Service**: For centralized configuration management and environment settings
 
 - **Azure Sentinel**: Core SIEM platform for security analytics and incident management
+
 - **Azure Log Analytics**: Data ingestion, storage, and query engine
+
 - **Azure Monitor**: System metrics and performance monitoring
+
 - **Validator Agent**: For telemetry validation and environment readiness verification
+
 - **Graph Database Service**: For storing telemetry relationships and monitoring metadata
+
 - **Core API Service**: For authentication and integration coordination
+
 - **Microsoft Graph Security API**: For incident enrichment and external threat intelligence
+
 - **Azure Data Explorer**: For advanced analytics and large-scale log processing
 
 ## Data Contracts / Schemas
 
 ### TelemetrySpec Schema
+
 ```yaml
 TelemetrySpec:
   workspace_id: string
@@ -101,6 +126,7 @@ DetectionRule:
 ```
 
 ### Telemetry Validation Schema
+
 ```yaml
 TelemetryValidation:
   validation_id: string
@@ -139,6 +165,7 @@ TelemetryValidation:
 ## Testing Strategy
 
 ### Unit Tests
+
 - Telemetry configuration parsing and validation
 - KQL query generation and syntax validation
 - Analytics rule deployment and configuration
@@ -147,6 +174,7 @@ TelemetryValidation:
 - Performance metrics calculation and reporting
 
 ### Integration Tests
+
 - **Live Azure Sentinel integration** - no mocking of Sentinel or Log Analytics services
 - Complete telemetry pipeline testing with real log ingestion
 - Analytics rule effectiveness testing with generated security events
@@ -155,6 +183,7 @@ TelemetryValidation:
 - Real-time alert generation and incident creation validation
 
 ### End-to-End Acceptance Tests
+
 - Full simulation telemetry lifecycle from configuration to incident investigation
 - Complex attack scenario detection validation with multi-stage attack chains
 - Integration with security operations workflows and incident response procedures

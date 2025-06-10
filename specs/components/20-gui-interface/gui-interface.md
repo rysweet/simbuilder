@@ -2,24 +2,33 @@
 
 ## Purpose / Overview
 
-The GUI Interface provides a modern web-based dashboard for SimBuilder, enabling visual simulation management, real-time monitoring, and interactive graph exploration. Built with React and TypeScript, it offers intuitive workflows for creating simulations, monitoring progress, visualizing infrastructure relationships, and managing costs through responsive, accessible web interfaces that complement the CLI and API experiences.
+The GUI Interface provides a modern web-based dashboard for SimBuilder, enabling visual simulation
+management, real-time monitoring, and interactive graph exploration. Built with React and
+TypeScript, it offers intuitive workflows for creating simulations, monitoring progress, visualizing
+infrastructure relationships, and managing costs through responsive, accessible web interfaces that
+complement the CLI and API experiences.
 
 ## Functional Requirements / User Stories
 
-- As a **Security Manager**, I need visual dashboards to monitor multiple simulations and resource utilization
-- As a **Security Researcher**, I need interactive graph visualization to understand attack paths and infrastructure relationships
+- As a **Security Manager**, I need visual dashboards to monitor multiple simulations and resource
+  utilization
+- As a **Security Researcher**, I need interactive graph visualization to understand attack paths
+  and infrastructure relationships
 - As a **Team Lead**, I need cost management interfaces to track spending and budget compliance
-- As a **Operations Engineer**, I need real-time monitoring views to track simulation health and performance
+- As a **Operations Engineer**, I need real-time monitoring views to track simulation health and
+  performance
 - As a **New User**, I need guided workflows that walk me through simulation creation step-by-step
 - As a **Compliance Officer**, I need audit trail views and reporting interfaces for governance
 
 ## Design Decisions
 
-- **MVP targets single-user workflow**: No real-time multi-user collaboration. Future ADR may add team collaboration.
+- **MVP targets single-user workflow**: No real-time multi-user collaboration. Future ADR may add
+  team collaboration.
 
 ## Interfaces / APIs
 
 ### Inputs
+
 - **User Authentication**: OAuth2 flows and session management
 - **Form Data**: Simulation creation forms and configuration interfaces
 - **File Uploads**: Attack scenario files and configuration templates
@@ -27,6 +36,7 @@ The GUI Interface provides a modern web-based dashboard for SimBuilder, enabling
 - **User Preferences**: Dashboard customization and display settings
 
 ### Outputs
+
 - **Interactive Dashboards**: Real-time simulation status and system health
 - **Graph Visualizations**: 3D force-directed graphs using force-graph-3d
 - **Reports and Exports**: PDF reports, CSV exports, and data visualizations
@@ -34,6 +44,7 @@ The GUI Interface provides a modern web-based dashboard for SimBuilder, enabling
 - **Configuration Downloads**: Generated templates and deployment artifacts
 
 ### Public REST / gRPC / CLI commands
+
 ```typescript
 // Core React Components
 <SimulationDashboard />
@@ -63,11 +74,13 @@ WebSocketService.connect(simulationId: string): WebSocket
 - **React Query**: Data fetching and caching management
 - **React Router**: Single-page application routing
 - **WebSocket Client**: Real-time update connections
-- **External Prompt Templates**: All AI agent prompts are externalized to Liquid template files under `prompts/` directory
+- **External Prompt Templates**: All AI agent prompts are externalized to Liquid template files
+  under `prompts/` directory
 
 ## Data Contracts / Schemas
 
 ### Component Props and State
+
 ```typescript
 interface SimulationDashboardProps {
   userId: string;
@@ -98,6 +111,7 @@ interface SimulationState {
 ```
 
 ### API Response Models
+
 ```typescript
 interface GraphData {
   nodes: GraphNode[];
@@ -135,6 +149,7 @@ interface CostData {
 ## Testing Strategy
 
 ### Unit Tests
+
 - React component rendering and prop handling
 - State management and reducer logic
 - API service integration and error handling
@@ -143,6 +158,7 @@ interface CostData {
 - WebSocket connection management
 
 ### Integration Tests
+
 - **Live Core API Service required** - no mocking of backend API calls
 - End-to-end user workflows through GUI interfaces
 - Real-time updates via WebSocket connections
@@ -151,6 +167,7 @@ interface CostData {
 - Cross-browser compatibility testing
 
 ### Acceptance Tests
+
 - Complete simulation lifecycle through GUI workflows
 - Graph visualization performance with large datasets
 - Responsive design across desktop, tablet, and mobile devices

@@ -25,20 +25,24 @@ def temp_template_dir():
         # Create test templates
         (temp_path / "simple.liquid").write_text("Hello {{ name }}!")
 
-        (temp_path / "with_optional.liquid").write_text("""
+        (temp_path / "with_optional.liquid").write_text(
+            """
 Hello {{ name }}!
 {% if greeting %}{{ greeting }}{% endif %}
 {% if message %}Message: {{ message }}{% endif %}
-""".strip())
+""".strip()
+        )
 
-        (temp_path / "complex.liquid").write_text("""
+        (temp_path / "complex.liquid").write_text(
+            """
 User: {{ user }}
 Context: {{ context }}
 Question: {{ question }}
 {% if additional_info %}
 Additional Info: {{ additional_info }}
 {% endif %}
-""".strip())
+""".strip()
+        )
 
         (temp_path / "syntax_error.liquid").write_text("Hello {{ name")  # Missing closing brace
 
@@ -147,7 +151,9 @@ class TestPromptLoader:
         loader = PromptLoader(temp_template_dir)
 
         # Only provide required variable
-        result = loader.render_template("with_optional", {"name": "Alice"}, validate_variables=False)
+        result = loader.render_template(
+            "with_optional", {"name": "Alice"}, validate_variables=False
+        )
         assert "Hello Alice!" in result
 
     def test_render_template_missing_variables(self, temp_template_dir):
@@ -196,13 +202,13 @@ class TestPromptLoader:
 class TestGlobalFunctions:
     """Tests for global prompt functions."""
 
-    @patch('src.simbuilder_llm.prompts._prompt_loader', None)
+    @patch("src.simbuilder_llm.prompts._prompt_loader", None)
     def test_get_prompt_loader_creates_instance(self):
         """Test that get_prompt_loader creates a new instance."""
         loader = get_prompt_loader()
         assert isinstance(loader, PromptLoader)
 
-    @patch('src.simbuilder_llm.prompts._prompt_loader')
+    @patch("src.simbuilder_llm.prompts._prompt_loader")
     def test_get_prompt_loader_returns_existing(self, mock_loader):
         """Test that get_prompt_loader returns existing instance."""
         result = get_prompt_loader()
@@ -210,7 +216,7 @@ class TestGlobalFunctions:
 
     def test_load_prompt_function(self, temp_template_dir):
         """Test global load_prompt function."""
-        with patch('src.simbuilder_llm.prompts.get_prompt_loader') as mock_get_loader:
+        with patch("src.simbuilder_llm.prompts.get_prompt_loader") as mock_get_loader:
             mock_loader = PromptLoader(temp_template_dir)
             mock_get_loader.return_value = mock_loader
 
@@ -219,7 +225,7 @@ class TestGlobalFunctions:
 
     def test_render_prompt_function(self, temp_template_dir):
         """Test global render_prompt function."""
-        with patch('src.simbuilder_llm.prompts.get_prompt_loader') as mock_get_loader:
+        with patch("src.simbuilder_llm.prompts.get_prompt_loader") as mock_get_loader:
             mock_loader = PromptLoader(temp_template_dir)
             mock_get_loader.return_value = mock_loader
 
@@ -228,7 +234,7 @@ class TestGlobalFunctions:
 
     def test_render_prompt_function_with_validation(self, temp_template_dir):
         """Test global render_prompt function with validation."""
-        with patch('src.simbuilder_llm.prompts.get_prompt_loader') as mock_get_loader:
+        with patch("src.simbuilder_llm.prompts.get_prompt_loader") as mock_get_loader:
             mock_loader = PromptLoader(temp_template_dir)
             mock_get_loader.return_value = mock_loader
 
@@ -237,7 +243,7 @@ class TestGlobalFunctions:
 
     def test_list_prompts_function(self, temp_template_dir):
         """Test global list_prompts function."""
-        with patch('src.simbuilder_llm.prompts.get_prompt_loader') as mock_get_loader:
+        with patch("src.simbuilder_llm.prompts.get_prompt_loader") as mock_get_loader:
             mock_loader = PromptLoader(temp_template_dir)
             mock_get_loader.return_value = mock_loader
 
@@ -293,7 +299,7 @@ class TestRealPromptFiles:
         variables = {
             "question": "What is Azure?",
             "context": "Cloud computing platform",
-            "additional_instructions": "Be concise"
+            "additional_instructions": "Be concise",
         }
 
         result = loader.render_template("base_prompt", variables, validate_variables=False)

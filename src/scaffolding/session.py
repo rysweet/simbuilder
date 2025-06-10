@@ -30,7 +30,7 @@ class SessionManager(LoggingMixin):
         "api_gateway",
         "graph_db_admin",
         "spec_library_api",
-        "tenant_discovery_api"
+        "tenant_discovery_api",
     ]
 
     def __init__(self) -> None:
@@ -110,13 +110,14 @@ class SessionManager(LoggingMixin):
             "env_file_path": str(env_session_path),
             "session_dir": str(session_dir),
             "allocated_ports": allocated_ports,
-            "services": services
+            "services": services,
         }
 
         # Save session metadata
         session_metadata_path = session_dir / "metadata.json"
         from typing import Any
         from typing import cast
+
         self._write_session_metadata(session_metadata_path, cast(dict[str, Any], session_info))
 
         self.logger.info(
@@ -124,7 +125,7 @@ class SessionManager(LoggingMixin):
             session_id=session_id,
             session_short=session_short,
             compose_project_name=compose_project_name,
-            allocated_ports=allocated_ports
+            allocated_ports=allocated_ports,
         )
 
         return cast(dict[str, str], session_info)
@@ -150,8 +151,7 @@ class SessionManager(LoggingMixin):
                         sessions.append(session_info)
                     except Exception as e:
                         self.log_error(
-                            e,
-                            {"operation": "list_sessions", "session_dir": str(session_dir)}
+                            e, {"operation": "list_sessions", "session_dir": str(session_dir)}
                         )
 
         # Sort by creation time, newest first
@@ -185,18 +185,15 @@ class SessionManager(LoggingMixin):
             session_info["env_file_exists"] = str(env_session_path.exists())
 
             # Check if Docker containers are running
-            session_info["containers_running"] = str(self._check_containers_running(
-                session_info["compose_project_name"]
-            ))
+            session_info["containers_running"] = str(
+                self._check_containers_running(session_info["compose_project_name"])
+            )
 
             self.logger.debug("Retrieved session status", session_id=session_id)
             return session_info
 
         except Exception as e:
-            self.log_error(
-                e,
-                {"operation": "get_session_status", "session_id": session_id}
-            )
+            self.log_error(e, {"operation": "get_session_status", "session_id": session_id})
             return None
 
     def cleanup_session(self, session_id: str) -> bool:
@@ -230,32 +227,32 @@ class SessionManager(LoggingMixin):
                 if env_session_path.exists():
                     try:
                         # Check if the env file contains our session ID
-                        with env_session_path.open(encoding='utf-8') as f:
+                        with env_session_path.open(encoding="utf-8") as f:
                             content = f.read()
                         if session_id in content:
                             env_session_path.unlink()
-                            self.logger.info("Removed .env.session file", path=str(env_session_path))
+                            self.logger.info(
+                                "Removed .env.session file", path=str(env_session_path)
+                            )
                     except Exception as e:
                         self.log_error(e, {"operation": "remove_env_file"})
 
             # Remove session directory
             import shutil
+
             shutil.rmtree(session_dir)
 
             self.logger.info("Session cleanup completed", session_id=session_id)
             return True
 
         except Exception as e:
-            self.log_error(
-                e,
-                {"operation": "cleanup_session", "session_id": session_id}
-            )
+            self.log_error(e, {"operation": "cleanup_session", "session_id": session_id})
             return False
 
     def _write_env_file(self, file_path: Path, env_vars: dict[str, str]) -> None:
         """Write environment variables to a .env file."""
         try:
-            with file_path.open('w', encoding='utf-8') as f:
+            with file_path.open("w", encoding="utf-8") as f:
                 f.write("# SimBuilder Session Environment Variables\n")
                 f.write(f"# Generated on {datetime.now().isoformat()}\n\n")
 
@@ -273,7 +270,7 @@ class SessionManager(LoggingMixin):
         import json
 
         try:
-            with file_path.open('w', encoding='utf-8') as f:
+            with file_path.open("w", encoding="utf-8") as f:
                 json.dump(session_info, f, indent=2)
 
             self.logger.debug("Wrote session metadata", path=str(file_path))
@@ -286,19 +283,28 @@ class SessionManager(LoggingMixin):
         """Read session metadata from JSON file."""
         import json
 
-        with file_path.open(encoding='utf-8') as f:
+        with file_path.open(encoding="utf-8") as f:
             from typing import cast
+
             return cast(dict[str, str], json.load(f))
 
     def _check_containers_running(self, compose_project_name: str) -> bool:
         """Check if Docker containers for the project are running."""
         try:
             import subprocess
+
             result = subprocess.run(
-                ["docker", "ps", "--filter", f"name={compose_project_name}", "--format", "{{.Names}}"],
+                [
+                    "docker",
+                    "ps",
+                    "--filter",
+                    f"name={compose_project_name}",
+                    "--format",
+                    "{{.Names}}",
+                ],
                 capture_output=True,
                 text=True,
-                timeout=10
+                timeout=10,
             )
             return len(result.stdout.strip()) > 0
         except Exception:
@@ -315,23 +321,18 @@ class SessionManager(LoggingMixin):
                 capture_output=True,
                 text=True,
                 timeout=60,
-                cwd=self.project_root
+                cwd=self.project_root,
             )
 
             if result.returncode == 0:
                 self.logger.info("Stopped containers", project=compose_project_name)
             else:
                 self.logger.warning(
-                    "Failed to stop containers",
-                    project=compose_project_name,
-                    stderr=result.stderr
+                    "Failed to stop containers", project=compose_project_name, stderr=result.stderr
                 )
 
         except Exception as e:
-            self.log_error(
-                e,
-                {"operation": "stop_containers", "project": compose_project_name}
-            )
+            self.log_error(e, {"operation": "stop_containers", "project": compose_project_name})
 
     def compose_up(self, detached: bool = True, profile: str | None = None) -> bool:
         """
@@ -353,10 +354,10 @@ class SessionManager(LoggingMixin):
         try:
             # Read compose project name from env file
             compose_project_name = None
-            with env_session_path.open(encoding='utf-8') as f:
+            with env_session_path.open(encoding="utf-8") as f:
                 for line in f:
-                    if line.startswith('COMPOSE_PROJECT_NAME='):
-                        compose_project_name = line.split('=', 1)[1].strip()
+                    if line.startswith("COMPOSE_PROJECT_NAME="):
+                        compose_project_name = line.split("=", 1)[1].strip()
                         break
 
             if not compose_project_name:
@@ -365,10 +366,13 @@ class SessionManager(LoggingMixin):
 
             # Build docker compose command
             cmd = [
-                "docker", "compose",
-                "-p", compose_project_name,
-                "--env-file", str(env_session_path),
-                "up"
+                "docker",
+                "compose",
+                "-p",
+                compose_project_name,
+                "--env-file",
+                str(env_session_path),
+                "up",
             ]
 
             if detached:
@@ -380,7 +384,7 @@ class SessionManager(LoggingMixin):
             self.logger.info(
                 "Starting Docker Compose services",
                 project=compose_project_name,
-                command=" ".join(cmd)
+                command=" ".join(cmd),
             )
 
             result = subprocess.run(
@@ -388,13 +392,12 @@ class SessionManager(LoggingMixin):
                 cwd=self.project_root,
                 capture_output=True,
                 text=True,
-                timeout=300  # 5 minute timeout
+                timeout=300,  # 5 minute timeout
             )
 
             if result.returncode == 0:
                 self.logger.info(
-                    "Docker Compose services started successfully",
-                    project=compose_project_name
+                    "Docker Compose services started successfully", project=compose_project_name
                 )
                 return True
             else:
@@ -402,7 +405,7 @@ class SessionManager(LoggingMixin):
                     "Failed to start Docker Compose services",
                     project=compose_project_name,
                     stdout=result.stdout,
-                    stderr=result.stderr
+                    stderr=result.stderr,
                 )
                 return False
 
@@ -432,10 +435,10 @@ class SessionManager(LoggingMixin):
         try:
             # Read compose project name from env file
             compose_project_name = None
-            with env_session_path.open(encoding='utf-8') as f:
+            with env_session_path.open(encoding="utf-8") as f:
                 for line in f:
-                    if line.startswith('COMPOSE_PROJECT_NAME='):
-                        compose_project_name = line.split('=', 1)[1].strip()
+                    if line.startswith("COMPOSE_PROJECT_NAME="):
+                        compose_project_name = line.split("=", 1)[1].strip()
                         break
 
             if not compose_project_name:
@@ -444,10 +447,13 @@ class SessionManager(LoggingMixin):
 
             # Build docker compose command
             cmd = [
-                "docker", "compose",
-                "-p", compose_project_name,
-                "--env-file", str(env_session_path),
-                "down"
+                "docker",
+                "compose",
+                "-p",
+                compose_project_name,
+                "--env-file",
+                str(env_session_path),
+                "down",
             ]
 
             if remove_volumes:
@@ -456,7 +462,7 @@ class SessionManager(LoggingMixin):
             self.logger.info(
                 "Stopping Docker Compose services",
                 project=compose_project_name,
-                command=" ".join(cmd)
+                command=" ".join(cmd),
             )
 
             result = subprocess.run(
@@ -464,13 +470,12 @@ class SessionManager(LoggingMixin):
                 cwd=self.project_root,
                 capture_output=True,
                 text=True,
-                timeout=120  # 2 minute timeout
+                timeout=120,  # 2 minute timeout
             )
 
             if result.returncode == 0:
                 self.logger.info(
-                    "Docker Compose services stopped successfully",
-                    project=compose_project_name
+                    "Docker Compose services stopped successfully", project=compose_project_name
                 )
                 return True
             else:
@@ -478,7 +483,7 @@ class SessionManager(LoggingMixin):
                     "Failed to stop Docker Compose services",
                     project=compose_project_name,
                     stdout=result.stdout,
-                    stderr=result.stderr
+                    stderr=result.stderr,
                 )
                 return False
 

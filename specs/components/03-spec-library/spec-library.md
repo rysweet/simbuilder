@@ -2,21 +2,31 @@
 
 ## Purpose / Overview
 
-The Spec Library provides version-controlled storage and management of simulation specifications, attack patterns, Infrastructure-as-Code templates, and deployment manifests. Built as a Git-based repository layer, it enables reproducible simulations, template sharing, collaborative specification development, and audit trails for all simulation artifacts. The library serves as the definitive source for simulation blueprints and enables simulation recreation from stored specifications.
+The Spec Library provides version-controlled storage and management of simulation specifications,
+attack patterns, Infrastructure-as-Code templates, and deployment manifests. Built as a Git-based
+repository layer, it enables reproducible simulations, template sharing, collaborative specification
+development, and audit trails for all simulation artifacts. The library serves as the definitive
+source for simulation blueprints and enables simulation recreation from stored specifications.
 
 ## Functional Requirements / User Stories
 
-- As a **Planner Agent**, I need to store and retrieve attack pattern templates and resource plans for reuse across simulations
-- As an **InfraSynthesis Agent**, I need to store and version IaC templates (Bicep, Terraform, ARM) generated for different scenarios
-- As a **Core API Service**, I need to manage simulation specifications with full version history and branching
-- As a **Security Researcher**, I need to share and collaborate on attack scenario specifications across teams
-- As a **Compliance Officer**, I need immutable audit trails of all simulation specifications and changes
+- As a **Planner Agent**, I need to store and retrieve attack pattern templates and resource plans
+  for reuse across simulations
+- As an **InfraSynthesis Agent**, I need to store and version IaC templates (Bicep, Terraform, ARM)
+  generated for different scenarios
+- As a **Core API Service**, I need to manage simulation specifications with full version history
+  and branching
+- As a **Security Researcher**, I need to share and collaborate on attack scenario specifications
+  across teams
+- As a **Compliance Officer**, I need immutable audit trails of all simulation specifications and
+  changes
 - As a **Developer**, I need to recreate exact simulation environments from stored specifications
 - As an **Operations Team**, I need to track specification lineage and impact analysis for changes
 
 ## Interfaces / APIs
 
 ### Inputs
+
 - **Attack Specifications**: Structured YAML/JSON attack scenario definitions
 - **Resource Plans**: Infrastructure resource definitions and dependency graphs
 - **IaC Templates**: Bicep, Terraform, and ARM template files
@@ -25,6 +35,7 @@ The Spec Library provides version-controlled storage and management of simulatio
 - **Validation Scripts**: Environment validation and precondition checks
 
 ### Outputs
+
 - **Specification Retrieval**: Versioned specifications by ID, tag, or branch
 - **Template Libraries**: Categorized IaC templates and attack patterns
 - **Diff Analysis**: Changes between specification versions
@@ -32,6 +43,7 @@ The Spec Library provides version-controlled storage and management of simulatio
 - **Audit Reports**: Change history and authorship tracking
 
 ### Public REST / gRPC / CLI commands
+
 ```http
 POST /specs/simulations
   - Create new simulation specification with Git commit
@@ -92,37 +104,45 @@ GET /specs/simulations/{id}/dependencies
 ```
 
 ### Git Repository Interface
+
 ```python
 class SpecRepository:
     """Git-based specification repository management."""
-    
+
     def create_specification(self, spec: SimulationSpec) -> SpecVersion:
         """Create new specification with initial Git commit."""
-        
-    def update_specification(self, spec_id: str, updated_spec: SimulationSpec) -> SpecVersion:
+
+    def update_specification(
+        self, spec_id: str, updated_spec: SimulationSpec
+    ) -> SpecVersion:
         """Update specification and create new version with Git commit."""
-        
-    def get_specification(self, spec_id: str, version: str = "latest") -> SimulationSpec:
+
+    def get_specification(
+        self, spec_id: str, version: str = "latest"
+    ) -> SimulationSpec:
         """Retrieve specification by ID and version from Git."""
-        
+
     def list_versions(self, spec_id: str) -> List[SpecVersion]:
         """List all versions of a specification from Git history."""
-        
+
     def create_branch(self, spec_id: str, branch_name: str) -> bool:
         """Create new branch for collaborative specification editing."""
-        
-    def merge_branch(self, spec_id: str, source_branch: str, target_branch: str) -> MergeResult:
+
+    def merge_branch(
+        self, spec_id: str, source_branch: str, target_branch: str
+    ) -> MergeResult:
         """Merge specification changes between branches."""
-        
+
     def validate_specification(self, spec: SimulationSpec) -> ValidationResult:
         """Validate specification against schema and business rules."""
 ```
 
 ### Template Management Interface
+
 ```python
 class TemplateLibrary:
     """Centralized template library management."""
-    
+
 ### Consumer Components
 The Spec Library provides interfaces consumed by:
 - **Core API Service**: Template management via [`GET /specs/templates/attacks`](spec_repository.py:45) and specification storage
@@ -135,16 +155,16 @@ The Spec Library provides interfaces consumed by:
 - **Operations Dashboard**: Audit tracking via [`GET /specs/audit/{simulation_id}`](spec_repository.py:89) and compliance reporting
     def add_attack_template(self, template: AttackTemplate) -> str:
         """Add new attack pattern template to library."""
-        
+
     def add_infrastructure_template(self, template: InfraTemplate) -> str:
         """Add new infrastructure template to library."""
-        
+
     def search_templates(self, criteria: SearchCriteria) -> List[Template]:
         """Search templates by category, complexity, provider, etc."""
-        
+
     def get_template(self, template_id: str) -> Template:
         """Retrieve specific template by ID."""
-        
+
     def validate_template(self, template: Template) -> ValidationResult:
         """Validate template syntax and completeness."""
 ```
@@ -157,11 +177,13 @@ The Spec Library provides interfaces consumed by:
 - **Graph Database Service**: Specification metadata and relationship storage
 - **Azure Storage**: Large artifact storage and backup
 - **CI/CD Pipeline**: Automated validation and template testing
-- **Attack spec artifacts are not sensitive**: They are stored in plain text within the repository; standard Git access control applies.
+- **Attack spec artifacts are not sensitive**: They are stored in plain text within the repository;
+  standard Git access control applies.
 
 ## Data Contracts / Schemas
 
 ### Specification Structure
+
 ```yaml
 SimulationSpec:
   metadata:
@@ -171,25 +193,25 @@ SimulationSpec:
     created_by: string
     created_at: timestamp
     tags: array[string]
-  
+
   attack_scenario:
     description: string
     mitre_tactics: array[string]
     target_environment: object
     preconditions: array[string]
-  
+
   infrastructure:
     tenants: array[TenantSpec]
     networks: array[NetworkSpec]
     workloads: array[WorkloadSpec]
     identities: array[IdentitySpec]
-  
+
   deployment:
     iac_provider: enum [terraform, bicep, arm]
     templates: array[TemplateReference]
     parameters: object
     dependencies: array[string]
-  
+
   telemetry:
     collection_points: array[TelemetryPoint]
     expected_events: array[EventSchema]
@@ -201,7 +223,7 @@ AttackTemplate:
     category: string
     severity: enum [low, medium, high, critical]
     mitre_techniques: array[string]
-  
+
   specification:
     description: string
     requirements: object
@@ -209,6 +231,7 @@ AttackTemplate:
 ```
 
 ### Repository Structure
+
 ```
 /specifications/
   /simulations/
@@ -243,6 +266,7 @@ AttackTemplate:
 ## Testing Strategy
 
 ### Unit Tests
+
 - Git operations (clone, commit, push, pull, merge)
 - Specification validation and schema compliance
 - Template rendering and parameter substitution
@@ -251,6 +275,7 @@ AttackTemplate:
 - File format parsing (YAML, JSON) and serialization
 
 ### Integration Tests
+
 - **Live Git repository required** - no mocking of version control operations
 - End-to-end specification storage and retrieval
 - Template library management with real file operations
@@ -259,6 +284,7 @@ AttackTemplate:
 - CI/CD pipeline integration with actual template validation
 
 ### Acceptance Tests
+
 - Complete simulation lifecycle with specification versioning
 - Template sharing and reuse across multiple simulations
 - Audit trail generation and compliance reporting

@@ -51,7 +51,7 @@ class PromptLoader:
             PromptRenderError: If template cannot be found or loaded
         """
         # Try different extensions if no extension provided
-        extensions = ['.liquid', '.jinja', '.j2'] if '.' not in name else ['']
+        extensions = [".liquid", ".jinja", ".j2"] if "." not in name else [""]
 
         for ext in extensions:
             template_name = name + ext if ext else name
@@ -61,17 +61,11 @@ class PromptLoader:
             except TemplateNotFound:
                 continue
             except LiquidSyntaxError as e:
-                raise PromptRenderError(
-                    name, f"Template has syntax errors: {str(e)}"
-                ) from e
+                raise PromptRenderError(name, f"Template has syntax errors: {str(e)}") from e
             except Exception as e:
-                raise PromptRenderError(
-                    name, f"Failed to load template: {str(e)}"
-                ) from e
+                raise PromptRenderError(name, f"Failed to load template: {str(e)}") from e
 
-        raise PromptRenderError(
-            name, f"Template not found in {self.template_dir}"
-        )
+        raise PromptRenderError(name, f"Template not found in {self.template_dir}")
 
     def extract_variables(self, template_name: str) -> set[str]:
         """Extract variable names from a template.
@@ -88,7 +82,7 @@ class PromptLoader:
             # Get the raw template source and extract variables using regex
             # Read the template file directly since liquid template parsing is complex
             template_path = None
-            for ext in ['.liquid', '.jinja', '.j2']:
+            for ext in [".liquid", ".jinja", ".j2"]:
                 candidate = self.template_dir / f"{template_name}{ext}"
                 if candidate.exists():
                     template_path = candidate
@@ -98,7 +92,7 @@ class PromptLoader:
                 template_source = template_path.read_text()
                 # Extract variables using regex (simple approach)
                 # Matches {{ variable }} and {{ variable.property }}
-                variable_pattern = r'\{\{\s*([a-zA-Z_][a-zA-Z0-9_]*)'
+                variable_pattern = r"\{\{\s*([a-zA-Z_][a-zA-Z0-9_]*)"
                 matches = re.findall(variable_pattern, template_source)
                 return set(matches)
 
@@ -136,12 +130,12 @@ class PromptLoader:
 
                 if missing_vars:
                     raise PromptRenderError(
-                        template_name,
-                        "Missing required variables",
-                        list(missing_vars)
+                        template_name, "Missing required variables", list(missing_vars)
                     )
 
-            logger.debug(f"Rendering template {template_name} with variables: {list(variables.keys())}")
+            logger.debug(
+                f"Rendering template {template_name} with variables: {list(variables.keys())}"
+            )
 
             result = template.render(**variables)
             return str(result)
@@ -149,9 +143,7 @@ class PromptLoader:
         except PromptRenderError:
             raise
         except Exception as e:
-            raise PromptRenderError(
-                template_name, f"Failed to render template: {str(e)}"
-            ) from e
+            raise PromptRenderError(template_name, f"Failed to render template: {str(e)}") from e
 
     def list_templates(self) -> list[str]:
         """List all available templates.

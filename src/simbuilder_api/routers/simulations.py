@@ -34,9 +34,7 @@ class SimulationListResponse(BaseModel):
 
 @router.post("", response_model=Simulation)
 async def create_simulation(
-    simulation_data: SimulationCreate,
-    request: Request,
-    settings: Settings = Depends(get_settings)
+    simulation_data: SimulationCreate, request: Request, settings: Settings = Depends(get_settings)
 ) -> Simulation:
     """Create a new simulation.
 
@@ -63,7 +61,7 @@ async def create_simulation(
         updated_at=now,
         started_at=None,
         completed_at=None,
-        error_message=None
+        error_message=None,
     )
 
     _simulations[simulation_id] = simulation
@@ -75,10 +73,7 @@ async def create_simulation(
 
 @router.get("", response_model=SimulationListResponse)
 async def list_simulations(
-    request: Request,
-    limit: int = 50,
-    offset: int = 0,
-    settings: Settings = Depends(get_settings)
+    request: Request, limit: int = 50, offset: int = 0, settings: Settings = Depends(get_settings)
 ) -> SimulationListResponse:
     """List simulations.
 
@@ -95,19 +90,14 @@ async def list_simulations(
     total = len(simulations_list)
 
     # Apply pagination
-    paginated_simulations = simulations_list[offset:offset + limit]
+    paginated_simulations = simulations_list[offset : offset + limit]
 
-    return SimulationListResponse(
-        simulations=paginated_simulations,
-        total=total
-    )
+    return SimulationListResponse(simulations=paginated_simulations, total=total)
 
 
 @router.get("/{simulation_id}", response_model=Simulation)
 async def get_simulation(
-    simulation_id: UUID,
-    request: Request,
-    settings: Settings = Depends(get_settings)
+    simulation_id: UUID, request: Request, settings: Settings = Depends(get_settings)
 ) -> Simulation:
     """Get a specific simulation.
 
@@ -130,9 +120,7 @@ async def get_simulation(
 
 @router.delete("/{simulation_id}")
 async def delete_simulation(
-    simulation_id: UUID,
-    request: Request,
-    settings: Settings = Depends(get_settings)
+    simulation_id: UUID, request: Request, settings: Settings = Depends(get_settings)
 ) -> dict:
     """Delete a simulation.
 

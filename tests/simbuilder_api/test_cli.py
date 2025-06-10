@@ -6,9 +6,8 @@ from unittest.mock import MagicMock
 from unittest.mock import patch
 
 import pytest
-from typer.testing import CliRunner
-
 from simbuilder_api.cli import app
+from typer.testing import CliRunner
 
 
 @pytest.fixture
@@ -121,7 +120,9 @@ class TestAPICLI:
 
     @patch("simbuilder_api.cli.get_settings")
     @patch("simbuilder_api.cli.create_app")
-    def test_check_command_app_creation_failure(self, mock_create_app, mock_get_settings, runner, mock_settings):
+    def test_check_command_app_creation_failure(
+        self, mock_create_app, mock_get_settings, runner, mock_settings
+    ):
         """Test check command with FastAPI app creation failure."""
         mock_get_settings.return_value = mock_settings
         mock_create_app.side_effect = Exception("App creation failed")
@@ -131,7 +132,9 @@ class TestAPICLI:
         assert result.exit_code == 1
         assert "Failed to create FastAPI app: App creation failed" in result.stdout
 
-    @pytest.mark.skip(reason="Import mocking is too complex, dependencies are available in test environment")
+    @pytest.mark.skip(
+        reason="Import mocking is too complex, dependencies are available in test environment"
+    )
     def test_check_command_missing_dependencies(self, runner, mock_settings):
         """Test check command with missing dependencies."""
         # This test is skipped because mocking imports properly is complex
@@ -156,7 +159,9 @@ class TestAPICLI:
 
     @patch("simbuilder_api.cli.get_settings")
     @patch("simbuilder_api.cli.uvicorn.run")
-    def test_run_command_default_settings(self, mock_uvicorn_run, mock_get_settings, runner, mock_settings):
+    def test_run_command_default_settings(
+        self, mock_uvicorn_run, mock_get_settings, runner, mock_settings
+    ):
         """Test run command with default settings."""
         mock_get_settings.return_value = mock_settings
 
@@ -172,22 +177,30 @@ class TestAPICLI:
             port=7000,
             reload=False,
             workers=1,
-            log_level="info"
+            log_level="info",
         )
 
     @patch("simbuilder_api.cli.get_settings")
     @patch("simbuilder_api.cli.uvicorn.run")
-    def test_run_command_custom_options(self, mock_uvicorn_run, mock_get_settings, runner, mock_settings):
+    def test_run_command_custom_options(
+        self, mock_uvicorn_run, mock_get_settings, runner, mock_settings
+    ):
         """Test run command with custom options."""
         mock_get_settings.return_value = mock_settings
 
-        result = runner.invoke(app, [
-            "run",
-            "--host", "0.0.0.0",  # noqa: S104
-            "--port", "8080",
-            "--reload",
-            "--workers", "4"
-        ])
+        result = runner.invoke(
+            app,
+            [
+                "run",
+                "--host",
+                "0.0.0.0",  # noqa: S104
+                "--port",
+                "8080",
+                "--reload",
+                "--workers",
+                "4",
+            ],
+        )
 
         assert result.exit_code == 0
 
@@ -198,12 +211,14 @@ class TestAPICLI:
             port=8080,
             reload=True,
             workers=4,
-            log_level="info"
+            log_level="info",
         )
 
     @patch("simbuilder_api.cli.get_settings")
     @patch("simbuilder_api.cli.uvicorn.run")
-    def test_run_command_keyboard_interrupt(self, mock_uvicorn_run, mock_get_settings, runner, mock_settings):
+    def test_run_command_keyboard_interrupt(
+        self, mock_uvicorn_run, mock_get_settings, runner, mock_settings
+    ):
         """Test run command handles keyboard interrupt gracefully."""
         mock_get_settings.return_value = mock_settings
         mock_uvicorn_run.side_effect = KeyboardInterrupt()
@@ -215,7 +230,9 @@ class TestAPICLI:
 
     @patch("simbuilder_api.cli.get_settings")
     @patch("simbuilder_api.cli.uvicorn.run")
-    def test_run_command_exception(self, mock_uvicorn_run, mock_get_settings, runner, mock_settings):
+    def test_run_command_exception(
+        self, mock_uvicorn_run, mock_get_settings, runner, mock_settings
+    ):
         """Test run command handles exceptions."""
         mock_get_settings.return_value = mock_settings
         mock_uvicorn_run.side_effect = Exception("Server startup failed")
@@ -227,7 +244,9 @@ class TestAPICLI:
 
     @patch("simbuilder_api.cli.get_settings")
     @patch("simbuilder_api.cli.uvicorn.run")
-    def test_run_command_uses_config_port_when_none_specified(self, mock_uvicorn_run, mock_get_settings, runner):
+    def test_run_command_uses_config_port_when_none_specified(
+        self, mock_uvicorn_run, mock_get_settings, runner
+    ):
         """Test run command uses port from config when none specified."""
         mock_settings = MagicMock()
         mock_settings.environment = "test"
@@ -248,5 +267,5 @@ class TestAPICLI:
             port=9999,  # From mock settings
             reload=False,
             workers=1,
-            log_level="debug"  # Lowercased from settings
+            log_level="debug",  # Lowercased from settings
         )
