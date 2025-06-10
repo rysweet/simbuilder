@@ -507,7 +507,6 @@ def cleanup(session_id: str) -> None:
 def _get_current_session_id() -> str | None:
     """
     Get the current session ID from environment or .env.session file.
-    
     Returns:
         Session ID if found, None otherwise
     """
@@ -524,41 +523,28 @@ def _get_current_session_id() -> str | None:
     try:
         env_session_path = get_project_root() / ".env.session"
         if env_session_path.exists():
-            with open(env_session_path, encoding='utf-8') as f:
+            with env_session_path.open(encoding='utf-8') as f:
                 for line in f:
                     if line.startswith("SIMBUILDER_SESSION_ID="):
                         return line.split("=", 1)[1].strip()
-    except Exception:
-        pass
+    except Exception as e:
+        import logging
+        logging.getLogger("scaffolding.cli").warning(f"Could not read session ID from .env.session: {e}")
 
     return None
 
 
-# Register graph commands
-from src.simbuilder_graph.cli import graph_check
-from src.simbuilder_graph.cli import graph_info
+from src.simbuilder_graph.cli import graph_check, graph_info
+from src.simbuilder_servicebus.cli import app as servicebus_cli_app
+from src.simbuilder_specs.cli import app as specs_cli_app
+from src.simbuilder_api.cli import app as api_cli_app
+from src.simbuilder_llm.cli import app as llm_cli_app
 
 graph_app.command("info")(graph_info)
 graph_app.command("check")(graph_check)
-
-# Register servicebus commands
-from src.simbuilder_servicebus.cli import app as servicebus_cli_app
-
 servicebus_app.add_typer(servicebus_cli_app, name="")
-
-# Register specs commands
-from src.simbuilder_specs.cli import app as specs_cli_app
-
 specs_app.add_typer(specs_cli_app, name="")
-
-# Register api commands
-from src.simbuilder_api.cli import app as api_cli_app
-
 api_app.add_typer(api_cli_app, name="")
-
-# Register llm commands
-from src.simbuilder_llm.cli import app as llm_cli_app
-
 llm_app.add_typer(llm_cli_app, name="")
 
 
