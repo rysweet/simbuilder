@@ -1,4 +1,5 @@
 """Tenant Discovery Configuration Settings."""
+from __future__ import annotations
 
 import re
 from enum import Enum
@@ -8,6 +9,7 @@ from urllib.parse import urlparse
 from pydantic import Field
 from pydantic import ValidationInfo
 from pydantic import field_validator
+from pydantic import model_validator
 from pydantic_settings import BaseSettings
 
 
@@ -28,7 +30,10 @@ class TenantDiscoverySettings(BaseSettings):
         default_factory=lambda: None,
         description="Azure client ID for authentication (optional)",
     )
-    azure_client_secret: str = Field(..., description="Azure client secret for authentication")
+    azure_client_secret: str | None = Field(
+        default=None,
+        description="Azure client secret for authentication (optional, required only if azure_client_id is set)",
+    )
     subscription_id: str | None = Field(
         default_factory=lambda: None,
         description="Azure subscription ID for resource discovery (optional)",
@@ -104,6 +109,15 @@ class TenantDiscoverySettings(BaseSettings):
         if parsed.scheme not in ["nats", "nats+tls"]:
             raise ValueError("service_bus_url must use nats:// or nats+tls:// scheme")
         return v
+
+    @model_validator(mode="after")
+    def validate_secrets(self) -> TenantDiscoverySettings:
+        """Ensure client_secret is required only if client_id is set, optional otherwise."""
+        client_id = self.azure_client_id
+        secret = self.azure_client_secret
+        if client_id and not secret:
+            raise ValueError("azure_client_secret must be set if azure_client_id is provided.")
+        return self
 
 
 @lru_cache

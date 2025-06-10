@@ -58,7 +58,7 @@ def info() -> None:
                 else "***"
             )
         else:
-            masked_secret = "[not set]"
+            masked_secret = "[not set]"  # noqa: S105
 
         cid = None if is_missing(settings.azure_client_id) else settings.azure_client_id
         subid = None if is_missing(settings.subscription_id) else settings.subscription_id
@@ -152,10 +152,19 @@ def check() -> None:
             if check_value:
                 console.print(f"[green]✓[/green] {check_name}")
             else:
-                # Only tenant_id and secret presence are required
-                if "Tenant ID" in check_name or "Client Secret" in check_name:
+                # Only tenant_id is always required.
+                # Client Secret is only required if Client ID is set; otherwise only a warning.
+                if "Tenant ID" in check_name:
                     console.print(f"[red]✗[/red] {check_name}")
                     all_passed = False
+                elif "Client Secret" in check_name:
+                    if not is_missing(
+                        settings.azure_client_id
+                    ):  # client ID is present, so secret is required
+                        console.print(f"[red]✗[/red] {check_name} (required with Client ID)")
+                        all_passed = False
+                    else:
+                        console.print(f"[yellow]⚠[/yellow] {check_name} [optional] not set")
                 else:
                     console.print(f"[yellow]⚠[/yellow] {check_name} [optional] not set")
         # DEBUG: summary line for troubleshooting

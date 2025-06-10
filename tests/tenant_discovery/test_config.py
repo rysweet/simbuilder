@@ -43,7 +43,7 @@ class TestTenantDiscoverySettings:
     def test_only_required_fields(self):
         """Test config loads when only azure_tenant_id and azure_client_secret are provided."""
         tenant_id = str(uuid.uuid4())
-        secret = "test-secret-456"
+        secret = "test-secret-456"  # noqa: S105
         settings = TenantDiscoverySettings(
             azure_tenant_id=tenant_id,
             azure_client_secret=secret,
@@ -243,7 +243,9 @@ class TestTenantDiscoverySettings:
         """Test no validation error if optional uuid fields are missing."""
         tenant_id = str(uuid.uuid4())
         TenantDiscoverySettings(
-            azure_tenant_id=tenant_id, azure_client_secret="foo", _env_file=None
+            azure_tenant_id=tenant_id,
+            azure_client_secret="foo",  # noqa: S106
+            _env_file=None,
         )
         # Should not raise; optional fields can be None
 
@@ -343,6 +345,26 @@ class TestGetTdSettings:
         assert result.exit_code == 0
         assert "Validating Tenant Discovery configuration" in result.stdout
         assert "All required configuration checks passed" in result.stdout
+
+    @patch.dict(
+        os.environ,
+        {"TD_AZURE_TENANT_ID": "12345678-1234-1234-1234-123456789012"},
+        clear=True,
+    )
+    def test_check_command_minimal_env(self):
+        """Test the check command succeeds with only minimal tenant id set (no client id, no secret)."""
+        get_td_settings.cache_clear()
+        runner = CliRunner()
+        result = runner.invoke(app, ["config", "check"])
+        if result.exit_code != 0:
+            print("==== CLI OUTPUT ====")
+            print(result.stdout)
+        assert result.exit_code == 0
+        assert "Validating Tenant Discovery configuration" in result.stdout
+        assert "All required configuration checks passed" in result.stdout
+        assert "Azure Client ID presence (optional)" in result.stdout
+        assert "Azure Client Secret presence" in result.stdout
+        assert "optional" in result.stdout.lower()
 
     @patch.dict(
         os.environ,
