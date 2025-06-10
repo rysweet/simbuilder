@@ -69,7 +69,7 @@ class TemplateLoader:
             )
 
         self.repository = repository
-        self._env: "Environment | None" = None
+        self._env: Environment | None = None
         self._template_cache: dict[str, Any] = {}
         # Add cache_clear for compatibility with tests that patch the method
         from contextlib import suppress
@@ -195,7 +195,6 @@ class TemplateLoader:
         self._template_cache.clear()
         self._env = None
 
-    @functools.lru_cache(maxsize=32)
     def load_template(self, template_name: str) -> Any:
         """Load and compile a Liquid template.
 
@@ -339,6 +338,5 @@ class TemplateLoader:
 
 
 def patch_template_loader_cache_clear() -> None:
-    TemplateLoader.load_template_cache_clear = staticmethod(
-        lambda: TemplateLoader.load_template.cache_clear()
-    )  # type: ignore[attr-defined]
+    """Compatibility function for tests that expect cache_clear method."""
+    pass
