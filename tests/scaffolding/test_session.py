@@ -160,48 +160,48 @@ class TestSessionManager:
 
     def test_get_session_status_nonexistent(self):
         """Test get_session_status returns None for nonexistent session."""
-        with tempfile.TemporaryDirectory() as temp_dir:
-            with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
-                session_manager = SessionManager()
-                status = session_manager.get_session_status("nonexistent-session")
+        with tempfile.TemporaryDirectory() as temp_dir, \
+             patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
+            session_manager = SessionManager()
+            status = session_manager.get_session_status("nonexistent-session")
 
-                assert status is None
+            assert status is None
 
     @patch.object(SessionManager, '_check_containers_running')
     def test_get_session_status_existing(self, mock_check_containers):
         """Test get_session_status returns status for existing session."""
-        with tempfile.TemporaryDirectory() as temp_dir:
-            with patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
-                session_manager = SessionManager()
-                mock_check_containers.return_value = False
+        with tempfile.TemporaryDirectory() as temp_dir, \
+             patch('src.scaffolding.session.get_project_root', return_value=Path(temp_dir)):
+            session_manager = SessionManager()
+            mock_check_containers.return_value = False
 
-                # Create test session
-                session_id = "test-session-1"
-                session_dir = session_manager.sessions_dir / session_id
-                session_dir.mkdir(parents=True)
+            # Create test session
+            session_id = "test-session-1"
+            session_dir = session_manager.sessions_dir / session_id
+            session_dir.mkdir(parents=True)
 
-                env_file_path = Path(temp_dir) / ".env.session"
-                env_file_path.write_text("SIMBUILDER_SESSION_ID=test-session-1")
+            env_file_path = Path(temp_dir) / ".env.session"
+            env_file_path.write_text("SIMBUILDER_SESSION_ID=test-session-1")
 
-                metadata = {
-                    "session_id": session_id,
-                    "session_short": "test1234",
-                    "compose_project_name": "simbuilder-test1234",
-                    "created_at": "2024-01-01T00:00:00",
-                    "env_file_path": str(env_file_path),
-                    "allocated_ports": {"service1": 30000}
-                }
+            metadata = {
+                "session_id": session_id,
+                "session_short": "test1234",
+                "compose_project_name": "simbuilder-test1234",
+                "created_at": "2024-01-01T00:00:00",
+                "env_file_path": str(env_file_path),
+                "allocated_ports": {"service1": 30000}
+            }
 
-                metadata_file = session_dir / "metadata.json"
-                with open(metadata_file, 'w', encoding='utf-8') as f:
-                    json.dump(metadata, f)
+            metadata_file = session_dir / "metadata.json"
+            with open(metadata_file, 'w', encoding='utf-8') as f:
+                json.dump(metadata, f)
 
-                status = session_manager.get_session_status(session_id)
+            status = session_manager.get_session_status(session_id)
 
-                assert status is not None
-                assert status["session_id"] == session_id
-                assert status["env_file_exists"] is True
-                assert status["containers_running"] is False
+            assert status is not None
+            assert status["session_id"] == session_id
+            assert status["env_file_exists"] is True
+            assert status["containers_running"] is False
 
     @patch.object(SessionManager, '_stop_containers')
     def test_cleanup_session_nonexistent(self, mock_stop_containers):
