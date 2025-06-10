@@ -140,3 +140,9 @@ gh pr create --title "Stub: Integrate graph commands into tdcli" --body "..." --
 ```
 
 # Created draft PR #31 for graph commands integration stub (branch: fix/integrate-graph-commands-into-tdcli)
+
+```bash
+git status
+```
+
+# Checking git status before starting tdcli discovery command implementation task
