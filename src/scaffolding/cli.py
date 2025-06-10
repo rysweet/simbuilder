@@ -14,6 +14,13 @@ from .exceptions import ConfigurationError
 from .logging import setup_logging
 from .session import SessionManager
 
+from src.simbuilder_api.cli import app as api_cli_app
+from src.simbuilder_graph.cli import graph_check
+from src.simbuilder_graph.cli import graph_info
+from src.simbuilder_llm.cli import app as llm_cli_app
+from src.simbuilder_servicebus.cli import app as servicebus_cli_app
+from src.simbuilder_specs.cli import app as specs_cli_app
+
 app = typer.Typer(
     name="scaffolding",
     help="SimBuilder scaffolding utilities and health checks",
@@ -534,11 +541,12 @@ def _get_current_session_id() -> str | None:
     return None
 
 
-from src.simbuilder_graph.cli import graph_check, graph_info
+from src.simbuilder_api.cli import app as api_cli_app
+from src.simbuilder_graph.cli import graph_check
+from src.simbuilder_graph.cli import graph_info
+from src.simbuilder_llm.cli import app as llm_cli_app
 from src.simbuilder_servicebus.cli import app as servicebus_cli_app
 from src.simbuilder_specs.cli import app as specs_cli_app
-from src.simbuilder_api.cli import app as api_cli_app
-from src.simbuilder_llm.cli import app as llm_cli_app
 
 graph_app.command("info")(graph_info)
 graph_app.command("check")(graph_check)
