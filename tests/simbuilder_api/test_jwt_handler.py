@@ -20,7 +20,7 @@ class TestJWTHandler:
         """Test JWT handler initialization."""
         handler = JWTHandler("test-secret", "test-issuer")
 
-        assert handler.secret == "test-secret"
+        assert handler.secret == "test-secret"  # noqa: S105
         assert handler.issuer == "test-issuer"
         assert handler.algorithm == "HS256"
 
@@ -28,7 +28,7 @@ class TestJWTHandler:
         """Test JWT handler initialization with default issuer."""
         handler = JWTHandler("test-secret")
 
-        assert handler.secret == "test-secret"
+        assert handler.secret == "test-secret"  # noqa: S105
         assert handler.issuer == "simbuilder"
         assert handler.algorithm == "HS256"
 
