@@ -44,6 +44,10 @@ class ServiceBusClient(LoggingMixin):
                 servers=[self.settings.service_bus_url],
                 cluster_id=self.settings.service_bus_cluster_id,
                 client_id=f"simbuilder-{uuid.uuid4().hex[:8]}",
+                max_reconnect_attempts=5,
+                reconnect_time_wait=2,
+                ping_interval=20,
+                max_outstanding=16384,
             )
 
         self._nats: NatsClient | None = None
@@ -128,10 +132,10 @@ class ServiceBusClient(LoggingMixin):
             stream_config = StreamConfig(
                 name=topic.name,
                 subjects=[topic.subject_pattern],
-                retention=topic.retention_policy,
+                retention=getattr(getattr(topic, "retention_policy", None), "value", None),
                 max_age=topic.max_age_seconds,
                 max_msgs=topic.max_messages,
-                replicas=topic.replicas,
+                num_replicas=topic.replicas,
             )
 
             try:
@@ -209,7 +213,7 @@ class ServiceBusClient(LoggingMixin):
     async def subscribe(
         self,
         config: SubscriptionConfig,
-        message_handler: Callable[[MessageSchema], None],
+        message_handler: Callable[[MessageSchema], None] | Callable[[MessageSchema], Any],
         error_handler: Callable[[Exception], None] | None = None
     ) -> str:
         """Subscribe to messages on a topic.
@@ -228,7 +232,7 @@ class ServiceBusClient(LoggingMixin):
         try:
             self.logger.info("Creating subscription", subscription=config.name)
 
-            async def msg_handler(msg):
+            async def msg_handler(msg: Any) -> None:
                 try:
                     # Parse message
                     message_data = json.loads(msg.data.decode('utf-8'))
@@ -242,7 +246,11 @@ class ServiceBusClient(LoggingMixin):
                     )
 
                     # Process message
-                    await message_handler(message)
+                    import inspect
+                    if inspect.iscoroutinefunction(message_handler):
+                        await message_handler(message)
+                    else:
+                        message_handler(message)
 
                     # Acknowledge message if not auto-ack
                     if not config.auto_ack:
@@ -256,7 +264,11 @@ class ServiceBusClient(LoggingMixin):
                     })
 
                     if error_handler:
-                        await error_handler(e)
+                        import inspect
+                        if inspect.iscoroutinefunction(error_handler):
+                            await error_handler(e)
+                        else:
+                            error_handler(e)
 
                     # Negative acknowledgment for retry
                     if not config.auto_ack:
@@ -331,11 +343,11 @@ class ServiceBusClient(LoggingMixin):
         if self._connected and self._nats:
             try:
                 # Test connection with RTT
-                rtt = await self._nats.rtt()
+                rtt = await self._nats.rtt()  # type: ignore[attr-defined]
                 health_status.update({
-                    "rtt_ms": round(rtt * 1000, 2),
-                    "is_connected": self._nats.is_connected,
-                    "server_info": self._nats.connected_server_version,
+                    "rtt_ms": round(rtt * 1000, 2) if rtt else None,
+                    "is_connected": getattr(self._nats, "is_connected", False),
+                    "server_info": getattr(self._nats, "connected_server_version", ""),
                     "active_subscriptions": len(self._subscriptions),
                     "active_streams": len(self._streams),
                 })
@@ -363,11 +375,11 @@ class ServiceBusClient(LoggingMixin):
         self.logger.info("NATS connection restored")
 
     # Context manager support
-    async def __aenter__(self):
+    async def __aenter__(self) -> "ServiceBusClient":
         """Async context manager entry."""
         await self.connect()
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         """Async context manager exit."""
         await self.disconnect()

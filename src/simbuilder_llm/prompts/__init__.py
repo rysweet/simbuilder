@@ -38,7 +38,7 @@ class PromptLoader:
         self.template_dir = template_dir
         self._env = Environment(loader=FileSystemLoader(str(template_dir)))
 
-    def load_template(self, name: str) -> Template:
+    def load_template(self, name: str) -> Any:
         """Load a template by name with caching.
 
         Args:
@@ -144,7 +144,7 @@ class PromptLoader:
             logger.debug(f"Rendering template {template_name} with variables: {list(variables.keys())}")
 
             result = template.render(**variables)
-            return result
+            return str(result)
 
         except PromptRenderError:
             raise
@@ -182,7 +182,7 @@ def get_prompt_loader() -> PromptLoader:
     return _prompt_loader
 
 
-def load_prompt(name: str) -> Template:
+def load_prompt(name: str) -> Any:
     """Load a prompt template by name.
 
     Args:

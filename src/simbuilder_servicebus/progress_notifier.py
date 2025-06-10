@@ -3,6 +3,7 @@
 import uuid
 from datetime import datetime
 from datetime import timedelta
+from typing import Any
 
 from src.scaffolding.logging import LoggingMixin
 
@@ -37,14 +38,14 @@ class ProgressNotifier(LoggingMixin):
         self._start_time = datetime.utcnow()
         self._last_update_time = self._start_time
 
-    async def __aenter__(self):
+    async def __aenter__(self) -> "ProgressNotifier":
         """Async context manager entry."""
         if self._own_client:
             self._client = ServiceBusClient()
             await self._client.connect()
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
+    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
         """Async context manager exit."""
         if self._own_client and self._client:
             await self._client.disconnect()
@@ -215,10 +216,14 @@ class ProgressNotifier(LoggingMixin):
             return
 
         try:
+            from .models import MessagePriority
+            from .models import MessageType
             message = ProgressMessage(
                 message_id=str(uuid.uuid4()),
+                message_type=MessageType.PROGRESS_UPDATE,
                 session_id=self.session_id,
                 source=f"{self.operation}_notifier",
+                priority=MessagePriority.NORMAL,
                 operation=self.operation,
                 progress_percentage=progress_percentage,
                 current_step=current_step,

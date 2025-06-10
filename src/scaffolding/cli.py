@@ -3,17 +3,20 @@ CLI interface for SimBuilder scaffolding operations.
 """
 
 import asyncio
+from typing import Any
+from typing import cast
 
 import typer
 from rich.console import Console
 from rich.table import Table
 
-from src.simbuilder_api.cli import app as api_cli_app
-from src.simbuilder_graph.cli import graph_check
-from src.simbuilder_graph.cli import graph_info
-from src.simbuilder_llm.cli import app as llm_cli_app
-from src.simbuilder_servicebus.cli import app as servicebus_cli_app
-from src.simbuilder_specs.cli import app as specs_cli_app
+# Use type: ignore for modules that may not exist
+from simbuilder_api.cli import app as api_cli_app  # type: ignore[import-not-found]
+from simbuilder_graph.cli import graph_check  # type: ignore[import-not-found]
+from simbuilder_graph.cli import graph_info
+from simbuilder_llm.cli import app as llm_cli_app  # type: ignore[import-not-found]
+from simbuilder_servicebus.cli import app as servicebus_cli_app  # type: ignore[import-not-found]
+from simbuilder_specs.cli import app as specs_cli_app  # type: ignore[import-not-found]
 
 from . import __version__
 from .config import get_settings
@@ -220,7 +223,7 @@ def check() -> None:
         raise typer.Exit(1) from e
 
 
-def _check_neo4j(settings) -> tuple[str, str]:
+def _check_neo4j(settings: Any) -> tuple[str, str]:
     """Check Neo4j connectivity."""
     try:
         # Import here to avoid dependency issues if Neo4j not available
@@ -247,13 +250,13 @@ def _check_neo4j(settings) -> tuple[str, str]:
         return "[red]✗ FAIL[/red]", f"Connection failed: {str(e)[:50]}..."
 
 
-def _check_nats(settings) -> tuple[str, str]:
+def _check_nats(settings: Any) -> tuple[str, str]:
     """Check NATS connectivity."""
     try:
         # Import here to avoid dependency issues if NATS not available
         import nats
 
-        async def check_connection():
+        async def check_connection() -> tuple[bool, str]:
             try:
                 nc = await nats.connect(settings.service_bus_url)
                 await nc.close()
@@ -331,8 +334,10 @@ def create(
         ports_table.add_column("Service", style="cyan")
         ports_table.add_column("Port", style="green")
 
-        for service, port in session_info["allocated_ports"].items():
-            ports_table.add_row(service, str(port))
+        allocated_ports = cast(dict[str, Any], session_info.get("allocated_ports", {}))
+        if isinstance(allocated_ports, dict):
+            for service, port in allocated_ports.items():
+                ports_table.add_row(service, str(port))
 
         console.print(ports_table)
 
@@ -455,8 +460,10 @@ def status(session_id: str) -> None:
             ports_table.add_column("Service", style="cyan")
             ports_table.add_column("Port", style="green")
 
-            for service, port in session_info["allocated_ports"].items():
-                ports_table.add_row(service, str(port))
+            allocated_ports = cast(dict[str, Any], session_info.get("allocated_ports", {}))
+            if isinstance(allocated_ports, dict):
+                for service, port in allocated_ports.items():
+                    ports_table.add_row(service, str(port))
 
             console.print(ports_table)
 

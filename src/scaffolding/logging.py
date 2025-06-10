@@ -48,7 +48,7 @@ def setup_logging() -> FilteringBoundLogger:
         cache_logger_on_first_use=True,
     )
 
-    return structlog.get_logger("simbuilder")
+    return structlog.get_logger("simbuilder")  # type: ignore[no-any-return]
 
 
 def get_logger(name: str = "simbuilder") -> FilteringBoundLogger:
@@ -59,7 +59,7 @@ def get_logger(name: str = "simbuilder") -> FilteringBoundLogger:
     Returns:
         Configured structlog logger instance
     """
-    return structlog.get_logger(name)
+    return structlog.get_logger(name)  # type: ignore[no-any-return]
 
 
 def log_function_call(
@@ -108,9 +108,9 @@ def log_error_with_context(
 class LoggingMixin:
     """Mixin to add structured logging to classes."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.logger = get_logger(self.__class__.__name__)
+        self.logger: FilteringBoundLogger = get_logger(self.__class__.__name__)
 
     def log_method_call(self, method_name: str, **kwargs: Any) -> None:
         """Log a method call with parameters."""

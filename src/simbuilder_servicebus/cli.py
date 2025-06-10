@@ -10,6 +10,7 @@ from rich.panel import Panel
 from rich.table import Table
 
 from .client import ServiceBusClient
+from .models import MessagePriority
 from .models import MessageSchema
 from .models import MessageType
 from .progress_notifier import ProgressNotifier
@@ -23,7 +24,7 @@ console = Console()
 def info() -> None:
     """Display Service Bus configuration and status."""
     try:
-        async def _info():
+        async def _info() -> None:
             async with ServiceBusClient() as client:
                 health = await client.health_check()
 
@@ -73,7 +74,7 @@ def info() -> None:
 def health() -> None:
     """Perform health check on Service Bus connection."""
     try:
-        async def _health():
+        async def _health() -> None:
             async with ServiceBusClient() as client:
                 health = await client.health_check()
 
@@ -97,7 +98,7 @@ def health() -> None:
 def setup_topics() -> None:
     """Create all predefined topics and streams."""
     try:
-        async def _setup():
+        async def _setup() -> None:
             async with ServiceBusClient() as client:
                 topics = TopicManager.get_all_topics()
 
@@ -130,7 +131,7 @@ def publish(
 ) -> None:
     """Publish a test message to a subject."""
     try:
-        async def _publish():
+        async def _publish() -> None:
             # Parse message data
             try:
                 message_data = json.loads(data)
@@ -144,7 +145,8 @@ def publish(
                 message_type=MessageType(message_type),
                 session_id=session_id,
                 source="cli",
-                data=message_data
+                data=message_data,
+                priority=MessagePriority.NORMAL
             )
 
             async with ServiceBusClient() as client:
@@ -165,10 +167,10 @@ def subscribe(
 ) -> None:
     """Subscribe to messages and display them."""
     try:
-        async def _subscribe():
+        async def _subscribe() -> None:
             messages_received = 0
 
-            async def message_handler(message: MessageSchema):
+            async def message_handler(message: MessageSchema) -> None:
                 nonlocal messages_received
                 messages_received += 1
 
@@ -190,8 +192,11 @@ def subscribe(
                 name=f"cli-subscriber-{asyncio.get_event_loop().time()}",
                 topic="test",  # Will be overridden by subject_filter
                 subject_filter=subject_pattern,
+                queue_group=None,
                 durable=False,
-                auto_ack=True
+                auto_ack=True,
+                max_pending=1000,
+                ack_wait_seconds=30
             )
 
             async with ServiceBusClient() as client:
@@ -223,7 +228,7 @@ def demo_progress(
 ) -> None:
     """Demonstrate progress notifications."""
     try:
-        async def _demo():
+        async def _demo() -> None:
             async with ProgressNotifier(session_id, "demo_operation") as notifier:
                 await notifier.start_operation(total_steps=steps)
 

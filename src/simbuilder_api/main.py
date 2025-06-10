@@ -4,11 +4,12 @@ Main FastAPI application for SimBuilder API.
 
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+from typing import Any
 
 import structlog
 from fastapi import FastAPI
 
-from scaffolding.config import get_settings
+from src.scaffolding.config import get_settings
 
 from .middleware import ErrorHandlerMiddleware
 from .middleware import SessionContextMiddleware
@@ -89,7 +90,7 @@ app = create_app()
 
 
 @app.get("/")
-async def root():
+async def root() -> dict[str, Any]:
     """Root endpoint providing API information."""
     return {
         "name": "SimBuilder Core API",

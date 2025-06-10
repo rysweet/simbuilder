@@ -6,6 +6,7 @@ import subprocess
 import uuid
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 from .config import get_project_root
 from .logging import LoggingMixin
@@ -32,7 +33,7 @@ class SessionManager(LoggingMixin):
         "tenant_discovery_api"
     ]
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the SessionManager."""
         super().__init__()
         self.project_root = get_project_root()
@@ -114,7 +115,9 @@ class SessionManager(LoggingMixin):
 
         # Save session metadata
         session_metadata_path = session_dir / "metadata.json"
-        self._write_session_metadata(session_metadata_path, session_info)
+        from typing import Any
+        from typing import cast
+        self._write_session_metadata(session_metadata_path, cast(dict[str, Any], session_info))
 
         self.logger.info(
             "Created new session",
@@ -124,7 +127,7 @@ class SessionManager(LoggingMixin):
             allocated_ports=allocated_ports
         )
 
-        return session_info
+        return cast(dict[str, str], session_info)
 
     def list_sessions(self) -> list[dict[str, str]]:
         """
@@ -133,7 +136,7 @@ class SessionManager(LoggingMixin):
         Returns:
             List of session information dictionaries
         """
-        sessions = []
+        sessions: list[dict[str, str]] = []
 
         if not self.sessions_dir.exists():
             return sessions
@@ -179,12 +182,12 @@ class SessionManager(LoggingMixin):
 
             # Add runtime status information
             env_session_path = Path(session_info["env_file_path"])
-            session_info["env_file_exists"] = env_session_path.exists()
+            session_info["env_file_exists"] = str(env_session_path.exists())
 
             # Check if Docker containers are running
-            session_info["containers_running"] = self._check_containers_running(
+            session_info["containers_running"] = str(self._check_containers_running(
                 session_info["compose_project_name"]
-            )
+            ))
 
             self.logger.debug("Retrieved session status", session_id=session_id)
             return session_info
@@ -265,7 +268,7 @@ class SessionManager(LoggingMixin):
             self.log_error(e, {"operation": "write_env_file", "path": str(file_path)})
             raise
 
-    def _write_session_metadata(self, file_path: Path, session_info: dict[str, str]) -> None:
+    def _write_session_metadata(self, file_path: Path, session_info: dict[str, Any]) -> None:
         """Write session metadata to JSON file."""
         import json
 
@@ -284,7 +287,8 @@ class SessionManager(LoggingMixin):
         import json
 
         with file_path.open(encoding='utf-8') as f:
-            return json.load(f)
+            from typing import cast
+            return cast(dict[str, str], json.load(f))
 
     def _check_containers_running(self, compose_project_name: str) -> bool:
         """Check if Docker containers for the project are running."""

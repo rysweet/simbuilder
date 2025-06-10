@@ -3,7 +3,9 @@ Error handling middleware for SimBuilder API.
 """
 
 import traceback
+from collections.abc import Awaitable
 from collections.abc import Callable
+from typing import Any
 
 import structlog
 from fastapi import HTTPException
@@ -18,7 +20,7 @@ logger = structlog.get_logger(__name__)
 class ErrorHandlerMiddleware(BaseHTTPMiddleware):
     """Global error handling middleware."""
 
-    def __init__(self, app, debug: bool = False) -> None:
+    def __init__(self, app: Any, debug: bool = False) -> None:
         """Initialize error handler middleware.
 
         Args:
@@ -28,7 +30,7 @@ class ErrorHandlerMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.debug = debug
 
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+    async def dispatch(self, request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
         """Process request with global error handling.
 
         Args:

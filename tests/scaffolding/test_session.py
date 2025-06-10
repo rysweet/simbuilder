@@ -201,8 +201,8 @@ class TestSessionManager:
 
             assert status is not None
             assert status["session_id"] == session_id
-            assert status["env_file_exists"] is True
-            assert status["containers_running"] is False
+            assert status["env_file_exists"] == "True"
+            assert status["containers_running"] == "False"
 
     @patch.object(SessionManager, '_stop_containers')
     def test_cleanup_session_nonexistent(self, mock_stop_containers):

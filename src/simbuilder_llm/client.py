@@ -5,6 +5,7 @@ Azure OpenAI client with async support, retry logic, and error handling.
 import logging
 from collections.abc import AsyncGenerator
 from typing import Any
+from typing import cast
 
 from openai import AsyncAzureOpenAI
 from openai.types import CreateEmbeddingResponse
@@ -96,9 +97,9 @@ class AzureOpenAIClient:
         try:
             # Convert ChatMessage objects to dicts if needed
             if messages and isinstance(messages[0], ChatMessage):
-                message_dicts = [{"role": msg.role, "content": msg.content} for msg in messages]
+                message_dicts = [{"role": msg.role, "content": msg.content} for msg in cast(list[ChatMessage], messages)]
             else:
-                message_dicts = messages
+                message_dicts = cast(list[dict[str, Any]], messages)
 
             model = model or self._settings.azure_openai_model_chat
 
@@ -109,7 +110,7 @@ class AzureOpenAIClient:
 
             response = await self.client.chat.completions.create(
                 model=model,
-                messages=message_dicts,
+                messages=message_dicts,  # type: ignore[arg-type]
                 temperature=temperature,
                 max_tokens=max_tokens,
                 stream=stream,
@@ -119,7 +120,7 @@ class AzureOpenAIClient:
             if stream:
                 return self._stream_chat_completion(response)
 
-            return response
+            return cast(ChatCompletion, response)
 
         except Exception as e:
             logger.error(f"Chat completion failed: {e}")
@@ -199,7 +200,7 @@ class AzureOpenAIClient:
 
             response = await self.client.chat.completions.create(
                 model=self._settings.azure_openai_model_chat,
-                messages=messages,
+                messages=messages,  # type: ignore[arg-type]
                 max_tokens=1,
                 temperature=0,
             )

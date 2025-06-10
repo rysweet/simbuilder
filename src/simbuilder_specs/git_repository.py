@@ -19,7 +19,7 @@ class GitRepositoryError(Exception):
 class GitRepository:
     """Git repository manager for template storage."""
 
-    def __init__(self, repo_url: str, branch: str | None = None, local_path: Path | None = None):
+    def __init__(self, repo_url: str, branch: str = "main", local_path: Path | None = None):
         """Initialize Git repository manager.
 
         Args:

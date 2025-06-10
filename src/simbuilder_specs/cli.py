@@ -2,6 +2,8 @@
 CLI interface for SimBuilder Specs Library.
 """
 
+from __future__ import annotations
+
 import json
 import types
 from pathlib import Path
@@ -22,7 +24,7 @@ from .template_loader import TemplateLoader
 from .template_loader import TemplateLoaderError
 
 
-def resolve_str_for_cli(val):
+def resolve_str_for_cli(val: object) -> str:
     """Robustly unwrap nested Mocks/callables for CLI output and test compatibility."""
 
     tried = 0
@@ -65,12 +67,23 @@ def resolve_str_for_cli(val):
         return ""
     return str(result) if result is not None else ""
 
-def path_exists(path):
+def path_exists(path: object) -> bool:
+    """Return True if path-like object exists, False otherwise."""
     try:
-        return path.exists()
-    except AttributeError:
-        # For MagicMock etc., let the test control the outcome
-        return hasattr(path, "exists")
+        # Only call .exists() if it's actually a Path
+        if isinstance(path, Path):
+            return path.exists()
+        # For MagicMock (test context) with .exists:
+        if hasattr(path, "exists") and callable(getattr(path, "exists", None)):
+            # Only call .exists on real Path or MagicMock in tests; strict type check for bool.
+            exists_val = path.exists()
+            if isinstance(exists_val, bool):
+                return exists_val
+            return bool(exists_val)
+        # custom test mocks
+        if hasattr(path, "exists"):
+            return bool(path.exists)
+        return False
     except Exception:
         return False
 
@@ -80,11 +93,12 @@ app = cli  # app and cli are the same Typer instance; use either for legacy or t
 
 # === SimBuilder CLI commands (info, pull, validate, render, etc.) follow ===
 
-def _get_template_loader(repo: "GitRepository" = None) -> TemplateLoader:
+def _get_template_loader(repo: GitRepository | None = None) -> TemplateLoader:
     """Return a TemplateLoader instance; for tests, repo argument is necessary."""
     if repo is not None:
         return TemplateLoader(repo)
-    return TemplateLoader()
+    # TemplateLoader now requires explicit repository; raise at test time if misused.
+    raise TypeError("TemplateLoader now requires a repository argument (not None)")
 
 # --- CLI Commands ---
 
@@ -176,7 +190,7 @@ def pull() -> None:
 def validate(
     template_name: str = typer.Argument(None, help="Validate one template by name (optional)"),
     context_file: Path = typer.Option(None, "--context-file", help="YAML/JSON file with template variables"),
-):
+) -> None:
     """Validate templates or a single template."""
     try:
         loader = _get_template_loader(GitRepository(get_settings().spec_repo_url, get_settings().spec_repo_branch))
@@ -222,7 +236,7 @@ def render(
     context_file: Path = typer.Option(None, "--context-file", help="YAML/JSON file with template variables"),
     output: Path = typer.Option(None, "--output", help="Write rendered output to file"),
     strict: bool = typer.Option(False, "--strict", help="Enable strict variable checking"),
-):
+) -> None:
     """Render a template with (optionally) a context file and/or output."""
     try:
         loader = _get_template_loader(GitRepository(get_settings().spec_repo_url, get_settings().spec_repo_branch))

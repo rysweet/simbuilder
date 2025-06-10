@@ -12,7 +12,7 @@ from fastapi import HTTPException
 from fastapi import Request
 from pydantic import BaseModel
 
-from scaffolding.config import Settings
+from src.scaffolding.config import Settings
 
 from ..dependencies import get_settings
 from ..models import Simulation
@@ -60,7 +60,10 @@ async def create_simulation(
         parameters=simulation_data.parameters,
         results={},
         created_at=now,
-        updated_at=now
+        updated_at=now,
+        started_at=None,
+        completed_at=None,
+        error_message=None
     )
 
     _simulations[simulation_id] = simulation

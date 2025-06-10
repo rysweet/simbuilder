@@ -5,9 +5,13 @@ CLI commands for SimBuilder LLM integration.
 import asyncio
 import json
 import logging
+from collections.abc import AsyncGenerator
 from typing import Any
+from typing import cast
 
 import typer
+from openai.types.chat import ChatCompletion
+from openai.types.chat import ChatCompletionChunk
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text
@@ -89,7 +93,10 @@ async def _send_chat_completion(
                 stream=True,
             )
 
-            async for chunk in response:
+            # Cast to the async generator type for streaming
+            stream_response = cast(AsyncGenerator[ChatCompletionChunk, None], response)
+
+            async for chunk in stream_response:
                 if chunk.choices and chunk.choices[0].delta.content:
                     console.print(chunk.choices[0].delta.content, end="")
             console.print()  # Final newline
@@ -102,8 +109,11 @@ async def _send_chat_completion(
                 stream=False,
             )
 
-            if response.choices:
-                content = response.choices[0].message.content
+            # Cast to ChatCompletion for non-streaming
+            completion_response = cast(ChatCompletion, response)
+
+            if completion_response.choices:
+                content = completion_response.choices[0].message.content
                 console.print(f"[green]Response:[/green] {content}")
             else:
                 console.print("[yellow]No response content received[/yellow]")
