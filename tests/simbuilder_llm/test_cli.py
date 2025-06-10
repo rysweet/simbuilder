@@ -2,13 +2,16 @@
 Tests for the LLM CLI module.
 """
 
-import json
+from unittest.mock import AsyncMock
+from unittest.mock import MagicMock
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
 from typer.testing import CliRunner
 
 from src.simbuilder_llm.cli import app
-from src.simbuilder_llm.exceptions import LLMError, PromptRenderError
+from src.simbuilder_llm.exceptions import LLMError
+from src.simbuilder_llm.exceptions import PromptRenderError
 
 
 @pytest.fixture
@@ -38,7 +41,7 @@ class TestChatCommand:
         """Test successful chat command."""
         # Mock prompt rendering
         mock_render_prompt.return_value = "Hello, how can I help you?"
-        
+
         # Mock client and response
         mock_client = AsyncMock()
         mock_response = MagicMock()
@@ -88,14 +91,14 @@ class TestChatCommand:
     def test_chat_with_streaming(self, mock_client_class, mock_render_prompt, runner):
         """Test chat command with streaming enabled."""
         mock_render_prompt.return_value = "Hello"
-        
+
         # Mock streaming response
         async def mock_stream():
             chunk1 = MagicMock()
             chunk1.choices = [MagicMock()]
             chunk1.choices[0].delta.content = "Hello "
             yield chunk1
-            
+
             chunk2 = MagicMock()
             chunk2.choices = [MagicMock()]
             chunk2.choices[0].delta.content = "world!"
@@ -121,7 +124,7 @@ class TestChatCommand:
     def test_chat_llm_error(self, mock_client_class, mock_render_prompt, runner):
         """Test chat command with LLM error."""
         mock_render_prompt.return_value = "Hello"
-        
+
         mock_client = AsyncMock()
         mock_client.create_chat_completion.side_effect = LLMError("API Error")
         mock_client.close = AsyncMock()
@@ -141,7 +144,7 @@ class TestChatCommand:
     def test_chat_with_custom_options(self, mock_client_class, mock_render_prompt, runner):
         """Test chat command with custom options."""
         mock_render_prompt.return_value = "Hello"
-        
+
         mock_client = AsyncMock()
         mock_response = MagicMock()
         mock_response.choices = [MagicMock()]
@@ -334,7 +337,7 @@ class TestCheckCommand:
         mock_check_config.return_value = [
             ("Config Test", True, "OK"),
         ]
-        
+
         # Mock async function properly
         mock_check_connectivity.return_value = [("Connectivity Test", True, "Connected")]
 
@@ -353,7 +356,7 @@ class TestCheckCommand:
         mock_check_config.return_value = [
             ("Config Test", False, "Failed"),
         ]
-        
+
         mock_check_connectivity.return_value = [("Connectivity Test", True, "Connected")]
 
         result = runner.invoke(app, ["check"])
@@ -378,9 +381,9 @@ class TestCheckHelpers:
     def test_check_configuration_all_set(self, mock_settings):
         """Test configuration check with all settings."""
         from src.simbuilder_llm.cli import _check_configuration
-        
+
         checks = _check_configuration(mock_settings)
-        
+
         # All checks should pass
         assert len(checks) == 4
         assert all(status for _, status, _ in checks)
@@ -388,15 +391,15 @@ class TestCheckHelpers:
     def test_check_configuration_missing_settings(self):
         """Test configuration check with missing settings."""
         from src.simbuilder_llm.cli import _check_configuration
-        
+
         settings = MagicMock()
         settings.azure_openai_endpoint = None
         settings.azure_openai_key = None
         settings.azure_openai_api_version = None
         settings.azure_openai_model_chat = None
-        
+
         checks = _check_configuration(settings)
-        
+
         # All checks should fail
         assert len(checks) == 4
         assert not any(status for _, status, _ in checks)
@@ -406,7 +409,7 @@ class TestCheckHelpers:
     async def test_check_connectivity_success(self, mock_client_class):
         """Test successful connectivity check."""
         from src.simbuilder_llm.cli import _check_connectivity
-        
+
         mock_client = AsyncMock()
         mock_client.check_health.return_value = {
             "status": "healthy",
@@ -428,7 +431,7 @@ class TestCheckHelpers:
     async def test_check_connectivity_failure(self, mock_client_class):
         """Test failed connectivity check."""
         from src.simbuilder_llm.cli import _check_connectivity
-        
+
         mock_client = AsyncMock()
         mock_client.check_health.return_value = {
             "status": "unhealthy",
@@ -450,7 +453,7 @@ class TestCheckHelpers:
     async def test_check_connectivity_exception(self, mock_client_class):
         """Test connectivity check with exception."""
         from src.simbuilder_llm.cli import _check_connectivity
-        
+
         mock_client = AsyncMock()
         mock_client.check_health.side_effect = Exception("Network error")
         mock_client.close = AsyncMock()

@@ -3,14 +3,13 @@ CLI interface for SimBuilder Specs Library.
 """
 
 import json
-import sys
 from pathlib import Path
-from typing import Any
 
 import typer
 import yaml  # type: ignore
 from rich.console import Console
 from rich.table import Table
+
 
 def resolve_str_for_cli(val):
     """Robustly unwrap nested Mocks/callables for CLI output and test compatibility."""
@@ -69,10 +68,13 @@ def path_exists(path):
         return False
 
 from src.scaffolding.config import get_settings
-from .git_repository import GitRepository, GitRepositoryError
+
+from .git_repository import GitRepository
+from .git_repository import GitRepositoryError
 from .models import TemplateRenderRequest
 from .spec_validator import SpecValidator
-from .template_loader import TemplateLoader, TemplateLoaderError
+from .template_loader import TemplateLoader
+from .template_loader import TemplateLoaderError
 
 console = Console()
 cli = typer.Typer(no_args_is_help=True, name="specs", help="SimBuilder Specs Library management")
@@ -186,7 +188,7 @@ def validate(
             if not context_file.exists():
                 console.print(f"[red]Context file not found: {context_file}[/red]")
                 raise SystemExit(1)
-            with open(context_file, "r", encoding="utf-8") as f:
+            with open(context_file, encoding="utf-8") as f:
                 if str(context_file).endswith(".json"):
                     context = json.load(f)
                 else:
@@ -234,7 +236,7 @@ def render(
             if not context_file.exists():
                 console.print(f"[red]Context file not found: {context_file}[/red]")
                 raise SystemExit(1)
-            with open(context_file, "r", encoding="utf-8") as f:
+            with open(context_file, encoding="utf-8") as f:
                 if str(context_file).endswith(".json"):
                     context = json.load(f)
                 else:

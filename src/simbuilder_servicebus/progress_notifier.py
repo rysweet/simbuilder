@@ -1,23 +1,23 @@
 """Progress notification system for long-running operations."""
 
 import uuid
-from datetime import datetime, timedelta
-from typing import Optional
+from datetime import datetime
+from datetime import timedelta
 
 from src.scaffolding.logging import LoggingMixin
 
 from .client import ServiceBusClient
-from .models import MessageType, ProgressMessage
-from .topics import TopicManager, discovery_subject
+from .models import ProgressMessage
+from .topics import discovery_subject
 
 
 class ProgressNotifier(LoggingMixin):
     """High-level interface for sending progress notifications."""
 
-    def __init__(self, 
-                 session_id: str, 
+    def __init__(self,
+                 session_id: str,
                  operation: str,
-                 client: Optional[ServiceBusClient] = None):
+                 client: ServiceBusClient | None = None):
         """Initialize progress notifier.
         
         Args:
@@ -30,9 +30,9 @@ class ProgressNotifier(LoggingMixin):
         self.operation = operation
         self._client = client
         self._own_client = client is None
-        
+
         # Progress tracking
-        self._total_steps: Optional[int] = None
+        self._total_steps: int | None = None
         self._current_step = 0
         self._start_time = datetime.utcnow()
         self._last_update_time = self._start_time
@@ -49,7 +49,7 @@ class ProgressNotifier(LoggingMixin):
         if self._own_client and self._client:
             await self._client.disconnect()
 
-    async def start_operation(self, total_steps: Optional[int] = None) -> None:
+    async def start_operation(self, total_steps: int | None = None) -> None:
         """Signal the start of an operation.
         
         Args:
@@ -74,10 +74,10 @@ class ProgressNotifier(LoggingMixin):
         )
 
     async def update_progress(self,
-                            progress_percentage: Optional[float] = None,
-                            current_step: Optional[str] = None,
-                            step_number: Optional[int] = None,
-                            details: Optional[str] = None) -> None:
+                            progress_percentage: float | None = None,
+                            current_step: str | None = None,
+                            step_number: int | None = None,
+                            details: str | None = None) -> None:
         """Update operation progress.
         
         Args:
@@ -118,9 +118,9 @@ class ProgressNotifier(LoggingMixin):
             current_step=current_step
         )
 
-    async def advance_step(self, 
+    async def advance_step(self,
                           step_description: str,
-                          details: Optional[str] = None) -> None:
+                          details: str | None = None) -> None:
         """Advance to the next step and update progress.
         
         Args:
@@ -128,7 +128,7 @@ class ProgressNotifier(LoggingMixin):
             details: Additional details about the step
         """
         self._current_step += 1
-        
+
         progress_percentage = None
         if self._total_steps:
             progress_percentage = (self._current_step / self._total_steps) * 100
@@ -140,7 +140,7 @@ class ProgressNotifier(LoggingMixin):
             details=details
         )
 
-    async def complete_operation(self, details: Optional[str] = None) -> None:
+    async def complete_operation(self, details: str | None = None) -> None:
         """Signal the completion of an operation.
         
         Args:
@@ -169,10 +169,10 @@ class ProgressNotifier(LoggingMixin):
             total_steps=self._current_step
         )
 
-    async def error_occurred(self, 
+    async def error_occurred(self,
                            error: Exception,
-                           current_step: Optional[str] = None,
-                           details: Optional[str] = None) -> None:
+                           current_step: str | None = None,
+                           details: str | None = None) -> None:
         """Signal that an error occurred during the operation.
         
         Args:
@@ -181,7 +181,7 @@ class ProgressNotifier(LoggingMixin):
             details: Additional error details
         """
         error_details = details or f"Error: {str(error)}"
-        
+
         await self._send_progress_message(
             progress_percentage=None,  # Don't update percentage on error
             current_step=current_step or f"Error in step {self._current_step}",
@@ -196,11 +196,11 @@ class ProgressNotifier(LoggingMixin):
         })
 
     async def _send_progress_message(self,
-                                   progress_percentage: Optional[float],
+                                   progress_percentage: float | None,
                                    current_step: str,
-                                   step_number: Optional[int] = None,
-                                   estimated_completion: Optional[datetime] = None,
-                                   details: Optional[str] = None) -> None:
+                                   step_number: int | None = None,
+                                   estimated_completion: datetime | None = None,
+                                   details: str | None = None) -> None:
         """Send a progress message via Service Bus.
         
         Args:
@@ -260,12 +260,12 @@ class ProgressNotifier(LoggingMixin):
         return self._current_step
 
     @property
-    def total_steps(self) -> Optional[int]:
+    def total_steps(self) -> int | None:
         """Get total number of steps."""
         return self._total_steps
 
     @property
-    def estimated_progress_percentage(self) -> Optional[float]:
+    def estimated_progress_percentage(self) -> float | None:
         """Get estimated progress percentage based on steps."""
         if not self._total_steps or self._total_steps == 0:
             return None
@@ -273,9 +273,9 @@ class ProgressNotifier(LoggingMixin):
 
 
 # Convenience function for simple progress tracking
-async def track_progress(session_id: str, 
+async def track_progress(session_id: str,
                         operation: str,
-                        total_steps: Optional[int] = None) -> ProgressNotifier:
+                        total_steps: int | None = None) -> ProgressNotifier:
     """Create and initialize a progress notifier.
     
     Args:

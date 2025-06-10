@@ -3,15 +3,21 @@ Azure OpenAI client with async support, retry logic, and error handling.
 """
 
 import logging
-from typing import Any, AsyncGenerator, Dict, List, Optional
+from collections.abc import AsyncGenerator
+from typing import Any
 
 from openai import AsyncAzureOpenAI
-from openai.types.chat import ChatCompletion, ChatCompletionChunk
 from openai.types import CreateEmbeddingResponse
+from openai.types.chat import ChatCompletion
+from openai.types.chat import ChatCompletionChunk
 from pydantic import BaseModel
-from tenacity import retry, stop_after_attempt, wait_exponential, retry_if_exception_type
+from tenacity import retry
+from tenacity import retry_if_exception_type
+from tenacity import stop_after_attempt
+from tenacity import wait_exponential
 
 from src.scaffolding.config import get_settings
+
 from .exceptions import LLMError
 
 logger = logging.getLogger(__name__)
@@ -26,14 +32,14 @@ class ChatMessage(BaseModel):
 class AzureOpenAIClient:
     """Async Azure OpenAI client with retry logic and error handling."""
 
-    def __init__(self, settings: Optional[Any] = None) -> None:
+    def __init__(self, settings: Any | None = None) -> None:
         """Initialize the Azure OpenAI client.
         
         Args:
             settings: Application settings (defaults to global settings)
         """
         self._settings = settings or get_settings()
-        self._client: Optional[AsyncAzureOpenAI] = None
+        self._client: AsyncAzureOpenAI | None = None
 
     @property
     def client(self) -> AsyncAzureOpenAI:
@@ -64,10 +70,10 @@ class AzureOpenAIClient:
     )
     async def create_chat_completion(
         self,
-        messages: List[ChatMessage] | List[Dict[str, str]],
-        model: Optional[str] = None,
+        messages: list[ChatMessage] | list[dict[str, str]],
+        model: str | None = None,
         temperature: float = 0.7,
-        max_tokens: Optional[int] = None,
+        max_tokens: int | None = None,
         stream: bool = False,
         **kwargs: Any,
     ) -> ChatCompletion | AsyncGenerator[ChatCompletionChunk, None]:
@@ -95,7 +101,7 @@ class AzureOpenAIClient:
                 message_dicts = messages
 
             model = model or self._settings.azure_openai_model_chat
-            
+
             logger.debug(
                 f"Creating chat completion with model={model}, "
                 f"temperature={temperature}, max_tokens={max_tokens}, stream={stream}"
@@ -112,7 +118,7 @@ class AzureOpenAIClient:
 
             if stream:
                 return self._stream_chat_completion(response)
-            
+
             return response
 
         except Exception as e:
@@ -145,8 +151,8 @@ class AzureOpenAIClient:
     )
     async def create_embeddings(
         self,
-        input_text: str | List[str],
-        model: Optional[str] = None,
+        input_text: str | list[str],
+        model: str | None = None,
         **kwargs: Any,
     ) -> CreateEmbeddingResponse:
         """Create embeddings for the given text.
@@ -166,7 +172,7 @@ class AzureOpenAIClient:
             # Note: Azure OpenAI uses the same model for embeddings as chat for now
             # In practice, you'd have a separate embedding model
             model = model or self._settings.azure_openai_model_chat
-            
+
             logger.debug(f"Creating embeddings with model={model}")
 
             response = await self.client.embeddings.create(
@@ -181,7 +187,7 @@ class AzureOpenAIClient:
             logger.error(f"Embedding creation failed: {e}")
             raise LLMError(f"Failed to create embeddings: {str(e)}", original_error=e)
 
-    async def check_health(self) -> Dict[str, Any]:
+    async def check_health(self) -> dict[str, Any]:
         """Check the health of the OpenAI connection.
         
         Returns:
@@ -190,14 +196,14 @@ class AzureOpenAIClient:
         try:
             # Simple health check by creating a minimal completion
             messages = [{"role": "user", "content": "Hello"}]
-            
+
             response = await self.client.chat.completions.create(
                 model=self._settings.azure_openai_model_chat,
                 messages=messages,
                 max_tokens=1,
                 temperature=0,
             )
-            
+
             return {
                 "status": "healthy",
                 "model": self._settings.azure_openai_model_chat,
@@ -205,7 +211,7 @@ class AzureOpenAIClient:
                 "api_version": self._settings.azure_openai_api_version,
                 "response_id": response.id,
             }
-            
+
         except Exception as e:
             logger.error(f"Health check failed: {e}")
             return {
@@ -216,7 +222,7 @@ class AzureOpenAIClient:
                 "api_version": self._settings.azure_openai_api_version,
             }
 
-    async def get_models(self) -> List[str]:
+    async def get_models(self) -> list[str]:
         """Get available models.
         
         Returns:

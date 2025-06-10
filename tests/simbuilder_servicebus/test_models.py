@@ -7,16 +7,14 @@ from uuid import uuid4
 import pytest
 from pydantic import ValidationError
 
-from src.simbuilder_servicebus.models import (
-    ConnectionConfig,
-    DiscoveryStatusMessage,
-    MessagePriority,
-    MessageSchema,
-    MessageType,
-    ProgressMessage,
-    SubscriptionConfig,
-    TopicDefinition,
-)
+from src.simbuilder_servicebus.models import ConnectionConfig
+from src.simbuilder_servicebus.models import DiscoveryStatusMessage
+from src.simbuilder_servicebus.models import MessagePriority
+from src.simbuilder_servicebus.models import MessageSchema
+from src.simbuilder_servicebus.models import MessageType
+from src.simbuilder_servicebus.models import ProgressMessage
+from src.simbuilder_servicebus.models import SubscriptionConfig
+from src.simbuilder_servicebus.models import TopicDefinition
 
 
 class TestMessageType:
@@ -26,12 +24,12 @@ class TestMessageType:
         """Test that all expected message types are defined."""
         expected_types = {
             "progress_update",
-            "discovery_start", 
+            "discovery_start",
             "discovery_complete",
             "discovery_error",
             "system_status"
         }
-        
+
         actual_types = {mt.value for mt in MessageType}
         assert actual_types == expected_types
 
@@ -67,7 +65,7 @@ class TestMessageSchema:
             source="test_service",
             data={"key": "value"}
         )
-        
+
         assert message.message_id == "test-123"
         assert message.message_type == MessageType.SYSTEM_STATUS
         assert message.source == "test_service"
@@ -86,7 +84,7 @@ class TestMessageSchema:
             source="discovery_agent",
             priority=MessagePriority.HIGH
         )
-        
+
         assert message.session_id == session_id
         assert message.priority == MessagePriority.HIGH
 
@@ -97,7 +95,7 @@ class TestMessageSchema:
                 message_type=MessageType.SYSTEM_STATUS,
                 # Missing message_id and source
             )
-        
+
         errors = exc_info.value.errors()
         error_fields = {error["loc"][0] for error in errors}
         assert "message_id" in error_fields
@@ -113,10 +111,10 @@ class TestMessageSchema:
             timestamp=timestamp,
             data={"progress": 50}
         )
-        
+
         json_data = message.model_dump_json()
         parsed = json.loads(json_data)
-        
+
         assert parsed["message_id"] == "test-789"
         assert parsed["message_type"] == "progress_update"
         assert parsed["source"] == "test_service"
@@ -137,7 +135,7 @@ class TestProgressMessage:
             progress_percentage=75.5,
             current_step="Analyzing relationships"
         )
-        
+
         assert message.message_type == MessageType.PROGRESS_UPDATE
         assert message.operation == "tenant_discovery"
         assert message.progress_percentage == 75.5
@@ -155,7 +153,7 @@ class TestProgressMessage:
             total_steps=10,
             current_step_number=4
         )
-        
+
         assert message.total_steps == 10
         assert message.current_step_number == 4
 
@@ -170,23 +168,23 @@ class TestProgressMessage:
             current_step="test"
         )
         assert message.progress_percentage == 50.0
-        
+
         # Invalid percentage - too low
         with pytest.raises(ValidationError):
             ProgressMessage(
                 message_id="test",
-                source="test", 
+                source="test",
                 operation="test",
                 progress_percentage=-10.0,
                 current_step="test"
             )
-            
+
         # Invalid percentage - too high
         with pytest.raises(ValidationError):
             ProgressMessage(
                 message_id="test",
                 source="test",
-                operation="test", 
+                operation="test",
                 progress_percentage=150.0,
                 current_step="test"
             )
@@ -208,7 +206,7 @@ class TestDiscoveryStatusMessage:
             errors_encountered=2,
             status="in_progress"
         )
-        
+
         assert message.tenant_id == "tenant-789"
         assert message.subscription_id == "sub-123"
         assert message.resources_discovered == 150
@@ -224,7 +222,7 @@ class TestDiscoveryStatusMessage:
             tenant_id="tenant-789",
             status="starting"
         )
-        
+
         assert message.resources_discovered == 0
         assert message.relationships_mapped == 0
         assert message.errors_encountered == 0
@@ -244,7 +242,7 @@ class TestTopicDefinition:
             max_age_seconds=1800,
             max_messages=5000
         )
-        
+
         assert topic.name == "test_topic"
         assert topic.subject_pattern == "test.*"
         assert topic.description == "Test topic for unit tests"
@@ -262,7 +260,7 @@ class TestTopicDefinition:
             description="Minimal topic",
             message_types=[MessageType.SYSTEM_STATUS]
         )
-        
+
         assert topic.retention_policy == "workqueue"
         assert topic.max_age_seconds == 3600
         assert topic.max_messages == 10000
@@ -284,9 +282,9 @@ class TestSubscriptionConfig:
             max_pending=500,
             ack_wait_seconds=60
         )
-        
+
         assert config.name == "test_subscription"
-        assert config.topic == "test_topic" 
+        assert config.topic == "test_topic"
         assert config.subject_filter == "test.specific.*"
         assert config.queue_group == "test_group"
         assert config.durable is True
@@ -300,7 +298,7 @@ class TestSubscriptionConfig:
             name="default_subscription",
             topic="default_topic"
         )
-        
+
         assert config.subject_filter is None
         assert config.queue_group is None
         assert config.durable is True
@@ -322,7 +320,7 @@ class TestConnectionConfig:
             reconnect_time_wait=3,
             ping_interval=60
         )
-        
+
         assert config.servers == ["nats://localhost:4222", "nats://backup:4222"]
         assert config.cluster_id == "test_cluster"
         assert config.client_id == "test_client"
@@ -337,7 +335,7 @@ class TestConnectionConfig:
             cluster_id="test_cluster",
             client_id="test_client"
         )
-        
+
         assert config.max_reconnect_attempts == 10
         assert config.reconnect_time_wait == 2
         assert config.ping_interval == 120
@@ -351,7 +349,7 @@ class TestConnectionConfig:
             cluster_id="test_cluster",
             client_id="test_client"
         )
-        
+
         # Should allow updating valid values
         config.max_reconnect_attempts = 15
         assert config.max_reconnect_attempts == 15

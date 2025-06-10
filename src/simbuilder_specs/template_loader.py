@@ -1,11 +1,10 @@
 """
 Liquid template loader and renderer for SimBuilder Specs Library.
 """
-import time
 import functools
+import time
 from typing import TYPE_CHECKING
 from typing import Any
-
 
 if TYPE_CHECKING:
     from liquid import Environment
@@ -23,13 +22,13 @@ except ImportError:
     # Create placeholder classes for when liquid is not available
     class Template:  # type: ignore
         pass
-    
+
     class Environment:  # type: ignore
         pass
-    
+
     class FileSystemLoader:  # type: ignore
         pass
-    
+
     LiquidSyntaxError = Exception  # type: ignore
     LiquidTypeError = Exception  # type: ignore
     LIQUID_AVAILABLE = False
@@ -80,20 +79,20 @@ class TemplateLoader:
             # Allow missing attribute for pure python mocks in tests
             pass
         try:
-            setattr(self.get_template_meta, "cache_clear", lambda: None)  # type: ignore[attr-defined]
+            self.get_template_meta.cache_clear = lambda: None  # type: ignore[attr-defined]
         except Exception:
             pass
-        setattr(self, "get_template_meta", self.get_template_meta)
+        self.get_template_meta = self.get_template_meta
         # Force patchable cache_clear for test mocks without lru_cache
         if not hasattr(self.get_template_meta, "cache_clear"):
             def _fake_get_template_meta(*a, **kw): return None
             _fake_get_template_meta.cache_clear = lambda: None  # type: ignore[attr-defined]
             self.get_template_meta = _fake_get_template_meta  # type: ignore[assignment]
- 
+
         # ensure test can patch cache_clear even if not lru-cached
         # Only attempt to patch cache_clear if it is safe; fallback to dummy function otherwise
         try:
-            setattr(self.get_template_meta, "cache_clear", lambda: None)  # type: ignore[attr-defined]
+            self.get_template_meta.cache_clear = lambda: None  # type: ignore[attr-defined]
         except AttributeError:
             def _patched(*a, **k):
                 # Delegate to the real implementation for expected behavior
@@ -105,7 +104,7 @@ class TemplateLoader:
         # get_template_meta is *not* wrapped by functools.lru_cache.
         # ------------------------------------------------------------------ #
         if not hasattr(self.get_template_meta, "cache_clear"):
-            setattr(self.get_template_meta, "cache_clear", lambda: None)  # type: ignore[attr-defined]
+            self.get_template_meta.cache_clear = lambda: None  # type: ignore[attr-defined]
 
     def _get_environment(self) -> "Environment":
         """Get or create Liquid environment."""

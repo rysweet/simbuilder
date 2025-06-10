@@ -1,15 +1,15 @@
 """Topic definitions and routing for Service Bus messaging."""
 
-from typing import Dict, List
 
-from .models import MessageType, TopicDefinition
+from .models import MessageType
+from .models import TopicDefinition
 
 
 class TopicManager:
     """Manages topic definitions and routing for SimBuilder messaging."""
 
     # Predefined topic definitions
-    TOPICS: Dict[str, TopicDefinition] = {
+    TOPICS: dict[str, TopicDefinition] = {
         "tenant_discovery": TopicDefinition(
             name="tenant_discovery",
             subject_pattern="tenant.discovery.*",
@@ -25,7 +25,7 @@ class TopicManager:
             max_messages=50000,
             replicas=1,
         ),
-        
+
         "system_events": TopicDefinition(
             name="system_events",
             subject_pattern="system.*",
@@ -38,7 +38,7 @@ class TopicManager:
             max_messages=10000,
             replicas=1,
         ),
-        
+
         "simulation_events": TopicDefinition(
             name="simulation_events",
             subject_pattern="simulation.*",
@@ -72,7 +72,7 @@ class TopicManager:
         return cls.TOPICS[name]
 
     @classmethod
-    def get_all_topics(cls) -> List[TopicDefinition]:
+    def get_all_topics(cls) -> list[TopicDefinition]:
         """Get all topic definitions.
         
         Returns:

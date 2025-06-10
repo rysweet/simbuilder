@@ -9,13 +9,11 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from src.simbuilder_specs.models import (
-    GitRepositoryInfo,
-    TemplateMeta,
-    TemplateRenderRequest,
-    TemplateRenderResult,
-    ValidationResult,
-)
+from src.simbuilder_specs.models import GitRepositoryInfo
+from src.simbuilder_specs.models import TemplateMeta
+from src.simbuilder_specs.models import TemplateRenderRequest
+from src.simbuilder_specs.models import TemplateRenderResult
+from src.simbuilder_specs.models import ValidationResult
 
 
 class TestTemplateMeta:
@@ -27,7 +25,7 @@ class TestTemplateMeta:
             name="test_template",
             path="templates/test_template.liquid"
         )
-        
+
         assert meta.name == "test_template"
         assert meta.path == "templates/test_template.liquid"
         assert meta.description is None
@@ -41,7 +39,7 @@ class TestTemplateMeta:
         """Test TemplateMeta with all fields."""
         created = datetime.now()
         modified = datetime.now()
-        
+
         meta = TemplateMeta(
             name="full_template",
             path="templates/full_template.liquid",
@@ -52,7 +50,7 @@ class TestTemplateMeta:
             created_at=created,
             modified_at=modified
         )
-        
+
         assert meta.name == "full_template"
         assert meta.path == "templates/full_template.liquid"
         assert meta.description == "A complete template"
@@ -65,13 +63,13 @@ class TestTemplateMeta:
     def test_template_meta_json_serialization(self):
         """Test TemplateMeta JSON serialization with datetime fields."""
         created = datetime(2024, 1, 1, 12, 0, 0)
-        
+
         meta = TemplateMeta(
             name="json_template",
             path="templates/json_template.liquid",
             created_at=created
         )
-        
+
         json_data = json.loads(meta.model_dump_json())
         assert json_data["created_at"] == "2024-01-01T12:00:00"
 
@@ -82,7 +80,7 @@ class TestTemplateRenderRequest:
     def test_minimal_render_request(self):
         """Test TemplateRenderRequest with minimal fields."""
         request = TemplateRenderRequest(template_name="test_template")
-        
+
         assert request.template_name == "test_template"
         assert request.context == {}
         assert request.strict_variables is False
@@ -94,7 +92,7 @@ class TestTemplateRenderRequest:
             context={"name": "John", "age": 30},
             strict_variables=True
         )
-        
+
         assert request.template_name == "full_template"
         assert request.context == {"name": "John", "age": 30}
         assert request.strict_variables is True
@@ -107,7 +105,7 @@ class TestTemplateRenderRequest:
                 context={},
                 extra_field="not_allowed"
             )
-        
+
         error = exc_info.value.errors()[0]
         assert error["type"] == "extra_forbidden"
 
@@ -127,7 +125,7 @@ class TestTemplateRenderResult:
             success=True,
             error_message=None
         )
-        
+
         assert result.rendered_content == "Hello John!"
         assert result.template_name == "greeting"
         assert result.context_used == {"name": "John"}
@@ -149,7 +147,7 @@ class TestTemplateRenderResult:
             success=False,
             error_message="Missing required variable: name"
         )
-        
+
         assert result.rendered_content == ""
         assert result.template_name == "broken_template"
         assert result.context_used == {}
@@ -170,7 +168,7 @@ class TestTemplateRenderResult:
                 success=True,
                 extra_field="not_allowed"
             )
-        
+
         error = exc_info.value.errors()[0]
         assert error["type"] == "extra_forbidden"
 
@@ -181,7 +179,7 @@ class TestGitRepositoryInfo:
     def test_minimal_repository_info(self):
         """Test GitRepositoryInfo with minimal fields."""
         info = GitRepositoryInfo(url="https://github.com/test/repo.git")
-        
+
         assert info.url == "https://github.com/test/repo.git"
         assert info.branch == "main"
         assert info.commit_hash is None
@@ -192,7 +190,7 @@ class TestGitRepositoryInfo:
         """Test GitRepositoryInfo with all fields."""
         updated = datetime.now()
         local_path = Path("/tmp/repo")
-        
+
         info = GitRepositoryInfo(
             url="https://github.com/test/repo.git",
             branch="develop",
@@ -200,7 +198,7 @@ class TestGitRepositoryInfo:
             last_updated=updated,
             local_path=local_path
         )
-        
+
         assert info.url == "https://github.com/test/repo.git"
         assert info.branch == "develop"
         assert info.commit_hash == "abc123"
@@ -211,13 +209,13 @@ class TestGitRepositoryInfo:
         """Test GitRepositoryInfo JSON serialization with Path and datetime."""
         updated = datetime(2024, 1, 1, 12, 0, 0)
         local_path = Path("/tmp/repo")
-        
+
         info = GitRepositoryInfo(
             url="https://github.com/test/repo.git",
             last_updated=updated,
             local_path=local_path
         )
-        
+
         json_data = json.loads(info.model_dump_json())
         assert json_data["last_updated"] == "2024-01-01T12:00:00"
         assert json_data["local_path"] == "/tmp/repo"
@@ -236,7 +234,7 @@ class TestValidationResult:
             warnings=[],
             suggestions=[]
         )
-        
+
         assert result.template_name == "valid_template"
         assert result.is_valid is True
         assert result.syntax_errors == []
@@ -254,7 +252,7 @@ class TestValidationResult:
             warnings=["Unused variable: email"],
             suggestions=["Consider adding error handling"]
         )
-        
+
         assert result.template_name == "invalid_template"
         assert result.is_valid is False
         assert result.syntax_errors == ["Syntax error on line 1"]
@@ -270,6 +268,6 @@ class TestValidationResult:
                 is_valid=True,
                 extra_field="not_allowed"
             )
-        
+
         error = exc_info.value.errors()[0]
         assert error["type"] == "extra_forbidden"

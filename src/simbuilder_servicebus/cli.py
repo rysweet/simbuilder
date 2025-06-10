@@ -2,18 +2,18 @@
 
 import asyncio
 import json
-from typing import Optional
 
 import typer
 from rich.console import Console
-from rich.table import Table
 from rich.live import Live
 from rich.panel import Panel
+from rich.table import Table
 
 from .client import ServiceBusClient
-from .models import MessageSchema, MessageType, ProgressMessage
-from .topics import TopicManager
+from .models import MessageSchema
+from .models import MessageType
 from .progress_notifier import ProgressNotifier
+from .topics import TopicManager
 
 app = typer.Typer(name="servicebus", help="Service Bus management commands")
 console = Console()
@@ -26,31 +26,31 @@ def info() -> None:
         async def _info():
             async with ServiceBusClient() as client:
                 health = await client.health_check()
-                
+
                 # Create status table
                 table = Table(title="Service Bus Status", show_header=True)
                 table.add_column("Property", style="cyan", no_wrap=True)
                 table.add_column("Value", style="magenta")
-                
+
                 table.add_row("Connected", "✅ Yes" if health["connected"] else "❌ No")
                 table.add_row("Client ID", health["client_id"])
                 table.add_row("Servers", ", ".join(health["servers"]))
-                
+
                 if health["connected"]:
                     table.add_row("RTT", f"{health.get('rtt_ms', 'N/A')} ms")
                     table.add_row("Server Version", health.get("server_info", "N/A"))
                     table.add_row("Active Subscriptions", str(health.get("active_subscriptions", 0)))
                     table.add_row("Active Streams", str(health.get("active_streams", 0)))
-                
+
                 console.print(table)
-                
+
                 # Show topics
                 topics_table = Table(title="Available Topics", show_header=True)
                 topics_table.add_column("Name", style="cyan")
                 topics_table.add_column("Subject Pattern", style="green")
                 topics_table.add_column("Message Types", style="yellow")
                 topics_table.add_column("Retention", style="blue")
-                
+
                 for topic in TopicManager.get_all_topics():
                     message_types = ", ".join([mt.value for mt in topic.message_types])
                     topics_table.add_row(
@@ -59,11 +59,11 @@ def info() -> None:
                         message_types,
                         f"{topic.retention_policy} ({topic.max_age_seconds}s)"
                     )
-                
+
                 console.print(topics_table)
-        
+
         asyncio.run(_info())
-        
+
     except Exception as e:
         console.print(f"[red]✗[/red] Error getting Service Bus info: {e}")
         raise typer.Exit(1)
@@ -76,7 +76,7 @@ def health() -> None:
         async def _health():
             async with ServiceBusClient() as client:
                 health = await client.health_check()
-                
+
                 if health["connected"]:
                     console.print("[green]✅ Service Bus is healthy[/green]")
                     console.print(f"Round-trip time: {health.get('rtt_ms', 'N/A')} ms")
@@ -85,9 +85,9 @@ def health() -> None:
                     if "error" in health:
                         console.print(f"Error: {health['error']}")
                     raise typer.Exit(1)
-        
+
         asyncio.run(_health())
-        
+
     except Exception as e:
         console.print(f"[red]✗[/red] Health check failed: {e}")
         raise typer.Exit(1)
@@ -100,9 +100,9 @@ def setup_topics() -> None:
         async def _setup():
             async with ServiceBusClient() as client:
                 topics = TopicManager.get_all_topics()
-                
+
                 console.print(f"Setting up {len(topics)} topics...")
-                
+
                 for topic in topics:
                     try:
                         stream_info = await client.create_stream(topic)
@@ -111,11 +111,11 @@ def setup_topics() -> None:
                         console.print(f"   Messages: {stream_info.state.messages}")
                     except Exception as e:
                         console.print(f"❌ Failed to create topic {topic.name}: {e}")
-                
+
                 console.print("[green]Topic setup completed[/green]")
-        
+
         asyncio.run(_setup())
-        
+
     except Exception as e:
         console.print(f"[red]✗[/red] Failed to setup topics: {e}")
         raise typer.Exit(1)
@@ -125,7 +125,7 @@ def setup_topics() -> None:
 def publish(
     subject: str = typer.Argument(..., help="NATS subject to publish to"),
     message_type: str = typer.Option("system_status", help="Message type"),
-    session_id: Optional[str] = typer.Option(None, help="Session ID"),
+    session_id: str | None = typer.Option(None, help="Session ID"),
     data: str = typer.Option("{}", help="Message data as JSON string"),
 ) -> None:
     """Publish a test message to a subject."""
@@ -137,7 +137,7 @@ def publish(
             except json.JSONDecodeError as e:
                 console.print(f"[red]Invalid JSON data: {e}[/red]")
                 raise typer.Exit(1)
-            
+
             # Create message
             message = MessageSchema(
                 message_id=f"cli-{asyncio.get_event_loop().time()}",
@@ -146,13 +146,13 @@ def publish(
                 source="cli",
                 data=message_data
             )
-            
+
             async with ServiceBusClient() as client:
                 message_id = await client.publish(subject, message)
                 console.print(f"[green]✅ Published message {message_id} to {subject}[/green]")
-        
+
         asyncio.run(_publish())
-        
+
     except Exception as e:
         console.print(f"[red]✗[/red] Failed to publish message: {e}")
         raise typer.Exit(1)
@@ -167,11 +167,11 @@ def subscribe(
     try:
         async def _subscribe():
             messages_received = 0
-            
+
             async def message_handler(message: MessageSchema):
                 nonlocal messages_received
                 messages_received += 1
-                
+
                 panel = Panel(
                     f"[bold]Message #{messages_received}[/bold]\n"
                     f"ID: {message.message_id}\n"
@@ -184,7 +184,7 @@ def subscribe(
                     border_style="green"
                 )
                 console.print(panel)
-            
+
             from .models import SubscriptionConfig
             config = SubscriptionConfig(
                 name=f"cli-subscriber-{asyncio.get_event_loop().time()}",
@@ -193,23 +193,23 @@ def subscribe(
                 durable=False,
                 auto_ack=True
             )
-            
+
             async with ServiceBusClient() as client:
                 console.print(f"[yellow]Listening for messages on '{subject_pattern}' for {duration} seconds...[/yellow]")
                 console.print("[dim]Press Ctrl+C to stop early[/dim]")
-                
+
                 subscription_id = await client.subscribe(config, message_handler)
-                
+
                 try:
                     await asyncio.sleep(duration)
                 except KeyboardInterrupt:
                     console.print("\n[yellow]Stopping subscription...[/yellow]")
-                
+
                 await client.unsubscribe(subscription_id)
                 console.print(f"[green]Received {messages_received} messages[/green]")
-        
+
         asyncio.run(_subscribe())
-        
+
     except Exception as e:
         console.print(f"[red]✗[/red] Subscription failed: {e}")
         raise typer.Exit(1)
@@ -226,7 +226,7 @@ def demo_progress(
         async def _demo():
             async with ProgressNotifier(session_id, "demo_operation") as notifier:
                 await notifier.start_operation(total_steps=steps)
-                
+
                 with Live(console=console, refresh_per_second=2) as live:
                     for i in range(steps):
                         step_desc = f"Processing step {i + 1} of {steps}"
@@ -234,11 +234,11 @@ def demo_progress(
                             step_desc,
                             details=f"Demo step with {delay}s delay"
                         )
-                        
+
                         # Update live display
                         progress = notifier.estimated_progress_percentage or 0
                         elapsed = notifier.get_elapsed_time()
-                        
+
                         progress_panel = Panel(
                             f"[bold]Progress Demo[/bold]\n"
                             f"Session: {session_id}\n"
@@ -250,14 +250,14 @@ def demo_progress(
                             border_style="blue"
                         )
                         live.update(progress_panel)
-                        
+
                         await asyncio.sleep(delay)
-                
+
                 await notifier.complete_operation("Demo completed successfully")
                 console.print("[green]✅ Progress demo completed[/green]")
-        
+
         asyncio.run(_demo())
-        
+
     except Exception as e:
         console.print(f"[red]✗[/red] Progress demo failed: {e}")
         raise typer.Exit(1)
