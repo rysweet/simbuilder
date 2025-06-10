@@ -147,10 +147,22 @@ class TestTemplateLoader:
     @patch("src.simbuilder_specs.template_loader.LIQUID_AVAILABLE", True)
     def test_get_template_meta(self, mock_repository):
         """Test getting template metadata."""
+        from src.simbuilder_specs.models import TemplateMeta
+
         loader = TemplateLoader(mock_repository)
 
-        # Mock file stat
-        with patch("pathlib.Path.stat"):
+        # Mock the static method directly to avoid GitRepository creation
+        mock_meta = TemplateMeta(
+            name="simple",
+            path="simple.liquid",
+            description=None,
+            variables=["name"],
+            version=None,
+            created_at=None,
+            modified_at=None,
+        )
+
+        with patch.object(TemplateLoader, "_get_template_meta_cached", return_value=mock_meta):
             meta = loader.get_template_meta("simple")
 
             assert meta.name == "simple"
@@ -160,9 +172,22 @@ class TestTemplateLoader:
     @patch("src.simbuilder_specs.template_loader.LIQUID_AVAILABLE", True)
     def test_get_template_meta_with_extension(self, mock_repository):
         """Test getting template metadata when name already has extension."""
+        from src.simbuilder_specs.models import TemplateMeta
+
         loader = TemplateLoader(mock_repository)
 
-        with patch("pathlib.Path.stat"):
+        # Mock the static method directly to avoid GitRepository creation
+        mock_meta = TemplateMeta(
+            name="simple",
+            path="simple.liquid",
+            description=None,
+            variables=["name"],
+            version=None,
+            created_at=None,
+            modified_at=None,
+        )
+
+        with patch.object(TemplateLoader, "_get_template_meta_cached", return_value=mock_meta):
             meta = loader.get_template_meta("simple.liquid")
 
             assert meta.name == "simple"
