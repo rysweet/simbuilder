@@ -5,6 +5,7 @@ Configuration management for SimBuilder using Pydantic settings.
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import AliasChoices
 from pydantic import Field
 from pydantic import field_validator
 from pydantic_settings import BaseSettings
@@ -20,6 +21,8 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
+        extra="forbid",
+        populate_by_name=True,
     )
 
     # Azure Authentication
@@ -55,10 +58,9 @@ class Settings(BaseSettings):
     # Application Configuration
     log_level: str = Field("INFO", description="Application log level")
     environment: str = Field(
-        "development",
+        default="development",
         description="Runtime environment",
-        alias="SIMBUILDER_ENVIRONMENT",
-        validation_alias="ENVIRONMENT",  # Accept both vars for backward compatibility
+        validation_alias=AliasChoices("SIMBUILDER_ENVIRONMENT", "ENVIRONMENT"),
     )
     debug_mode: bool = Field(False, description="Enable debug features")
 
