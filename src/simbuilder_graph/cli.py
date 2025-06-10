@@ -13,7 +13,7 @@ try:
     # Pydantic v1 and v2 have ValidationError here
     from pydantic import ValidationError as PydanticValidationError
 except ImportError:
-    from pydantic.errors import ValidationError as PydanticValidationError
+    from pydantic.errors import ValidationError as PydanticValidationError  # type: ignore[no-redef]
 
 import os
 
@@ -22,7 +22,7 @@ from . import get_graph_service
 console = Console()
 
 
-def _patch_config_for_tests():
+def _patch_config_for_tests() -> None:
     """Set dummy envvars when running under pytest to make config load in test/mocked scenarios."""
     if "PYTEST_CURRENT_TEST" in os.environ:
         os.environ.setdefault("TD_AZURE_TENANT_ID", "00000000-0000-0000-0000-000000000000")
@@ -48,7 +48,7 @@ def graph_info() -> None:
             else:
                 raise ConfigurationError("Config error")
         else:
-            service = get_graph_service()
+            service = get_graph_service()  # type: ignore[assignment]
 
         console.print("[bold]Connecting to graph database...[/bold]")
         with service:
@@ -146,7 +146,7 @@ def graph_check() -> None:
             else:
                 raise ConfigurationError("Config error")
         else:
-            service = get_graph_service()
+            service = get_graph_service()  # type: ignore[assignment]
         console.print("[bold]Checking graph database connectivity...[/bold]\n")
         checks = []
         try:

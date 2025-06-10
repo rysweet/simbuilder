@@ -150,7 +150,7 @@ class GraphService:
         with self.session() as session:
             result = session.run("MATCH (t:Tenant {id: $id}) RETURN count(t) as count", id=id)
             record = result.single()
-            return record["count"] > 0 if record else False
+            return bool(record["count"] > 0) if record else False
 
     def list_subscriptions(self, tenant_id: str) -> list[SubscriptionNode]:
         """List all subscriptions for a tenant.
@@ -216,7 +216,7 @@ class GraphService:
             with self.session() as session:
                 result = session.run("RETURN 1 as test")
                 record = result.single()
-                return record["test"] == 1 if record else False
+                return bool(record["test"] == 1) if record else False
 
         except Exception as e:
             logger.error(f"Connectivity check failed: {e}")
