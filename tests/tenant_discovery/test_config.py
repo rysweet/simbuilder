@@ -34,7 +34,7 @@ class TestTenantDiscoverySettings:
 
         assert settings.azure_tenant_id == tenant_id
         assert settings.azure_client_id == client_id
-        assert settings.azure_client_secret == "test-secret-123"
+        assert settings.azure_client_secret == "test-secret-123"  # noqa: S105
         assert settings.subscription_id == subscription_id
         assert settings.graph_db_url == "bolt://localhost:30000"
         assert settings.service_bus_url == "nats://localhost:30002"
@@ -218,7 +218,7 @@ class TestTenantDiscoverySettings:
 
         assert settings.azure_tenant_id == "12345678-1234-1234-1234-123456789012"
         assert settings.azure_client_id == "87654321-4321-4321-4321-210987654321"
-        assert settings.azure_client_secret == "env-secret-123"
+        assert settings.azure_client_secret == "env-secret-123"  # noqa: S105
         assert settings.subscription_id == "11111111-2222-3333-4444-555555555555"
         assert settings.log_level == LogLevel.DEBUG
 
