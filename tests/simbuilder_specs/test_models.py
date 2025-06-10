@@ -189,7 +189,7 @@ class TestGitRepositoryInfo:
     def test_full_repository_info(self):
         """Test GitRepositoryInfo with all fields."""
         updated = datetime.now()
-        local_path = Path("/tmp/repo")
+        local_path = Path("/tmp/repo")  # noqa: S108
 
         info = GitRepositoryInfo(
             url="https://github.com/test/repo.git",
@@ -208,7 +208,7 @@ class TestGitRepositoryInfo:
     def test_repository_info_json_serialization(self):
         """Test GitRepositoryInfo JSON serialization with Path and datetime."""
         updated = datetime(2024, 1, 1, 12, 0, 0)
-        local_path = Path("/tmp/repo")
+        local_path = Path("/tmp/repo")  # noqa: S108
 
         info = GitRepositoryInfo(
             url="https://github.com/test/repo.git",
