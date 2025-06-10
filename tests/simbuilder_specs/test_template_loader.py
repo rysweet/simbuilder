@@ -19,7 +19,7 @@ from src.simbuilder_specs.template_loader import TemplateLoaderError
 def mock_repository():
     """Create a mock GitRepository for testing."""
     repo = Mock(spec=GitRepository)
-    repo.local_path = Path("/tmp/test_repo")
+    repo.local_path = Path("/tmp/test_repo")  # noqa: S108
 
     # Mock template files
     template_files = [
