@@ -2,22 +2,31 @@
 Tests for the Azure OpenAI client module.
 """
 
-import pytest
-import httpx
-from unittest.mock import AsyncMock, MagicMock, patch
-from openai.types.chat import ChatCompletion, ChatCompletionChunk, ChatCompletionMessage
-from openai.types.chat.chat_completion import Choice
-from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice, ChoiceDelta
-from openai.types import CreateEmbeddingResponse, Embedding
-from openai import APIError, RateLimitError
+from unittest.mock import AsyncMock
+from unittest.mock import MagicMock
+from unittest.mock import patch
 
-from src.simbuilder_llm.client import AzureOpenAIClient, ChatMessage
+import httpx
+import pytest
+from openai import APIError
+from openai import RateLimitError
+from openai.types import CreateEmbeddingResponse
+from openai.types import Embedding
+from openai.types.chat import ChatCompletion
+from openai.types.chat import ChatCompletionChunk
+from openai.types.chat import ChatCompletionMessage
+from openai.types.chat.chat_completion import Choice
+from openai.types.chat.chat_completion_chunk import Choice as ChunkChoice
+from openai.types.chat.chat_completion_chunk import ChoiceDelta
+
+from src.simbuilder_llm.client import AzureOpenAIClient
+from src.simbuilder_llm.client import ChatMessage
 from src.simbuilder_llm.exceptions import LLMError
 
 
 class MockSettings:
     """Mock settings for testing."""
-    
+
     def __init__(self):
         self.azure_openai_endpoint = "https://test.openai.azure.com/"
         self.azure_openai_key = "test-api-key"
@@ -74,9 +83,9 @@ class TestAzureOpenAIClient:
         """Test that client property creates AsyncAzureOpenAI instance."""
         mock_instance = MagicMock()
         mock_azure_openai.return_value = mock_instance
-        
+
         result = client.client
-        
+
         assert result == mock_instance
         mock_azure_openai.assert_called_once_with(
             api_key="test-api-key",
@@ -89,11 +98,11 @@ class TestAzureOpenAIClient:
         """Test that client property caches the client instance."""
         mock_instance = MagicMock()
         mock_azure_openai.return_value = mock_instance
-        
+
         # Call twice
         result1 = client.client
         result2 = client.client
-        
+
         assert result1 == result2
         # Should only create once
         mock_azure_openai.assert_called_once()
@@ -206,7 +215,7 @@ class TestAzureOpenAIClient:
     async def test_create_chat_completion_streaming(self, client):
         """Test streaming chat completion."""
         mock_client = AsyncMock()
-        
+
         # Mock streaming response
         async def mock_stream():
             yield ChatCompletionChunk(
@@ -261,10 +270,10 @@ class TestAzureOpenAIClient:
         client._client = mock_client
 
         messages = [ChatMessage(role="user", content="Hello")]
-        
+
         with pytest.raises(LLMError) as exc_info:
             await client.create_chat_completion(messages)
-        
+
         assert "Failed to create chat completion" in str(exc_info.value)
         assert exc_info.value.original_error is not None
 
@@ -272,7 +281,7 @@ class TestAzureOpenAIClient:
     async def test_create_chat_completion_rate_limit_retry(self, client):
         """Test that rate limit errors trigger retry."""
         mock_client = AsyncMock()
-        
+
         # First call fails with rate limit, second succeeds
         mock_response = ChatCompletion(
             id="test-id",
@@ -287,11 +296,11 @@ class TestAzureOpenAIClient:
             model="gpt-4o",
             object="chat.completion",
         )
-        
+
         # Create a mock response for RateLimitError
         mock_response_obj = MagicMock()
         mock_response_obj.request = httpx.Request("POST", "https://api.openai.com/v1/chat/completions")
-        
+
         mock_client.chat.completions.create.side_effect = [
             RateLimitError("Rate limit exceeded", response=mock_response_obj, body=None),
             mock_response
@@ -299,7 +308,7 @@ class TestAzureOpenAIClient:
         client._client = mock_client
 
         messages = [ChatMessage(role="user", content="Hello")]
-        
+
         # This should succeed after retry
         result = await client.create_chat_completion(messages)
         assert result == mock_response
@@ -366,7 +375,7 @@ class TestAzureOpenAIClient:
 
         with pytest.raises(LLMError) as exc_info:
             await client.create_embeddings("Hello world")
-        
+
         assert "Failed to create embeddings" in str(exc_info.value)
 
     @pytest.mark.asyncio
@@ -434,7 +443,7 @@ class TestAzureOpenAIClient:
 
         with pytest.raises(LLMError) as exc_info:
             await client.get_models()
-        
+
         assert "Failed to get available models" in str(exc_info.value)
 
     @pytest.mark.asyncio

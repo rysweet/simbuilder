@@ -21,10 +21,9 @@ class TestSettings:
 
     def test_required_fields_validation(self):
         """Test that required fields are validated."""
-        with patch.dict(os.environ, {}, clear=True):
+        with patch.dict(os.environ, {}, clear=True), pytest.raises(ValidationError) as exc_info:
             # Create Settings without loading from .env file
-            with pytest.raises(ValidationError) as exc_info:
-                Settings(_env_file=None)
+            Settings(_env_file=None)
 
         errors = exc_info.value.errors()
         required_fields = {error["loc"][0] for error in errors if error["type"] == "missing"}
@@ -42,7 +41,7 @@ class TestSettings:
             # Provide minimal required config without loading from .env file
             settings = Settings(
                 azure_tenant_id="test-tenant",
-                neo4j_password="test-password",
+                neo4j_password="test-password",  # noqa: S106
                 azure_openai_endpoint="https://test.openai.azure.com",
                 azure_openai_key="test-key",
                 _env_file=None  # Prevent loading from .env file
@@ -63,7 +62,7 @@ class TestSettings:
         """Test OpenAI endpoint URL validation."""
         settings = Settings(
             azure_tenant_id="test-tenant",
-            neo4j_password="test-password",
+            neo4j_password="test-password",  # noqa: S106
             azure_openai_endpoint="https://test.openai.azure.com",  # No trailing slash
             azure_openai_key="test-key"
         )
@@ -76,7 +75,7 @@ class TestSettings:
         # Valid log level
         settings = Settings(
             azure_tenant_id="test-tenant",
-            neo4j_password="test-password",
+            neo4j_password="test-password",  # noqa: S106
             azure_openai_endpoint="https://test.openai.azure.com/",
             azure_openai_key="test-key",
             log_level="DEBUG"
@@ -87,7 +86,7 @@ class TestSettings:
         with pytest.raises(ValidationError) as exc_info:
             Settings(
                 azure_tenant_id="test-tenant",
-                neo4j_password="test-password",
+                neo4j_password="test-password",  # noqa: S106
                 azure_openai_endpoint="https://test.openai.azure.com/",
                 azure_openai_key="test-key",
                 log_level="INVALID"
@@ -101,7 +100,7 @@ class TestSettings:
         # Valid port
         settings = Settings(
             azure_tenant_id="test-tenant",
-            neo4j_password="test-password",
+            neo4j_password="test-password",  # noqa: S106
             azure_openai_endpoint="https://test.openai.azure.com/",
             azure_openai_key="test-key",
             core_api_port=8080
@@ -112,7 +111,7 @@ class TestSettings:
         with pytest.raises(ValidationError) as exc_info:
             Settings(
                 azure_tenant_id="test-tenant",
-                neo4j_password="test-password",
+                neo4j_password="test-password",  # noqa: S106
                 azure_openai_endpoint="https://test.openai.azure.com/",
                 azure_openai_key="test-key",
                 core_api_port=80
@@ -125,7 +124,7 @@ class TestSettings:
         """Test environment property methods."""
         dev_settings = Settings(
             azure_tenant_id="test-tenant",
-            neo4j_password="test-password",
+            neo4j_password="test-password",  # noqa: S106
             azure_openai_endpoint="https://test.openai.azure.com/",
             azure_openai_key="test-key",
             environment="development"
@@ -136,7 +135,7 @@ class TestSettings:
 
         prod_settings = Settings(
             azure_tenant_id="test-tenant",
-            neo4j_password="test-password",
+            neo4j_password="test-password",  # noqa: S106
             azure_openai_endpoint="https://test.openai.azure.com/",
             azure_openai_key="test-key",
             environment="production"
@@ -149,7 +148,7 @@ class TestSettings:
         """Test production environment validation."""
         settings = Settings(
             azure_tenant_id="test-tenant",
-            neo4j_password="test-password",
+            neo4j_password="test-password",  # noqa: S106
             azure_openai_endpoint="https://test.openai.azure.com/",
             azure_openai_key="test-key",
             environment="production"
@@ -207,25 +206,24 @@ class TestConfigHelpers:
 
     def test_create_env_template(self):
         """Test creation of .env.template file."""
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory() as temp_dir, patch("src.scaffolding.config.get_project_root", return_value=Path(temp_dir)):
             # Mock get_project_root to return temp directory
-            with patch("src.scaffolding.config.get_project_root", return_value=Path(temp_dir)):
-                create_env_template()
+            create_env_template()
 
-                template_file = Path(temp_dir) / ".env.template"
-                assert template_file.exists()
+            template_file = Path(temp_dir) / ".env.template"
+            assert template_file.exists()
 
-                content = template_file.read_text(encoding="utf-8")
+            content = template_file.read_text(encoding="utf-8")
 
-                # Check that template contains expected sections
-                assert "# Azure Authentication" in content
-                assert "AZURE_TENANT_ID=" in content
-                assert "# Graph Database" in content
-                assert "NEO4J_URI=" in content
-                assert "# LLM Integration" in content
-                assert "AZURE_OPENAI_ENDPOINT=" in content
-                assert "# Service Bus" in content
-                assert "SERVICE_BUS_URL=" in content
+            # Check that template contains expected sections
+            assert "# Azure Authentication" in content
+            assert "AZURE_TENANT_ID=" in content
+            assert "# Graph Database" in content
+            assert "NEO4J_URI=" in content
+            assert "# LLM Integration" in content
+            assert "AZURE_OPENAI_ENDPOINT=" in content
+            assert "# Service Bus" in content
+            assert "SERVICE_BUS_URL=" in content
 
 
 class TestEnvironmentVariableLoading:
@@ -248,7 +246,7 @@ class TestEnvironmentVariableLoading:
             settings = Settings()
 
             assert settings.azure_tenant_id == "env-tenant-id"
-            assert settings.neo4j_password == "env-password"
+            assert settings.neo4j_password == "env-password"  # noqa: S105
             assert settings.azure_openai_endpoint == "https://env.openai.azure.com/"
             assert settings.azure_openai_key == "env-key"
             assert settings.log_level == "DEBUG"

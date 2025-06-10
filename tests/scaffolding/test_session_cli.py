@@ -345,18 +345,16 @@ class TestSessionCLI:
             env_file = Path(temp_dir) / ".env.session"
             env_file.write_text("SIMBUILDER_SESSION_ID=file-session-id\nOTHER_VAR=value\n")
 
-            with patch('os.getenv', return_value=None):
-                with patch('src.scaffolding.config.get_project_root', return_value=Path(temp_dir)):
-                    session_id = _get_current_session_id()
-                    assert session_id == "file-session-id"
+            with patch('os.getenv', return_value=None), patch('src.scaffolding.config.get_project_root', return_value=Path(temp_dir)):
+                session_id = _get_current_session_id()
+                assert session_id == "file-session-id"
 
     def test_get_current_session_id_none(self):
         """Test _get_current_session_id returns None when no session found."""
         from src.scaffolding.cli import _get_current_session_id
 
-        with patch('os.getenv', return_value=None):
-            with patch('src.scaffolding.config.get_project_root') as mock_get_root:
-                # Point to non-existent directory
-                mock_get_root.return_value = Path("/nonexistent")
-                session_id = _get_current_session_id()
-                assert session_id is None
+        with patch('os.getenv', return_value=None), patch('src.scaffolding.config.get_project_root') as mock_get_root:
+            # Point to non-existent directory
+            mock_get_root.return_value = Path("/nonexistent")
+            session_id = _get_current_session_id()
+            assert session_id is None

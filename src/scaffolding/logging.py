@@ -15,7 +15,6 @@ from .config import get_settings
 def setup_logging() -> FilteringBoundLogger:
     """
     Configure structured logging with JSON output.
-    
     Returns:
         Configured structlog logger instance
     """
@@ -49,20 +48,18 @@ def setup_logging() -> FilteringBoundLogger:
         cache_logger_on_first_use=True,
     )
 
-    return structlog.get_logger("simbuilder")
+    return structlog.get_logger("simbuilder")  # type: ignore[no-any-return]
 
 
 def get_logger(name: str = "simbuilder") -> FilteringBoundLogger:
     """
     Get a named logger instance.
-    
     Args:
         name: Logger name, defaults to "simbuilder"
-        
     Returns:
         Configured structlog logger instance
     """
-    return structlog.get_logger(name)
+    return structlog.get_logger(name)  # type: ignore[no-any-return]
 
 
 def log_function_call(
@@ -72,7 +69,6 @@ def log_function_call(
 ) -> None:
     """
     Log a function call with parameters.
-    
     Args:
         logger: Logger instance
         function_name: Name of the function being called
@@ -92,7 +88,7 @@ def log_error_with_context(
 ) -> None:
     """
     Log an error with additional context.
-    
+
     Args:
         logger: Logger instance
         error: Exception that occurred
@@ -112,9 +108,9 @@ def log_error_with_context(
 class LoggingMixin:
     """Mixin to add structured logging to classes."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.logger = get_logger(self.__class__.__name__)
+        self.logger: FilteringBoundLogger = get_logger(self.__class__.__name__)
 
     def log_method_call(self, method_name: str, **kwargs: Any) -> None:
         """Log a method call with parameters."""

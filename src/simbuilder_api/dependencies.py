@@ -10,10 +10,10 @@ from fastapi import Header
 from fastapi import HTTPException
 from jose import JWTError
 
-from scaffolding.config import Settings
-from scaffolding.config import get_settings as _get_settings
-from simbuilder_graph.service import GraphService
-from simbuilder_servicebus.client import ServiceBusClient
+from simbuilder_graph.service import GraphService  # type: ignore[import-not-found]
+from simbuilder_servicebus.client import ServiceBusClient  # type: ignore[import-not-found]
+from src.scaffolding.config import Settings
+from src.scaffolding.config import get_settings as _get_settings
 
 from .auth.jwt_handler import JWTHandler
 

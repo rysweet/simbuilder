@@ -12,7 +12,7 @@ from fastapi import HTTPException
 from fastapi import Request
 from pydantic import BaseModel
 
-from scaffolding.config import Settings
+from src.scaffolding.config import Settings
 
 from ..dependencies import get_settings
 from ..models import DiscoverySession
@@ -59,7 +59,9 @@ async def create_discovery_session(
         config=session_data.config,
         results={},
         created_at=now,
-        updated_at=now
+        updated_at=now,
+        completed_at=None,
+        error_message=None
     )
 
     _sessions[session_id] = session

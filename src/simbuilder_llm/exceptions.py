@@ -5,10 +5,10 @@ Custom exceptions for the SimBuilder LLM integration package.
 
 class LLMError(Exception):
     """Base exception for LLM-related errors."""
-    
+
     def __init__(self, message: str, original_error: Exception | None = None) -> None:
         """Initialize LLM error.
-        
+
         Args:
             message: Human-readable error message
             original_error: Original exception that caused this error
@@ -26,10 +26,10 @@ class LLMError(Exception):
 
 class PromptRenderError(Exception):
     """Exception raised when prompt rendering fails."""
-    
+
     def __init__(self, prompt_name: str, message: str, missing_variables: list[str] | None = None) -> None:
         """Initialize prompt render error.
-        
+
         Args:
             prompt_name: Name of the prompt that failed to render
             message: Human-readable error message
@@ -38,11 +38,11 @@ class PromptRenderError(Exception):
         self.prompt_name = prompt_name
         self.message = message
         self.missing_variables = missing_variables or []
-        
+
         error_msg = f"Failed to render prompt '{prompt_name}': {message}"
         if self.missing_variables:
             error_msg += f" (Missing variables: {', '.join(self.missing_variables)})"
-            
+
         super().__init__(error_msg)
 
     def __str__(self) -> str:

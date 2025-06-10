@@ -3,10 +3,20 @@ CLI interface for SimBuilder scaffolding operations.
 """
 
 import asyncio
+from typing import Any
+from typing import cast
 
 import typer
 from rich.console import Console
 from rich.table import Table
+
+# Use type: ignore for modules that may not exist
+from simbuilder_api.cli import app as api_cli_app  # type: ignore[import-not-found]
+from simbuilder_graph.cli import graph_check  # type: ignore[import-not-found]
+from simbuilder_graph.cli import graph_info
+from simbuilder_llm.cli import app as llm_cli_app  # type: ignore[import-not-found]
+from simbuilder_servicebus.cli import app as servicebus_cli_app  # type: ignore[import-not-found]
+from simbuilder_specs.cli import app as specs_cli_app  # type: ignore[import-not-found]
 
 from . import __version__
 from .config import get_settings
@@ -137,10 +147,10 @@ def info() -> None:
 
     except ConfigurationError as e:
         console.print(f"[red]Configuration Error:[/red] {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
     except Exception as e:
         console.print(f"[red]Unexpected Error:[/red] {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @app.command()
@@ -206,14 +216,14 @@ def check() -> None:
 
     except ConfigurationError as e:
         console.print(f"[red]Configuration Error:[/red] {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
     except Exception as e:
         console.print(f"[red]Unexpected Error:[/red] {e}")
         logger.error("Health check failed with unexpected error", error=str(e))
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
-def _check_neo4j(settings) -> tuple[str, str]:
+def _check_neo4j(settings: Any) -> tuple[str, str]:
     """Check Neo4j connectivity."""
     try:
         # Import here to avoid dependency issues if Neo4j not available
@@ -240,13 +250,13 @@ def _check_neo4j(settings) -> tuple[str, str]:
         return "[red]✗ FAIL[/red]", f"Connection failed: {str(e)[:50]}..."
 
 
-def _check_nats(settings) -> tuple[str, str]:
+def _check_nats(settings: Any) -> tuple[str, str]:
     """Check NATS connectivity."""
     try:
         # Import here to avoid dependency issues if NATS not available
         import nats
 
-        async def check_connection():
+        async def check_connection() -> tuple[bool, str]:
             try:
                 nc = await nats.connect(settings.service_bus_url)
                 await nc.close()
@@ -324,8 +334,10 @@ def create(
         ports_table.add_column("Service", style="cyan")
         ports_table.add_column("Port", style="green")
 
-        for service, port in session_info["allocated_ports"].items():
-            ports_table.add_row(service, str(port))
+        allocated_ports = cast(dict[str, Any], session_info.get("allocated_ports", {}))
+        if isinstance(allocated_ports, dict):
+            for service, port in allocated_ports.items():
+                ports_table.add_row(service, str(port))
 
         console.print(ports_table)
 
@@ -358,7 +370,7 @@ def create(
         logger = setup_logging()
         logger.error("Session creation failed", error=str(e))
         console.print(f"[red]Error creating session:[/red] {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @session_app.command()
@@ -408,7 +420,7 @@ def list() -> None:
         logger = setup_logging()
         logger.error("Session listing failed", error=str(e))
         console.print(f"[red]Error listing sessions:[/red] {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @session_app.command()
@@ -448,8 +460,10 @@ def status(session_id: str) -> None:
             ports_table.add_column("Service", style="cyan")
             ports_table.add_column("Port", style="green")
 
-            for service, port in session_info["allocated_ports"].items():
-                ports_table.add_row(service, str(port))
+            allocated_ports = cast(dict[str, Any], session_info.get("allocated_ports", {}))
+            if isinstance(allocated_ports, dict):
+                for service, port in allocated_ports.items():
+                    ports_table.add_row(service, str(port))
 
             console.print(ports_table)
 
@@ -462,7 +476,7 @@ def status(session_id: str) -> None:
         logger = setup_logging()
         logger.error("Session status check failed", error=str(e), session_id=session_id)
         console.print(f"[red]Error getting session status:[/red] {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @session_app.command()
@@ -501,13 +515,12 @@ def cleanup(session_id: str) -> None:
         logger = setup_logging()
         logger.error("Session cleanup failed", error=str(e), session_id=session_id)
         console.print(f"[red]Error cleaning up session:[/red] {e}")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 def _get_current_session_id() -> str | None:
     """
     Get the current session ID from environment or .env.session file.
-    
     Returns:
         Session ID if found, None otherwise
     """
@@ -524,41 +537,23 @@ def _get_current_session_id() -> str | None:
     try:
         env_session_path = get_project_root() / ".env.session"
         if env_session_path.exists():
-            with open(env_session_path, encoding='utf-8') as f:
+            with env_session_path.open(encoding='utf-8') as f:
                 for line in f:
                     if line.startswith("SIMBUILDER_SESSION_ID="):
                         return line.split("=", 1)[1].strip()
-    except Exception:
-        pass
+    except Exception as e:
+        import logging
+        logging.getLogger("scaffolding.cli").warning(f"Could not read session ID from .env.session: {e}")
 
     return None
 
 
-# Register graph commands
-from src.simbuilder_graph.cli import graph_check
-from src.simbuilder_graph.cli import graph_info
 
 graph_app.command("info")(graph_info)
 graph_app.command("check")(graph_check)
-
-# Register servicebus commands
-from src.simbuilder_servicebus.cli import app as servicebus_cli_app
-
 servicebus_app.add_typer(servicebus_cli_app, name="")
-
-# Register specs commands
-from src.simbuilder_specs.cli import app as specs_cli_app
-
 specs_app.add_typer(specs_cli_app, name="")
-
-# Register api commands
-from src.simbuilder_api.cli import app as api_cli_app
-
 api_app.add_typer(api_cli_app, name="")
-
-# Register llm commands
-from src.simbuilder_llm.cli import app as llm_cli_app
-
 llm_app.add_typer(llm_cli_app, name="")
 
 

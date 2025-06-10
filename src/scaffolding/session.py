@@ -6,6 +6,7 @@ import subprocess
 import uuid
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 from .config import get_project_root
 from .logging import LoggingMixin
@@ -32,7 +33,7 @@ class SessionManager(LoggingMixin):
         "tenant_discovery_api"
     ]
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the SessionManager."""
         super().__init__()
         self.project_root = get_project_root()
@@ -44,10 +45,10 @@ class SessionManager(LoggingMixin):
     def create_session(self, services: list[str] | None = None) -> dict[str, str]:
         """
         Create a new session with unique ID and allocated ports.
-        
+
         Args:
             services: List of services to allocate ports for, defaults to DEFAULT_SERVICES
-            
+
         Returns:
             Dictionary containing session information
         """
@@ -114,7 +115,9 @@ class SessionManager(LoggingMixin):
 
         # Save session metadata
         session_metadata_path = session_dir / "metadata.json"
-        self._write_session_metadata(session_metadata_path, session_info)
+        from typing import Any
+        from typing import cast
+        self._write_session_metadata(session_metadata_path, cast(dict[str, Any], session_info))
 
         self.logger.info(
             "Created new session",
@@ -124,16 +127,16 @@ class SessionManager(LoggingMixin):
             allocated_ports=allocated_ports
         )
 
-        return session_info
+        return cast(dict[str, str], session_info)
 
     def list_sessions(self) -> list[dict[str, str]]:
         """
         List all existing sessions.
-        
+
         Returns:
             List of session information dictionaries
         """
-        sessions = []
+        sessions: list[dict[str, str]] = []
 
         if not self.sessions_dir.exists():
             return sessions
@@ -160,10 +163,10 @@ class SessionManager(LoggingMixin):
     def get_session_status(self, session_id: str) -> dict[str, str] | None:
         """
         Get status information for a specific session.
-        
+
         Args:
             session_id: Session ID to get status for
-            
+
         Returns:
             Session information if found, None otherwise
         """
@@ -179,12 +182,12 @@ class SessionManager(LoggingMixin):
 
             # Add runtime status information
             env_session_path = Path(session_info["env_file_path"])
-            session_info["env_file_exists"] = env_session_path.exists()
+            session_info["env_file_exists"] = str(env_session_path.exists())
 
             # Check if Docker containers are running
-            session_info["containers_running"] = self._check_containers_running(
+            session_info["containers_running"] = str(self._check_containers_running(
                 session_info["compose_project_name"]
-            )
+            ))
 
             self.logger.debug("Retrieved session status", session_id=session_id)
             return session_info
@@ -199,10 +202,10 @@ class SessionManager(LoggingMixin):
     def cleanup_session(self, session_id: str) -> bool:
         """
         Clean up a session by stopping containers and removing files.
-        
+
         Args:
             session_id: Session ID to clean up
-            
+
         Returns:
             True if cleanup successful, False otherwise
         """
@@ -227,7 +230,7 @@ class SessionManager(LoggingMixin):
                 if env_session_path.exists():
                     try:
                         # Check if the env file contains our session ID
-                        with open(env_session_path, encoding='utf-8') as f:
+                        with env_session_path.open(encoding='utf-8') as f:
                             content = f.read()
                         if session_id in content:
                             env_session_path.unlink()
@@ -252,7 +255,7 @@ class SessionManager(LoggingMixin):
     def _write_env_file(self, file_path: Path, env_vars: dict[str, str]) -> None:
         """Write environment variables to a .env file."""
         try:
-            with open(file_path, 'w', encoding='utf-8') as f:
+            with file_path.open('w', encoding='utf-8') as f:
                 f.write("# SimBuilder Session Environment Variables\n")
                 f.write(f"# Generated on {datetime.now().isoformat()}\n\n")
 
@@ -265,12 +268,12 @@ class SessionManager(LoggingMixin):
             self.log_error(e, {"operation": "write_env_file", "path": str(file_path)})
             raise
 
-    def _write_session_metadata(self, file_path: Path, session_info: dict[str, str]) -> None:
+    def _write_session_metadata(self, file_path: Path, session_info: dict[str, Any]) -> None:
         """Write session metadata to JSON file."""
         import json
 
         try:
-            with open(file_path, 'w', encoding='utf-8') as f:
+            with file_path.open('w', encoding='utf-8') as f:
                 json.dump(session_info, f, indent=2)
 
             self.logger.debug("Wrote session metadata", path=str(file_path))
@@ -283,8 +286,9 @@ class SessionManager(LoggingMixin):
         """Read session metadata from JSON file."""
         import json
 
-        with open(file_path, encoding='utf-8') as f:
-            return json.load(f)
+        with file_path.open(encoding='utf-8') as f:
+            from typing import cast
+            return cast(dict[str, str], json.load(f))
 
     def _check_containers_running(self, compose_project_name: str) -> bool:
         """Check if Docker containers for the project are running."""
@@ -332,11 +336,11 @@ class SessionManager(LoggingMixin):
     def compose_up(self, detached: bool = True, profile: str | None = None) -> bool:
         """
         Start Docker Compose services using the current session environment.
-        
+
         Args:
             detached: Whether to run in detached mode
             profile: Optional profile to activate (e.g., 'full')
-            
+
         Returns:
             True if successful, False otherwise
         """
@@ -349,7 +353,7 @@ class SessionManager(LoggingMixin):
         try:
             # Read compose project name from env file
             compose_project_name = None
-            with open(env_session_path, encoding='utf-8') as f:
+            with env_session_path.open(encoding='utf-8') as f:
                 for line in f:
                     if line.startswith('COMPOSE_PROJECT_NAME='):
                         compose_project_name = line.split('=', 1)[1].strip()
@@ -412,10 +416,10 @@ class SessionManager(LoggingMixin):
     def compose_down(self, remove_volumes: bool = False) -> bool:
         """
         Stop Docker Compose services using the current session environment.
-        
+
         Args:
             remove_volumes: Whether to remove volumes when stopping
-            
+
         Returns:
             True if successful, False otherwise
         """
@@ -428,7 +432,7 @@ class SessionManager(LoggingMixin):
         try:
             # Read compose project name from env file
             compose_project_name = None
-            with open(env_session_path, encoding='utf-8') as f:
+            with env_session_path.open(encoding='utf-8') as f:
                 for line in f:
                     if line.startswith('COMPOSE_PROJECT_NAME='):
                         compose_project_name = line.split('=', 1)[1].strip()

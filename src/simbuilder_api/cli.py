@@ -8,7 +8,7 @@ import uvicorn
 from rich.console import Console
 from rich.table import Table
 
-from scaffolding.config import get_settings
+from src.scaffolding.config import get_settings
 
 from .main import create_app
 

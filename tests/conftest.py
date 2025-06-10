@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+
 import pytest
 
 # Add `<repo>/src` to sys.path once, at highest priority
@@ -19,13 +20,14 @@ if str(_SRC) not in sys.path:
 def clear_caches():
     """Clear LRU caches before each test to ensure clean state."""
     try:
-        from simbuilder_api.dependencies import get_settings, get_jwt_handler
+        from simbuilder_api.dependencies import get_jwt_handler
+        from simbuilder_api.dependencies import get_settings
         get_settings.cache_clear()
         get_jwt_handler.cache_clear()
     except ImportError:
         # Module might not be available for all tests
         pass
-    
+
     try:
         from scaffolding.config import get_settings as scaffolding_get_settings
         scaffolding_get_settings.cache_clear()

@@ -1,11 +1,10 @@
 """
 Liquid template loader and renderer for SimBuilder Specs Library.
 """
-import time
 import functools
+import time
 from typing import TYPE_CHECKING
 from typing import Any
-
 
 if TYPE_CHECKING:
     from liquid import Environment
@@ -23,13 +22,13 @@ except ImportError:
     # Create placeholder classes for when liquid is not available
     class Template:  # type: ignore
         pass
-    
+
     class Environment:  # type: ignore
         pass
-    
+
     class FileSystemLoader:  # type: ignore
         pass
-    
+
     LiquidSyntaxError = Exception  # type: ignore
     LiquidTypeError = Exception  # type: ignore
     LIQUID_AVAILABLE = False
@@ -50,7 +49,9 @@ class TemplateLoader:
 
     @classmethod
     @functools.lru_cache(maxsize=1)
-    def get_repository(cls, *args, **kwargs) -> "GitRepository":
+    def get_repository(
+        cls, *args: Any, **kwargs: Any
+    ) -> "GitRepository":
         """Return a cached GitRepository instance. Used for testability/reset."""
         return GitRepository(*args, **kwargs)
 
@@ -69,43 +70,9 @@ class TemplateLoader:
         self.repository = repository
         self._env: Environment | None = None
         self._template_cache: dict[str, Any] = {}
-        # Propagate cache_clear to bound method so tests may patch it
-        try:
-            # Patch method object itself to ensure an assignable attribute (needed for some test mocks)
-            if not hasattr(self.get_template_meta, "cache_clear"):
-                self.get_template_meta.cache_clear = lambda: None  # type: ignore[attr-defined]
-            # Then propagate classmethod logic (real, lru_cache-wrapped) if available
-            self.get_template_meta.cache_clear = self.__class__.get_template_meta.cache_clear  # type: ignore[attr-defined]
-        except Exception:
-            # Allow missing attribute for pure python mocks in tests
-            pass
-        try:
-            setattr(self.get_template_meta, "cache_clear", lambda: None)  # type: ignore[attr-defined]
-        except Exception:
-            pass
-        setattr(self, "get_template_meta", self.get_template_meta)
-        # Force patchable cache_clear for test mocks without lru_cache
-        if not hasattr(self.get_template_meta, "cache_clear"):
-            def _fake_get_template_meta(*a, **kw): return None
-            _fake_get_template_meta.cache_clear = lambda: None  # type: ignore[attr-defined]
-            self.get_template_meta = _fake_get_template_meta  # type: ignore[assignment]
- 
-        # ensure test can patch cache_clear even if not lru-cached
-        # Only attempt to patch cache_clear if it is safe; fallback to dummy function otherwise
-        try:
-            setattr(self.get_template_meta, "cache_clear", lambda: None)  # type: ignore[attr-defined]
-        except AttributeError:
-            def _patched(*a, **k):
-                # Delegate to the real implementation for expected behavior
-                return self.__class__.get_template_meta(self, *a, **k)
-            _patched.cache_clear = lambda: None  # type: ignore[attr-defined]
-            self.get_template_meta = _patched  # type: ignore[assignment]
-        # ------------------------------------------------------------------ #
-        # Ensure tests can monkey-patch a cache_clear attribute even when
-        # get_template_meta is *not* wrapped by functools.lru_cache.
-        # ------------------------------------------------------------------ #
-        if not hasattr(self.get_template_meta, "cache_clear"):
-            setattr(self.get_template_meta, "cache_clear", lambda: None)  # type: ignore[attr-defined]
+        # Remove all dynamic cache_clear assignment and self.get_template_meta wrapper logic.
+        # Tests should patch class-level methods directly if needed.
+
 
     def _get_environment(self) -> "Environment":
         """Get or create Liquid environment."""
@@ -123,7 +90,6 @@ class TemplateLoader:
         self._template_cache.clear()
         self._env = None
 
-    @functools.lru_cache(maxsize=256)
     def get_template_meta(self, template_name: str) -> TemplateMeta:
         """Get metadata for a template (LRU cached per-instance).
 
@@ -252,7 +218,7 @@ class TemplateLoader:
         """
         try:
             template = self.load_template(template_name)
-            result = template.render(**context)  # type: ignore
+            result = template.render(**context)
             return str(result)
 
         except Exception as e:

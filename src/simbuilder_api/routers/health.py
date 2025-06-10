@@ -10,7 +10,7 @@ from fastapi import Depends
 from fastapi import Request
 from pydantic import BaseModel
 
-from scaffolding.config import Settings
+from src.scaffolding.config import Settings
 
 from ..dependencies import get_settings
 

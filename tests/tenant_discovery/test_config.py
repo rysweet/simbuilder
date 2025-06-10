@@ -27,14 +27,14 @@ class TestTenantDiscoverySettings:
         settings = TenantDiscoverySettings(
             azure_tenant_id=tenant_id,
             azure_client_id=client_id,
-            azure_client_secret="test-secret-123",
+            azure_client_secret="test-secret-123",  # noqa: S106
             subscription_id=subscription_id,
             _env_file=None,
         )
 
         assert settings.azure_tenant_id == tenant_id
         assert settings.azure_client_id == client_id
-        assert settings.azure_client_secret == "test-secret-123"
+        assert settings.azure_client_secret == "test-secret-123"  # noqa: S105
         assert settings.subscription_id == subscription_id
         assert settings.graph_db_url == "bolt://localhost:30000"
         assert settings.service_bus_url == "nats://localhost:30002"
@@ -49,7 +49,7 @@ class TestTenantDiscoverySettings:
         settings = TenantDiscoverySettings(
             azure_tenant_id=tenant_id,
             azure_client_id=client_id,
-            azure_client_secret="test-secret",
+            azure_client_secret="test-secret",  # noqa: S106
             subscription_id=subscription_id,
             graph_db_url="bolt://remote:7687",
             service_bus_url="nats://remote:4222",
@@ -67,7 +67,7 @@ class TestTenantDiscoverySettings:
             TenantDiscoverySettings(
                 azure_tenant_id="not-a-uuid",
                 azure_client_id=str(uuid.uuid4()),
-                azure_client_secret="test-secret",
+                azure_client_secret="test-secret",  # noqa: S106
                 subscription_id=str(uuid.uuid4()),
                 _env_file=None,
             )
@@ -83,7 +83,7 @@ class TestTenantDiscoverySettings:
             TenantDiscoverySettings(
                 azure_tenant_id="not-a-uuid",
                 azure_client_id="also-not-a-uuid",
-                azure_client_secret="test-secret",
+                azure_client_secret="test-secret",  # noqa: S106
                 subscription_id="still-not-a-uuid",
                 _env_file=None,
             )
@@ -105,7 +105,7 @@ class TestTenantDiscoverySettings:
             TenantDiscoverySettings(
                 azure_tenant_id=tenant_id,
                 azure_client_id=client_id,
-                azure_client_secret="test-secret",
+                azure_client_secret="test-secret",  # noqa: S106
                 subscription_id=subscription_id,
                 graph_db_url="http://localhost:7687",
                 _env_file=None,
@@ -135,7 +135,7 @@ class TestTenantDiscoverySettings:
             settings = TenantDiscoverySettings(
                 azure_tenant_id=tenant_id,
                 azure_client_id=client_id,
-                azure_client_secret="test-secret",
+                azure_client_secret="test-secret",  # noqa: S106
                 subscription_id=subscription_id,
                 graph_db_url=url,
                 _env_file=None,
@@ -152,7 +152,7 @@ class TestTenantDiscoverySettings:
             TenantDiscoverySettings(
                 azure_tenant_id=tenant_id,
                 azure_client_id=client_id,
-                azure_client_secret="test-secret",
+                azure_client_secret="test-secret",  # noqa: S106
                 subscription_id=subscription_id,
                 service_bus_url="http://localhost:4222",
                 _env_file=None,
@@ -178,7 +178,7 @@ class TestTenantDiscoverySettings:
             settings = TenantDiscoverySettings(
                 azure_tenant_id=tenant_id,
                 azure_client_id=client_id,
-                azure_client_secret="test-secret",
+                azure_client_secret="test-secret",  # noqa: S106
                 subscription_id=subscription_id,
                 service_bus_url=url,
                 _env_file=None,
@@ -195,7 +195,7 @@ class TestTenantDiscoverySettings:
             settings = TenantDiscoverySettings(
                 azure_tenant_id=tenant_id,
                 azure_client_id=client_id,
-                azure_client_secret="test-secret",
+                azure_client_secret="test-secret",  # noqa: S106
                 subscription_id=subscription_id,
                 log_level=level,
                 _env_file=None,
@@ -218,7 +218,7 @@ class TestTenantDiscoverySettings:
 
         assert settings.azure_tenant_id == "12345678-1234-1234-1234-123456789012"
         assert settings.azure_client_id == "87654321-4321-4321-4321-210987654321"
-        assert settings.azure_client_secret == "env-secret-123"
+        assert settings.azure_client_secret == "env-secret-123"  # noqa: S105
         assert settings.subscription_id == "11111111-2222-3333-4444-555555555555"
         assert settings.log_level == LogLevel.DEBUG
 

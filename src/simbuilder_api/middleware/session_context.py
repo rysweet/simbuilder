@@ -3,7 +3,9 @@ Session context middleware for SimBuilder API.
 """
 
 import uuid
+from collections.abc import Awaitable
 from collections.abc import Callable
+from typing import Any
 
 from fastapi import Request
 from fastapi import Response
@@ -13,7 +15,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 class SessionContextMiddleware(BaseHTTPMiddleware):
     """Middleware to inject session ID into request state."""
 
-    def __init__(self, app, session_header: str = "X-Session-Id") -> None:
+    def __init__(self, app: Any, session_header: str = "X-Session-Id") -> None:
         """Initialize session context middleware.
 
         Args:
@@ -23,7 +25,7 @@ class SessionContextMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.session_header = session_header
 
-    async def dispatch(self, request: Request, call_next: Callable) -> Response:
+    async def dispatch(self, request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
         """Process request and inject session context.
 
         Args:
