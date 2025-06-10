@@ -38,7 +38,7 @@ def mock_repository():
     repo = Mock()
     repo.repo_url = "https://github.com/test/specs.git"
     repo.branch = "main"
-    repo.local_path = Path("/tmp/test_repo")
+    repo.local_path = Path("/tmp/test_repo")  # noqa: S108
 
     # Mock repository info
     repo_info = Mock()
