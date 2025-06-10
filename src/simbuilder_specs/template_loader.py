@@ -31,8 +31,8 @@ except ImportError:
     class FileSystemLoader:  # type: ignore
         pass
 
-    LiquidSyntaxError = Exception  # type: ignore
-    LiquidTypeError = Exception  # type: ignore
+    LiquidSyntaxError = Exception
+    LiquidTypeError = Exception
     LIQUID_AVAILABLE = False
 
 from .git_repository import GitRepository
@@ -75,7 +75,7 @@ class TemplateLoader:
         from contextlib import suppress
 
         with suppress(Exception):
-            self.get_template_meta.cache_clear = type(self).get_template_meta.cache_clear
+            self.get_template_meta.cache_clear = type(self).get_template_meta.cache_clear  # type: ignore[attr-defined]
 
     @staticmethod
     @functools.lru_cache(maxsize=32)
@@ -114,24 +114,24 @@ class TemplateLoader:
         )
 
     @property
-    def get_template_meta(self):
+    def get_template_meta(self) -> Any:
         """Return a callable behaving like a classic lru_cache-wrapped func, and patchable in tests.
 
         Ensures instance-level memoization of the wrapper function, so .cache_clear can be monkeypatched.
         """
         if not hasattr(self, "_get_template_meta_closure"):
 
-            def _call(template_name: str):
+            def _call(template_name: str) -> Any:
                 return type(self)._get_template_meta_cached(
                     str(self.repository.local_path), template_name
                 )
 
-            _call.cache_clear = type(self)._get_template_meta_cached.cache_clear
+            _call.cache_clear = type(self)._get_template_meta_cached.cache_clear  # type: ignore[attr-defined]
             self._get_template_meta_closure = _call
         return self._get_template_meta_closure
 
     @get_template_meta.setter
-    def get_template_meta(self, value):
+    def get_template_meta(self, value: Any) -> None:
         self._get_template_meta_closure = value
 
     def _extract_variables(self, content: str) -> list[str]:
@@ -195,6 +195,7 @@ class TemplateLoader:
         self._template_cache.clear()
         self._env = None
 
+    @functools.lru_cache(maxsize=32)
     def load_template(self, template_name: str) -> Any:
         """Load and compile a Liquid template.
 
@@ -337,5 +338,7 @@ class TemplateLoader:
             meta_cache_clear()
 
 
-# Attach .cache_clear to allow cache clearing and monkeypatching in tests.
-# (no longer needed - now handled in instance property getter)
+def patch_template_loader_cache_clear() -> None:
+    TemplateLoader.load_template_cache_clear = staticmethod(
+        lambda: TemplateLoader.load_template.cache_clear()
+    )  # type: ignore[attr-defined]
