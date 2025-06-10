@@ -201,7 +201,7 @@ class TestTemplateLoader:
     def test_load_template(self, mock_repository_with_real_path):
         """Test loading and compiling a template."""
         with patch.object(type(mock_repository_with_real_path.local_path), "exists", return_value=True), \
-             patch('src.simbuilder_specs.template_loader.FileSystemLoader') as mock_loader_cls, \
+             patch('src.simbuilder_specs.template_loader.FileSystemLoader') as _mock_loader_cls, \
              patch('src.simbuilder_specs.template_loader.Environment') as mock_env_cls:
             mock_template = Mock()
             mock_env = Mock()
