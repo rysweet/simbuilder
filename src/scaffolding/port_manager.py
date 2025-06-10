@@ -149,7 +149,7 @@ class PortManager(LoggingMixin):
         }
 
         try:
-            with open(file_path, 'w', encoding='utf-8') as f:
+            with file_path.open('w', encoding='utf-8') as f:
                 json.dump(port_data, f, indent=2)
 
             self.logger.info("Saved port data to file", file_path=str(file_path))
@@ -165,7 +165,7 @@ class PortManager(LoggingMixin):
             file_path: Path to load the port allocation data from
         """
         try:
-            with open(file_path, encoding='utf-8') as f:
+            with file_path.open(encoding='utf-8') as f:
                 port_data = json.load(f)
 
             self.port_range_start = port_data.get("port_range_start", self.port_range_start)
@@ -198,7 +198,7 @@ class PortManager(LoggingMixin):
         try:
             with FileLock(str(self.lock_file), timeout=10):
                 if self.global_file.exists():
-                    with open(self.global_file, encoding="utf-8") as f:
+                    with self.global_file.open(encoding="utf-8") as f:
                         data = json.load(f)
                     self.used_ports.update(data.get("used_ports", []))
         except Exception as e:
@@ -209,7 +209,7 @@ class PortManager(LoggingMixin):
         """Persist global port usage to disk under a file lock."""
         try:
             with FileLock(str(self.lock_file), timeout=10):
-                with open(self.global_file, "w", encoding="utf-8") as f:
+                with self.global_file.open("w", encoding="utf-8") as f:
                     json.dump({"used_ports": list(self.used_ports)}, f, indent=2)
         except Exception as e:
             self.log_error(e, {"operation": "save_global_state", "file": str(self.global_file)})
