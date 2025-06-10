@@ -17,4 +17,6 @@ git switch -c fix/pydantic-dependency
 
 python -c "import importlib, sys; print(importlib.util.find_spec('pydantic'))"
 # Verified pydantic still unavailable
+python -m src.tenant_discovery.cli --help
+# Attempt to display help; ModuleNotFoundError: pydantic
 ```
