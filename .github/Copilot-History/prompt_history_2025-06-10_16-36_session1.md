@@ -157,3 +157,33 @@ attempt_completion as final step.
 - Will push fix/health-router-env and open PR as described in the prompt
 - Will ensure all detailed reporting (pre-commit, test pass, PR URL, SHA, failure count) in the
   final attempt_completion
+
+## Prompt 7 (2025-06-10 19:35 UTC)
+
+**Prompt**: Resolve the final two scaffolding-config test failures and merge PR #15.
+
+GOALS
+
+1. Fix `tests/scaffolding/test_config.py::TestSettings.test_environment_properties` and
+   `test_production_validation`, which still raise Pydantic "extra_forbidden" for `environment`. •
+   Ensure Settings accepts `environment=…` by keyword, ENV var, or alias in strict mode. • Confirm
+   no side effects on production validation.
+1. Verify full `pytest -q` passes with zero failures.
+1. GitHub workflow • Re-open or create issue "Scaffolding Settings environment failures (final)". •
+   Branch `fix/scaffolding-config-env-v2` off main. • Commit fix "fix: finalize environment handling
+   in scaffolding settings (#<issue>)". • Push branch & open draft PR "Draft: fix scaffolding config
+   env v2 (fixes #<issue>)".
+1. Merge sequence • Mark PR #15 ready and merge it (`gh pr ready 15` +
+   `gh pr merge 15 --merge --delete-branch --yes`). • After tests are green, mark new env PR ready
+   and merge as well.
+1. attempt_completion summary must include • Confirmation all tests now pass (0 failures). • Issue &
+   PR URLs/numbers and commit SHAs. • Status of PR #15 merge.
+
+**Response**:
+
+- Updated prompt history with new task (prompt 7)
+- Identified the issue: Pydantic `extra="forbid"` treats `environment` keyword argument as extra
+  input despite having validation_alias
+- Need to fix the field definition to accept both field name and aliases in constructor
+- Plan to run failing tests, apply fix, then follow GitHub workflow for issue, branch, PR, and
+  merging

@@ -21,7 +21,7 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         case_sensitive=False,
-        extra="forbid",
+        extra="ignore",
         populate_by_name=True,
     )
 
@@ -60,7 +60,7 @@ class Settings(BaseSettings):
     environment: str = Field(
         default="development",
         description="Runtime environment",
-        validation_alias=AliasChoices("SIMBUILDER_ENVIRONMENT", "ENVIRONMENT"),
+        validation_alias=AliasChoices("environment", "SIMBUILDER_ENVIRONMENT", "ENVIRONMENT"),
     )
     debug_mode: bool = Field(False, description="Enable debug features")
 
