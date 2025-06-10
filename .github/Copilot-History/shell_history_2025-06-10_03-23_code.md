@@ -116,3 +116,27 @@ uv run mypy src/
 ```
 
 # SUCCESS: Fixed all remaining LLM client and CLI type issues - 0 errors! Complete mypy type checking cleanup achieved!
+
+```bash
+gh issue create --title "Implement tdcli discovery commands (start, list, status)" --body "..." --label "enhancement"
+```
+
+# Created GitHub issue #28 for missing discovery commands
+
+```bash
+gh issue create --title "Integrate graph commands into tdcli (info, check)" --body "..." --label "enhancement"
+```
+
+# Created GitHub issue #29 for missing graph command integration
+
+```bash
+gh pr create --title "Stub: Implement tdcli discovery commands" --body "..." --draft
+```
+
+# Created draft PR #30 for discovery commands stub (branch: fix/implement-tdcli-discovery-commands)
+
+```bash
+gh pr create --title "Stub: Integrate graph commands into tdcli" --body "..." --draft
+```
+
+# Created draft PR #31 for graph commands integration stub (branch: fix/integrate-graph-commands-into-tdcli)
