@@ -27,7 +27,9 @@ class LLMError(Exception):
 class PromptRenderError(Exception):
     """Exception raised when prompt rendering fails."""
 
-    def __init__(self, prompt_name: str, message: str, missing_variables: list[str] | None = None) -> None:
+    def __init__(
+        self, prompt_name: str, message: str, missing_variables: list[str] | None = None
+    ) -> None:
         """Initialize prompt render error.
 
         Args:

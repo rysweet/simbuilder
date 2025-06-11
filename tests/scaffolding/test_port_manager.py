@@ -33,7 +33,7 @@ class TestPortManager:
         assert port_manager.port_range_start == 35000
         assert port_manager.port_range_end == 36000
 
-    @patch('socket.socket')
+    @patch("socket.socket")
     def test_is_port_available_true(self, mock_socket):
         """Test _is_port_available returns True for available port."""
         mock_sock = MagicMock()
@@ -44,9 +44,9 @@ class TestPortManager:
         result = port_manager._is_port_available(30000)
 
         assert result is True
-        mock_sock.bind.assert_called_once_with(('localhost', 30000))
+        mock_sock.bind.assert_called_once_with(("localhost", 30000))
 
-    @patch('socket.socket')
+    @patch("socket.socket")
     def test_is_port_available_false(self, mock_socket):
         """Test _is_port_available returns False for unavailable port."""
         mock_sock = MagicMock()
@@ -58,7 +58,7 @@ class TestPortManager:
 
         assert result is False
 
-    @patch.object(PortManager, '_is_port_available')
+    @patch.object(PortManager, "_is_port_available")
     def test_find_free_port_success(self, mock_is_available):
         """Test _find_free_port finds an available port."""
         mock_is_available.return_value = True
@@ -70,7 +70,7 @@ class TestPortManager:
         assert 30000 in port_manager.used_ports
         mock_is_available.assert_called_once_with(30000)
 
-    @patch.object(PortManager, '_is_port_available')
+    @patch.object(PortManager, "_is_port_available")
     def test_find_free_port_no_available_ports(self, mock_is_available):
         """Test _find_free_port raises error when no ports available."""
         mock_is_available.return_value = False
@@ -80,7 +80,7 @@ class TestPortManager:
         with pytest.raises(ConfigurationError, match="No free ports available"):
             port_manager._find_free_port()
 
-    @patch.object(PortManager, '_find_free_port')
+    @patch.object(PortManager, "_find_free_port")
     def test_get_port_new_service(self, mock_find_free_port):
         """Test get_port allocates new port for new service."""
         mock_find_free_port.return_value = 30000
@@ -92,7 +92,7 @@ class TestPortManager:
         assert port_manager.allocated_ports["test_service"] == 30000
         mock_find_free_port.assert_called_once()
 
-    @patch.object(PortManager, '_find_free_port')
+    @patch.object(PortManager, "_find_free_port")
     def test_get_port_existing_service(self, mock_find_free_port):
         """Test get_port returns existing port for existing service."""
         port_manager = PortManager()
@@ -146,14 +146,14 @@ class TestPortManager:
 
             assert file_path.exists()
 
-            with file_path.open(encoding='utf-8') as f:
+            with file_path.open(encoding="utf-8") as f:
                 data = json.load(f)
 
             expected_data = {
                 "port_range_start": 35000,
                 "port_range_end": 36000,
                 "allocated_ports": {"service1": 35000},
-                "used_ports": [35000]
+                "used_ports": [35000],
             }
 
             assert data == expected_data
@@ -167,10 +167,10 @@ class TestPortManager:
                 "port_range_start": 35000,
                 "port_range_end": 36000,
                 "allocated_ports": {"service1": 35000},
-                "used_ports": [35000]
+                "used_ports": [35000],
             }
 
-            with file_path.open('w', encoding='utf-8') as f:
+            with file_path.open("w", encoding="utf-8") as f:
                 json.dump(data, f)
 
             port_manager = PortManager()
@@ -210,7 +210,7 @@ class TestPortManager:
         assert port_manager.allocated_ports == {}
         assert port_manager.used_ports == set()
 
-    @patch.object(PortManager, '_is_port_available')
+    @patch.object(PortManager, "_is_port_available")
     def test_port_reuse_after_clear(self, mock_is_available):
         """Test that ports can be reused after clearing all allocations."""
         mock_is_available.return_value = True
@@ -226,7 +226,7 @@ class TestPortManager:
         port2 = port_manager.get_port("service2")
         assert port2 == 30000  # Same port should be available again
 
-    @patch.object(PortManager, '_is_port_available')
+    @patch.object(PortManager, "_is_port_available")
     def test_sequential_port_allocation(self, mock_is_available):
         """Test that multiple services get different sequential ports."""
         mock_is_available.return_value = True

@@ -56,16 +56,10 @@ def mock_template_loader():
 
     # Mock template list
     templates = [
+        TemplateMeta(name="greeting", path="greeting.liquid", variables=["name", "title"]),
         TemplateMeta(
-            name="greeting",
-            path="greeting.liquid",
-            variables=["name", "title"]
+            name="email", path="templates/email.liquid", variables=["recipient", "content"]
         ),
-        TemplateMeta(
-            name="email",
-            path="templates/email.liquid",
-            variables=["recipient", "content"]
-        )
     ]
     loader.list_templates.return_value = templates
 
@@ -75,11 +69,19 @@ def mock_template_loader():
 class TestSpecsInfo:
     """Test specs info command."""
 
-    @patch('src.simbuilder_specs.cli.get_settings')
-    @patch('src.simbuilder_specs.cli.GitRepository')
-    @patch('src.simbuilder_specs.cli.TemplateLoader')
-    def test_info_without_refresh(self, mock_loader_cls, mock_repo_cls, mock_get_settings,
-                                  runner, mock_settings, mock_repository, mock_template_loader):
+    @patch("src.simbuilder_specs.cli.get_settings")
+    @patch("src.simbuilder_specs.cli.GitRepository")
+    @patch("src.simbuilder_specs.cli.TemplateLoader")
+    def test_info_without_refresh(
+        self,
+        mock_loader_cls,
+        mock_repo_cls,
+        mock_get_settings,
+        runner,
+        mock_settings,
+        mock_repository,
+        mock_template_loader,
+    ):
         """Test info command without refresh."""
         mock_get_settings.return_value = mock_settings
         mock_repo_cls.return_value = mock_repository
@@ -96,11 +98,19 @@ class TestSpecsInfo:
         assert "greeting" in result.stdout
         assert "email" in result.stdout
 
-    @patch('src.simbuilder_specs.cli.get_settings')
-    @patch('src.simbuilder_specs.cli.GitRepository')
-    @patch('src.simbuilder_specs.cli.TemplateLoader')
-    def test_info_with_refresh(self, mock_loader_cls, mock_repo_cls, mock_get_settings,
-                               runner, mock_settings, mock_repository, mock_template_loader):
+    @patch("src.simbuilder_specs.cli.get_settings")
+    @patch("src.simbuilder_specs.cli.GitRepository")
+    @patch("src.simbuilder_specs.cli.TemplateLoader")
+    def test_info_with_refresh(
+        self,
+        mock_loader_cls,
+        mock_repo_cls,
+        mock_get_settings,
+        runner,
+        mock_settings,
+        mock_repository,
+        mock_template_loader,
+    ):
         """Test info command with refresh flag."""
         mock_get_settings.return_value = mock_settings
         mock_repo_cls.return_value = mock_repository
@@ -111,11 +121,19 @@ class TestSpecsInfo:
         assert result.exit_code in {0, 1}
         mock_repository.clone_or_pull.assert_called_once()
 
-    @patch('src.simbuilder_specs.cli.get_settings')
-    @patch('src.simbuilder_specs.cli.GitRepository')
-    @patch('src.simbuilder_specs.cli.TemplateLoader')
-    def test_info_repository_not_available(self, mock_loader_cls, mock_repo_cls, mock_get_settings,
-                                           runner, mock_settings, mock_repository, mock_template_loader):
+    @patch("src.simbuilder_specs.cli.get_settings")
+    @patch("src.simbuilder_specs.cli.GitRepository")
+    @patch("src.simbuilder_specs.cli.TemplateLoader")
+    def test_info_repository_not_available(
+        self,
+        mock_loader_cls,
+        mock_repo_cls,
+        mock_get_settings,
+        runner,
+        mock_settings,
+        mock_repository,
+        mock_template_loader,
+    ):
         """Test info command when repository is not available."""
         mock_get_settings.return_value = mock_settings
         mock_repo_cls.return_value = mock_repository
@@ -127,8 +145,8 @@ class TestSpecsInfo:
         assert "Not cloned" in result.stdout
         assert "Repository not available" in result.stdout
 
-    @patch('src.simbuilder_specs.cli.get_settings')
-    @patch('src.simbuilder_specs.cli.GitRepository')
+    @patch("src.simbuilder_specs.cli.get_settings")
+    @patch("src.simbuilder_specs.cli.GitRepository")
     def test_info_error_handling(self, mock_repo_cls, mock_get_settings, runner, mock_settings):
         """Test info command error handling."""
         mock_get_settings.return_value = mock_settings
@@ -143,11 +161,19 @@ class TestSpecsInfo:
 class TestSpecsPull:
     """Test specs pull command."""
 
-    @patch('src.simbuilder_specs.cli.get_settings')
-    @patch('src.simbuilder_specs.cli.GitRepository')
-    @patch('src.simbuilder_specs.cli.TemplateLoader')
-    def test_pull_success(self, mock_loader_cls, mock_repo_cls, mock_get_settings,
-                          runner, mock_settings, mock_repository, mock_template_loader):
+    @patch("src.simbuilder_specs.cli.get_settings")
+    @patch("src.simbuilder_specs.cli.GitRepository")
+    @patch("src.simbuilder_specs.cli.TemplateLoader")
+    def test_pull_success(
+        self,
+        mock_loader_cls,
+        mock_repo_cls,
+        mock_get_settings,
+        runner,
+        mock_settings,
+        mock_repository,
+        mock_template_loader,
+    ):
         """Test successful pull command."""
         mock_get_settings.return_value = mock_settings
         mock_repo_cls.return_value = mock_repository
@@ -168,8 +194,8 @@ class TestSpecsPull:
         assert "Commit: abc123de" in result.stdout
         assert "Templates available: 2" in result.stdout
 
-    @patch('src.simbuilder_specs.cli.get_settings')
-    @patch('src.simbuilder_specs.cli.GitRepository')
+    @patch("src.simbuilder_specs.cli.get_settings")
+    @patch("src.simbuilder_specs.cli.GitRepository")
     def test_pull_git_error(self, mock_repo_cls, mock_get_settings, runner, mock_settings):
         """Test pull command with Git error."""
         from src.simbuilder_specs.git_repository import GitRepositoryError
@@ -186,8 +212,8 @@ class TestSpecsPull:
 class TestSpecsValidate:
     """Test specs validate command."""
 
-    @patch('src.simbuilder_specs.cli._get_template_loader')
-    @patch('src.simbuilder_specs.cli.SpecValidator')
+    @patch("src.simbuilder_specs.cli._get_template_loader")
+    @patch("src.simbuilder_specs.cli.SpecValidator")
     def test_validate_all_templates(self, mock_validator_cls, mock_get_loader, runner):
         """Test validating all templates."""
         mock_loader = Mock()
@@ -201,7 +227,7 @@ class TestSpecsValidate:
                 syntax_errors=[],
                 missing_variables=[],
                 warnings=[],
-                suggestions=[]
+                suggestions=[],
             ),
             ValidationResult(
                 template_name="invalid_template",
@@ -209,8 +235,8 @@ class TestSpecsValidate:
                 syntax_errors=["Syntax error"],
                 missing_variables=["name"],
                 warnings=["Warning message"],
-                suggestions=["Suggestion"]
-            )
+                suggestions=["Suggestion"],
+            ),
         ]
 
         mock_validator = Mock()
@@ -221,7 +247,7 @@ class TestSpecsValidate:
             "invalid_templates": 1,
             "success_rate": 50.0,
             "total_errors": 1,
-            "total_warnings": 1
+            "total_warnings": 1,
         }
         mock_validator_cls.return_value = mock_validator
 
@@ -234,8 +260,8 @@ class TestSpecsValidate:
         assert "Missing variables: name" in result.stdout
         assert "Validation Summary" in result.stdout
 
-    @patch('src.simbuilder_specs.cli._get_template_loader')
-    @patch('src.simbuilder_specs.cli.SpecValidator')
+    @patch("src.simbuilder_specs.cli._get_template_loader")
+    @patch("src.simbuilder_specs.cli.SpecValidator")
     def test_validate_single_template(self, mock_validator_cls, mock_get_loader, runner):
         """Test validating a single template."""
         mock_loader = Mock()
@@ -247,7 +273,7 @@ class TestSpecsValidate:
             syntax_errors=[],
             missing_variables=[],
             warnings=[],
-            suggestions=[]
+            suggestions=[],
         )
 
         mock_validator = Mock()
@@ -258,7 +284,7 @@ class TestSpecsValidate:
             "invalid_templates": 0,
             "success_rate": 100.0,
             "total_errors": 0,
-            "total_warnings": 0
+            "total_warnings": 0,
         }
         mock_validator_cls.return_value = mock_validator
 
@@ -270,14 +296,14 @@ class TestSpecsValidate:
 
     def test_validate_with_json_context_file(self, runner):
         """Test validation with JSON context file."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             json.dump({"name": "John", "age": 30}, f)
             context_file = f.name
 
         try:
-            with patch('src.simbuilder_specs.cli._get_template_loader') as mock_get_loader, \
-                 patch('src.simbuilder_specs.cli.SpecValidator') as mock_validator_cls:
-
+            with patch("src.simbuilder_specs.cli._get_template_loader") as mock_get_loader, patch(
+                "src.simbuilder_specs.cli.SpecValidator"
+            ) as mock_validator_cls:
                 mock_loader = Mock()
                 mock_get_loader.return_value = mock_loader
 
@@ -287,7 +313,7 @@ class TestSpecsValidate:
                     syntax_errors=[],
                     missing_variables=[],
                     warnings=[],
-                    suggestions=[]
+                    suggestions=[],
                 )
 
                 mock_validator = Mock()
@@ -298,28 +324,32 @@ class TestSpecsValidate:
                     "invalid_templates": 0,
                     "success_rate": 100.0,
                     "total_errors": 0,
-                    "total_warnings": 0
+                    "total_warnings": 0,
                 }
                 mock_validator_cls.return_value = mock_validator
 
-                result = runner.invoke(app, ["validate", "test_template", "--context-file", context_file])
+                result = runner.invoke(
+                    app, ["validate", "test_template", "--context-file", context_file]
+                )
 
                 assert result.exit_code == 0
-                mock_validator.validate_template.assert_called_once_with("test_template", {"name": "John", "age": 30})
+                mock_validator.validate_template.assert_called_once_with(
+                    "test_template", {"name": "John", "age": 30}
+                )
 
         finally:
             Path(context_file).unlink()
 
     def test_validate_with_yaml_context_file(self, runner):
         """Test validation with YAML context file."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yml", delete=False) as f:
             yaml.dump({"name": "Jane", "role": "admin"}, f)
             context_file = f.name
 
         try:
-            with patch('src.simbuilder_specs.cli._get_template_loader') as mock_get_loader, \
-                 patch('src.simbuilder_specs.cli.SpecValidator') as mock_validator_cls:
-
+            with patch("src.simbuilder_specs.cli._get_template_loader") as mock_get_loader, patch(
+                "src.simbuilder_specs.cli.SpecValidator"
+            ) as mock_validator_cls:
                 mock_loader = Mock()
                 mock_get_loader.return_value = mock_loader
 
@@ -329,7 +359,7 @@ class TestSpecsValidate:
                     syntax_errors=[],
                     missing_variables=[],
                     warnings=[],
-                    suggestions=[]
+                    suggestions=[],
                 )
 
                 mock_validator = Mock()
@@ -340,21 +370,27 @@ class TestSpecsValidate:
                     "invalid_templates": 0,
                     "success_rate": 100.0,
                     "total_errors": 0,
-                    "total_warnings": 0
+                    "total_warnings": 0,
                 }
                 mock_validator_cls.return_value = mock_validator
 
-                result = runner.invoke(app, ["validate", "test_template", "--context-file", context_file])
+                result = runner.invoke(
+                    app, ["validate", "test_template", "--context-file", context_file]
+                )
 
                 assert result.exit_code == 0
-                mock_validator.validate_template.assert_called_once_with("test_template", {"name": "Jane", "role": "admin"})
+                mock_validator.validate_template.assert_called_once_with(
+                    "test_template", {"name": "Jane", "role": "admin"}
+                )
 
         finally:
             Path(context_file).unlink()
 
     def test_validate_nonexistent_context_file(self, runner):
         """Test validation with nonexistent context file."""
-        result = runner.invoke(app, ["validate", "test_template", "--context-file", "/nonexistent/file.json"])
+        result = runner.invoke(
+            app, ["validate", "test_template", "--context-file", "/nonexistent/file.json"]
+        )
 
         assert result.exit_code == 1
         assert "Context file not found" in result.stdout
@@ -363,7 +399,7 @@ class TestSpecsValidate:
 class TestSpecsRender:
     """Test specs render command."""
 
-    @patch('src.simbuilder_specs.cli._get_template_loader')
+    @patch("src.simbuilder_specs.cli._get_template_loader")
     def test_render_to_stdout(self, mock_get_loader, runner):
         """Test rendering template to stdout."""
         from src.simbuilder_specs.models import TemplateRenderResult
@@ -379,7 +415,7 @@ class TestSpecsRender:
             variables_missing=[],
             render_time_ms=15.5,
             success=True,
-            error_message=None
+            error_message=None,
         )
         mock_loader.render_with_metadata.return_value = render_result
 
@@ -389,7 +425,7 @@ class TestSpecsRender:
         assert "Hello John!" in result.stdout
         assert "Rendered in 15.50ms" in result.stdout
 
-    @patch('src.simbuilder_specs.cli._get_template_loader')
+    @patch("src.simbuilder_specs.cli._get_template_loader")
     def test_render_to_file(self, mock_get_loader, runner):
         """Test rendering template to output file."""
         from src.simbuilder_specs.models import TemplateRenderResult
@@ -405,11 +441,11 @@ class TestSpecsRender:
             variables_missing=[],
             render_time_ms=12.3,
             success=True,
-            error_message=None
+            error_message=None,
         )
         mock_loader.render_with_metadata.return_value = render_result
 
-        with tempfile.NamedTemporaryFile(mode='w', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
             output_file = f.name
 
         try:
@@ -426,7 +462,7 @@ class TestSpecsRender:
         finally:
             Path(output_file).unlink()
 
-    @patch('src.simbuilder_specs.cli._get_template_loader')
+    @patch("src.simbuilder_specs.cli._get_template_loader")
     def test_render_with_context_file(self, mock_get_loader, runner):
         """Test rendering with context file."""
         from src.simbuilder_specs.models import TemplateRenderRequest
@@ -443,12 +479,12 @@ class TestSpecsRender:
             variables_missing=[],
             render_time_ms=20.1,
             success=True,
-            error_message=None
+            error_message=None,
         )
         mock_loader.render_with_metadata.return_value = render_result
 
         # Create context file
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             json.dump({"name": "Bob", "title": "Admin"}, f)
             context_file = f.name
 
@@ -462,7 +498,7 @@ class TestSpecsRender:
             expected_request = TemplateRenderRequest(
                 template_name="greeting",
                 context={"name": "Bob", "title": "Admin"},
-                strict_variables=False
+                strict_variables=False,
             )
             mock_loader.render_with_metadata.assert_called_once()
             actual_request = mock_loader.render_with_metadata.call_args[0][0]
@@ -473,7 +509,7 @@ class TestSpecsRender:
         finally:
             Path(context_file).unlink()
 
-    @patch('src.simbuilder_specs.cli._get_template_loader')
+    @patch("src.simbuilder_specs.cli._get_template_loader")
     def test_render_with_strict_variables(self, mock_get_loader, runner):
         """Test rendering with strict variables flag."""
         from src.simbuilder_specs.models import TemplateRenderResult
@@ -489,7 +525,7 @@ class TestSpecsRender:
             variables_missing=["name"],
             render_time_ms=5.0,
             success=False,
-            error_message="Missing required variables: name"
+            error_message="Missing required variables: name",
         )
         mock_loader.render_with_metadata.return_value = render_result
 
@@ -499,7 +535,7 @@ class TestSpecsRender:
         assert "Rendering failed" in result.stdout
         assert "Missing required variables" in result.stdout
 
-    @patch('src.simbuilder_specs.cli._get_template_loader')
+    @patch("src.simbuilder_specs.cli._get_template_loader")
     def test_render_template_error(self, mock_get_loader, runner):
         """Test render command with template loading error."""
         from src.simbuilder_specs.template_loader import TemplateLoaderError

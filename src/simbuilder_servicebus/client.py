@@ -154,12 +154,7 @@ class ServiceBusClient(LoggingMixin):
             self.log_error(e, {"operation": "create_stream", "topic": topic.name})
             raise
 
-    async def publish(
-        self,
-        subject: str,
-        message: MessageSchema,
-        timeout: float = 10.0
-    ) -> str:
+    async def publish(self, subject: str, message: MessageSchema, timeout: float = 10.0) -> str:
         """Publish a message to a subject.
 
         Args:
@@ -175,13 +170,13 @@ class ServiceBusClient(LoggingMixin):
 
         try:
             # Serialize message to JSON
-            message_data = message.model_dump_json().encode('utf-8')
+            message_data = message.model_dump_json().encode("utf-8")
 
             self.logger.debug(
                 "Publishing message",
                 subject=subject,
                 message_id=message.message_id,
-                message_type=message.message_type
+                message_type=message.message_type,
             )
 
             # Publish with acknowledgment
@@ -189,7 +184,7 @@ class ServiceBusClient(LoggingMixin):
                 subject=subject,
                 payload=message_data,
                 timeout=timeout,
-                headers={"message-id": message.message_id}
+                headers={"message-id": message.message_id},
             )
 
             self.logger.info(
@@ -197,24 +192,27 @@ class ServiceBusClient(LoggingMixin):
                 subject=subject,
                 message_id=message.message_id,
                 stream=ack.stream,
-                sequence=ack.seq
+                sequence=ack.seq,
             )
 
             return message.message_id
 
         except Exception as e:
-            self.log_error(e, {
-                "operation": "publish",
-                "subject": subject,
-                "message_id": getattr(message, 'message_id', 'unknown')
-            })
+            self.log_error(
+                e,
+                {
+                    "operation": "publish",
+                    "subject": subject,
+                    "message_id": getattr(message, "message_id", "unknown"),
+                },
+            )
             raise
 
     async def subscribe(
         self,
         config: SubscriptionConfig,
         message_handler: Callable[[MessageSchema], None] | Callable[[MessageSchema], Any],
-        error_handler: Callable[[Exception], None] | None = None
+        error_handler: Callable[[Exception], None] | None = None,
     ) -> str:
         """Subscribe to messages on a topic.
 
@@ -235,18 +233,19 @@ class ServiceBusClient(LoggingMixin):
             async def msg_handler(msg: Any) -> None:
                 try:
                     # Parse message
-                    message_data = json.loads(msg.data.decode('utf-8'))
+                    message_data = json.loads(msg.data.decode("utf-8"))
                     message = MessageSchema(**message_data)
 
                     self.logger.debug(
                         "Received message",
                         subject=msg.subject,
                         message_id=message.message_id,
-                        message_type=message.message_type
+                        message_type=message.message_type,
                     )
 
                     # Process message
                     import inspect
+
                     if inspect.iscoroutinefunction(message_handler):
                         await message_handler(message)
                     else:
@@ -257,14 +256,18 @@ class ServiceBusClient(LoggingMixin):
                         await msg.ack()
 
                 except Exception as e:
-                    self.log_error(e, {
-                        "operation": "message_processing",
-                        "subject": msg.subject,
-                        "subscription": config.name
-                    })
+                    self.log_error(
+                        e,
+                        {
+                            "operation": "message_processing",
+                            "subject": msg.subject,
+                            "subscription": config.name,
+                        },
+                    )
 
                     if error_handler:
                         import inspect
+
                         if inspect.iscoroutinefunction(error_handler):
                             await error_handler(e)
                         else:
@@ -298,7 +301,7 @@ class ServiceBusClient(LoggingMixin):
             self.logger.info(
                 "Subscription created successfully",
                 subscription=config.name,
-                subscription_id=subscription_id
+                subscription_id=subscription_id,
             )
 
             return subscription_id
@@ -344,18 +347,17 @@ class ServiceBusClient(LoggingMixin):
             try:
                 # Test connection with RTT
                 rtt = await self._nats.rtt()  # type: ignore[attr-defined]
-                health_status.update({
-                    "rtt_ms": round(rtt * 1000, 2) if rtt else None,
-                    "is_connected": getattr(self._nats, "is_connected", False),
-                    "server_info": getattr(self._nats, "connected_server_version", ""),
-                    "active_subscriptions": len(self._subscriptions),
-                    "active_streams": len(self._streams),
-                })
+                health_status.update(
+                    {
+                        "rtt_ms": round(rtt * 1000, 2) if rtt else None,
+                        "is_connected": getattr(self._nats, "is_connected", False),
+                        "server_info": getattr(self._nats, "connected_server_version", ""),
+                        "active_subscriptions": len(self._subscriptions),
+                        "active_streams": len(self._streams),
+                    }
+                )
             except Exception as e:
-                health_status.update({
-                    "error": str(e),
-                    "status": "unhealthy"
-                })
+                health_status.update({"error": str(e), "status": "unhealthy"})
 
         return health_status
 

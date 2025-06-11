@@ -2,25 +2,40 @@
 
 ## Purpose / Overview
 
-The Graph Database Service serves as the foundational data layer for SimBuilder, providing sophisticated graph-based storage and querying capabilities specifically designed for simulation data management. This service leverages the natural graph structure of cloud infrastructure relationships to enable efficient storage, retrieval, and analysis of complex simulation scenarios.
+The Graph Database Service serves as the foundational data layer for SimBuilder, providing
+sophisticated graph-based storage and querying capabilities specifically designed for simulation
+data management. This service leverages the natural graph structure of cloud infrastructure
+relationships to enable efficient storage, retrieval, and analysis of complex simulation scenarios.
 
-As the central repository for all simulation-related data, the service manages intricate relationships between infrastructure components, deployment dependencies, user interactions, and temporal simulation states. The graph-based approach allows for intuitive representation of multi-tenant cloud environments, resource hierarchies, and cross-service dependencies that are fundamental to accurate infrastructure simulations.
+As the central repository for all simulation-related data, the service manages intricate
+relationships between infrastructure components, deployment dependencies, user interactions, and
+temporal simulation states. The graph-based approach allows for intuitive representation of
+multi-tenant cloud environments, resource hierarchies, and cross-service dependencies that are
+fundamental to accurate infrastructure simulations.
 
 **Core Value Propositions:**
-- **Natural Relationship Modeling**: Graph structure inherently represents infrastructure dependencies and relationships
+
+- **Natural Relationship Modeling**: Graph structure inherently represents infrastructure
+  dependencies and relationships
 - **Performance at Scale**: Optimized for complex queries across large simulation datasets
 - **Real-time Operations**: Supports live simulation state management and updates
 - **Historical Intelligence**: Maintains comprehensive audit trails and enables trend analysis
-- **Ecosystem Integration**: Seamlessly integrates with all SimBuilder components through standardized interfaces
+- **Ecosystem Integration**: Seamlessly integrates with all SimBuilder components through
+  standardized interfaces
 
-The service is designed to run in a container locally or in Azure Container Apps, with mounted `plugins/` directory for APOC and vector search extensions, and persistent data storage in a named volume `neo4j_data`.
+The service is designed to run in a container locally or in Azure Container Apps, with mounted
+`plugins/` directory for APOC and vector search extensions, and persistent data storage in a named
+volume `neo4j_data`.
 
 **Key Capabilities:**
+
 - Ingest and store Azure tenant resource graphs produced by the Tenant Discovery Agent
-- Support complex relationship queries across multi-tenant environments with sub-second response times
+- Support complex relationship queries across multi-tenant environments with sub-second response
+  times
 - Maintain simulation state and metadata integrity with ACID compliance
 - Provide semantic search through vector indexes and embeddings using GDS similarity functions
-- Enable efficient storage and retrieval of various node types (AST, filesystem, documentation, summaries)
+- Enable efficient storage and retrieval of various node types (AST, filesystem, documentation,
+  summaries)
 - Support both synchronous and asynchronous query execution patterns
 - Manage connection lifecycle with retry mechanisms for transient failures
 - Advanced analytics support for simulation pattern recognition
@@ -30,50 +45,79 @@ The service is designed to run in a container locally or in Azure Container Apps
 ## Functional Requirements / User Stories
 
 ### Core Data Management
-- **FR-1**: Store and manage comprehensive simulation metadata including configurations, parameters, execution context, and environmental variables
-- **FR-2**: Maintain complex multi-dimensional relationships between infrastructure components including dependencies, hierarchies, associations, and temporal relationships
-- **FR-3**: Support real-time data updates during simulation execution with zero-downtime operations and consistent performance
-- **FR-4**: Provide sophisticated querying capabilities including graph traversal, pattern matching, and analytical queries with sub-second response times
-- **FR-5**: Implement comprehensive data versioning, historical tracking, point-in-time recovery, and audit capabilities for compliance and debugging
+
+- **FR-1**: Store and manage comprehensive simulation metadata including configurations, parameters,
+  execution context, and environmental variables
+- **FR-2**: Maintain complex multi-dimensional relationships between infrastructure components
+  including dependencies, hierarchies, associations, and temporal relationships
+- **FR-3**: Support real-time data updates during simulation execution with zero-downtime operations
+  and consistent performance
+- **FR-4**: Provide sophisticated querying capabilities including graph traversal, pattern matching,
+  and analytical queries with sub-second response times
+- **FR-5**: Implement comprehensive data versioning, historical tracking, point-in-time recovery,
+  and audit capabilities for compliance and debugging
 
 ### Advanced Graph Operations
-- **FR-6**: Execute complex graph algorithms for dependency analysis, impact assessment, and optimization recommendations
-- **FR-7**: Support graph pattern recognition for identifying common infrastructure configurations and anti-patterns
-- **FR-8**: Provide path analysis capabilities for understanding deployment workflows and dependency chains
-- **FR-9**: Enable graph-based analytics for simulation performance optimization and resource utilization analysis
+
+- **FR-6**: Execute complex graph algorithms for dependency analysis, impact assessment, and
+  optimization recommendations
+- **FR-7**: Support graph pattern recognition for identifying common infrastructure configurations
+  and anti-patterns
+- **FR-8**: Provide path analysis capabilities for understanding deployment workflows and dependency
+  chains
+- **FR-9**: Enable graph-based analytics for simulation performance optimization and resource
+  utilization analysis
 
 ### Integration and Ecosystem Support
-- **FR-10**: Integrate seamlessly with Service Bus for event-driven data updates and real-time synchronization
-- **FR-11**: Support Core API Service queries and complex data operations with standardized interfaces
+
+- **FR-10**: Integrate seamlessly with Service Bus for event-driven data updates and real-time
+  synchronization
+- **FR-11**: Support Core API Service queries and complex data operations with standardized
+  interfaces
 - **FR-12**: Enable secure data access for various SimBuilder agents with role-based permissions
 - **FR-13**: Provide standardized GraphQL and REST interfaces for ecosystem components
 - **FR-14**: Support real-time data streaming for live simulation monitoring and dashboards
 
 ### Performance, Scalability, and Reliability
-- **FR-15**: Handle concurrent read/write operations from multiple simulation instances with linear scalability
+
+- **FR-15**: Handle concurrent read/write operations from multiple simulation instances with linear
+  scalability
 - **FR-16**: Scale horizontally to accommodate enterprise-level simulation complexity and volume
-- **FR-17**: Maintain query response times under 50ms for standard operations and under 200ms for complex analytical queries
-- **FR-18**: Support large-scale simulations with tens of thousands of infrastructure components and millions of relationships
+- **FR-17**: Maintain query response times under 50ms for standard operations and under 200ms for
+  complex analytical queries
+- **FR-18**: Support large-scale simulations with tens of thousands of infrastructure components and
+  millions of relationships
 - **FR-19**: Provide 99.9% uptime with automated failover and disaster recovery capabilities
 - **FR-20**: Implement intelligent caching and query optimization for enhanced performance
 
 ### SimBuilder-Specific Use Cases
-- As a **Core API Service**, I need to persist and query simulation metadata in a graph structure to track complex relationships between resources
-- As a **Clarifier Agent**, I need to store partial attack specifications and incrementally build complete models through clarification sessions
-- As a **Planner Agent**, I need to query existing patterns and store resource plans with dependency relationships
-- As a **InfraSynthesis Agent**, I need to validate resource dependencies and store deployment manifests with their relationships
+
+- As a **Core API Service**, I need to persist and query simulation metadata in a graph structure to
+  track complex relationships between resources
+- As a **Clarifier Agent**, I need to store partial attack specifications and incrementally build
+  complete models through clarification sessions
+- As a **Planner Agent**, I need to query existing patterns and store resource plans with dependency
+  relationships
+- As a **InfraSynthesis Agent**, I need to validate resource dependencies and store deployment
+  manifests with their relationships
 - As a **DataSeeder Agent**, I need to record seeded data relationships across tenants and workloads
-- As a **Validator Agent**, I need to query environment state and validate against expected telemetry configurations
-- As a **GUI Interface**, I need to retrieve graph data for visualization using force-directed graph layouts
+- As a **Validator Agent**, I need to query environment state and validate against expected
+  telemetry configurations
+- As a **GUI Interface**, I need to retrieve graph data for visualization using force-directed graph
+  layouts
 - As an **Operations team**, I need to query simulation costs, usage patterns, and cleanup schedules
-- As a **developer**, I want to easily execute Cypher queries against the graph service so that I can retrieve and manipulate graph data
-- As a **developer**, I want reliable connection handling so that transient database issues don't crash my application
-- As a **developer**, I want to use vector search for semantic similarity so that I can find related code elements by meaning
+- As a **developer**, I want to easily execute Cypher queries against the graph service so that I
+  can retrieve and manipulate graph data
+- As a **developer**, I want reliable connection handling so that transient database issues don't
+  crash my application
+- As a **developer**, I want to use vector search for semantic similarity so that I can find related
+  code elements by meaning
 - As a **developer**, I want async-compatible database access so I can use it with FastAPI endpoints
 
 ## Technical Stack
 
 ### Database Technology
+
 - **Primary Database**: Neo4j Enterprise Edition 5.x
   - Native graph database with APOC (Awesome Procedures on Cypher) for advanced algorithms
   - Full ACID compliance with distributed transaction support
@@ -82,6 +126,7 @@ The service is designed to run in a container locally or in Azure Container Apps
   - Graph Data Science Library for advanced analytics and machine learning capabilities
 
 ### Runtime and Infrastructure
+
 - **Container Platform**: Kubernetes with Helm charts for deployment management
 - **Language**: Java 21 LTS with virtual threads for enhanced performance
 - **API Framework**: Spring Boot 3.2+ with Spring Data Neo4j 7.x
@@ -89,12 +134,14 @@ The service is designed to run in a container locally or in Azure Container Apps
 - **Service Mesh**: Istio for secure service-to-service communication and observability
 
 ### Performance and Optimization
+
 - **Caching Layer**: Redis Enterprise for query result caching and session management
 - **Connection Pooling**: HikariCP with optimized connection management
 - **Query Optimization**: Cypher query profiling and automatic index recommendations
 - **Load Balancing**: NGINX with intelligent routing for read/write split operations
 
 ### Supporting Technologies
+
 - **Monitoring and Observability**:
   - Prometheus metrics with custom business metrics
   - Grafana dashboards with alerting
@@ -116,59 +163,63 @@ The service is designed to run in a container locally or in Azure Container Apps
 
 ### Neo4jConnector Interface
 
-The [`Neo4jConnector`](neo4j_connector.py:1) class provides a unified interface for interacting with Neo4j, supporting both synchronous and asynchronous operations:
+The [`Neo4jConnector`](neo4j_connector.py:1) class provides a unified interface for interacting with
+Neo4j, supporting both synchronous and asynchronous operations:
 
 ```python
 class Neo4jConnector:
     def __init__(self, uri=None, username=None, password=None, **config_options):
         """Initialize connector with connection parameters from env vars or args."""
-        
+
     # Synchronous methods
     def execute_query(self, query, params=None, write=False, retry_count=3):
         """Execute a Cypher query with automatic connection management."""
-        
+
     def execute_many(self, queries, params_list=None, write=False):
         """Execute multiple queries in a single transaction."""
-    
+
     # Asynchronous methods
     async def execute_query_async(self, query, params=None, write=False):
         """Execute a Cypher query asynchronously."""
-        
+
     async def check_connection_async(self):
         """Check database connectivity asynchronously."""
-        
+
     async def close_async(self):
         """Close connections asynchronously."""
-    
+
     # Schema management
     def initialize_schema(self):
         """Create constraints, indexes, and schema elements."""
-        
-    def create_vector_index(self, label, property_name, dimensions, similarity="cosine"):
+
+    def create_vector_index(
+        self, label, property_name, dimensions, similarity="cosine"
+    ):
         """Create a vector index for semantic search."""
-    
+
     # Vector search
     def semantic_search(self, query_embedding, node_label, limit=10):
         """Perform vector similarity search using the provided embedding."""
-    
+
     # Connection management
     def check_connection(self):
         """Check if database is accessible and return basic info."""
-        
+
     def close(self):
         """Close all connections in the pool."""
-        
+
     # Context manager support
     def __enter__(self):
         """Support for context manager protocol."""
-        
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Clean up resources when exiting context."""
 ```
 
 ### Connection Management
 
-The [`Neo4jConnector`](neo4j_connector.py:1) implements smart connection pooling with these features:
+The [`Neo4jConnector`](neo4j_connector.py:1) implements smart connection pooling with these
+features:
 
 - **Dynamic Pool Sizing** - Scales connections based on load with configurable min/max size
 - **Connection Validation** - Checks connection health before returning from pool
@@ -179,18 +230,19 @@ The [`Neo4jConnector`](neo4j_connector.py:1) implements smart connection pooling
 
 ### Vector Search Implementation
 
-Vector search is implemented directly in the [`Neo4jConnector`](neo4j_connector.py:182) class using Neo4j 5.x's native vector index capabilities:
+Vector search is implemented directly in the [`Neo4jConnector`](neo4j_connector.py:182) class using
+Neo4j 5.x's native vector index capabilities:
 
 ```python
 def semantic_search(self, query_embedding, node_label, limit=10):
     """
     Perform vector similarity search using the provided embedding.
-    
+
     Args:
         query_embedding: The vector embedding to search against
         node_label: The node label to search within
         limit: Maximum number of results
-        
+
     Returns:
         List of nodes with similarity scores
     """
@@ -202,11 +254,8 @@ def semantic_search(self, query_embedding, node_label, limit=10):
     LIMIT $limit
     RETURN n, score
     """
-    
-    return self.execute_query(
-        cypher,
-        {"embedding": query_embedding, "limit": limit}
-    )
+
+    return self.execute_query(cypher, {"embedding": query_embedding, "limit": limit})
 ```
 
 ### Error Handling Strategy
@@ -224,16 +273,20 @@ Error hierarchy:
 ```python
 class Neo4jError(Exception):
     """Base exception for all Neo4j-related errors."""
-    
+
+
 class ConnectionError(Neo4jError):
     """Error establishing connection to Neo4j."""
-    
+
+
 class QueryError(Neo4jError):
     """Error executing a Cypher query."""
-    
+
+
 class SchemaError(Neo4jError):
     """Error with graph schema operation."""
-    
+
+
 class TransactionError(Neo4jError):
     """Error in transaction management."""
 ```
@@ -243,6 +296,7 @@ class TransactionError(Neo4jError):
 ### Core Data Operations
 
 #### Entity Management
+
 ```http
 POST /api/v1/entities
   - Create new simulation entities with validation and relationship setup
@@ -266,6 +320,7 @@ DELETE /api/v1/entities/{id}
 ```
 
 #### Relationship Management
+
 ```http
 POST /api/v1/relationships
   - Create typed relationships between entities
@@ -286,6 +341,7 @@ DELETE /api/v1/relationships/{id}
 ```
 
 #### Advanced Query Operations
+
 ```http
 POST /api/v1/query/cypher
   - Execute custom Cypher queries with parameterization
@@ -316,6 +372,7 @@ POST /api/v1/analytics/graph-algorithms
 ### Simulation-Specific Operations
 
 #### Simulation Lifecycle Management
+
 ```http
 POST /api/v1/simulations
   - Create new simulation instances with complete metadata
@@ -339,6 +396,7 @@ DELETE /api/v1/simulations/{simulationId}
 ```
 
 #### Historical Data and Analytics
+
 ```http
 GET /api/v1/history/simulations
   - Query simulation execution history with filtering
@@ -362,6 +420,7 @@ POST /api/v1/analytics/trends
 ```
 
 ### Real-time Operations
+
 ```http
 GET /api/v1/stream/simulation/{simulationId}
   - WebSocket endpoint for real-time simulation updates
@@ -377,6 +436,7 @@ POST /api/v1/events/webhook
 ## Interfaces / APIs
 
 ### Inputs
+
 - **AttackSpec objects**: Structured attack scenario data with entities and relationships
 - **ResourcePlan objects**: Infrastructure plans with dependency graphs
 - **DeploymentManifest objects**: Deployed infrastructure state and configuration
@@ -385,12 +445,14 @@ POST /api/v1/events/webhook
 - **Cleanup requests**: Deletion of simulation nodes and relationships
 
 ### Outputs
+
 - **Graph query results**: JSON responses with nodes, relationships, and properties
 - **Visualization data**: Graph structure optimized for force-directed rendering
 - **Relationship traversals**: Dependency chains, impact analysis, and path queries
 - **Aggregation reports**: Cost summaries, resource utilization, and pattern analysis
 
 ### Public REST / gRPC / CLI commands
+
 ```
 POST /graph/nodes - Create nodes with properties and labels
 POST /graph/relationships - Create relationships between nodes
@@ -402,6 +464,7 @@ POST /tenant-discovery/import - Import TenantDiscoveryExport JSON data
 ```
 
 ### Neo4j Integration Endpoints
+
 ```
 Bolt Protocol: bolt://localhost:7687 - Direct Neo4j access for agent connections
 HTTP API: http://localhost:7474 - Neo4j browser and HTTP queries
@@ -413,17 +476,30 @@ Cypher Schema Conventions:
 ```
 
 ### Consumer Components
+
 The Graph Database Service provides interfaces consumed by:
-- **Core API Service**: Simulation metadata queries via [`POST /graph/query`](graph-service.py:45) and [`GET /graph/visualize/{simulation_id}`](graph-service.py:67)
-- **Tenant Discovery Agent**: Resource graph population via [`POST /tenant-discovery/import`](graph-service.py:89) and [`Neo4jConnector.execute_query()`](neo4j_connector.py:127)
-- **Clarifier Agent**: Attack specification storage via [`POST /graph/nodes`](graph-service.py:23) and relationship queries
-- **Planner Agent**: Resource plan storage and dependency analysis via [`POST /graph/relationships`](graph-service.py:34) and path analysis
-- **InfraSynthesis Agent**: Deployment manifest storage via [`POST /graph/nodes`](graph-service.py:23) and validation queries
-- **DataSeeder Agent**: Seeded data tracking via [`POST /graph/relationships`](graph-service.py:34) and identity mapping
-- **Validator Agent**: Telemetry validation via [`GET /graph/query`](graph-service.py:45) and state comparison
-- **GUI Interface**: Visualization data via [`GET /graph/visualize/{simulation_id}`](graph-service.py:67) and real-time updates
-- **Service Bus**: State change notifications via [`Neo4jConnector.execute_query()`](neo4j_connector.py:127) and event triggers
-```
+
+- **Core API Service**: Simulation metadata queries via [`POST /graph/query`](graph-service.py:45)
+  and [`GET /graph/visualize/{simulation_id}`](graph-service.py:67)
+- **Tenant Discovery Agent**: Resource graph population via
+  [`POST /tenant-discovery/import`](graph-service.py:89) and
+  [`Neo4jConnector.execute_query()`](neo4j_connector.py:127)
+- **Clarifier Agent**: Attack specification storage via [`POST /graph/nodes`](graph-service.py:23)
+  and relationship queries
+- **Planner Agent**: Resource plan storage and dependency analysis via
+  [`POST /graph/relationships`](graph-service.py:34) and path analysis
+- **InfraSynthesis Agent**: Deployment manifest storage via
+  [`POST /graph/nodes`](graph-service.py:23) and validation queries
+- **DataSeeder Agent**: Seeded data tracking via [`POST /graph/relationships`](graph-service.py:34)
+  and identity mapping
+- **Validator Agent**: Telemetry validation via [`GET /graph/query`](graph-service.py:45) and state
+  comparison
+- **GUI Interface**: Visualization data via
+  [`GET /graph/visualize/{simulation_id}`](graph-service.py:67) and real-time updates
+- **Service Bus**: State change notifications via
+  [`Neo4jConnector.execute_query()`](neo4j_connector.py:127) and event triggers
+
+````
 
 ## Dependencies
 
@@ -484,9 +560,10 @@ neo4j:
     timeout: 10s
     retries: 5
     start_period: 30s
-```
+````
 
 ### Dynamic Port Allocation
+
 The Graph Database Service supports dynamic port allocation through environment variables:
 
 - **GRAPH_DB_HTTP_PORT**: Allocated HTTP port for Neo4j browser access
@@ -495,12 +572,14 @@ The Graph Database Service supports dynamic port allocation through environment 
 - **NEO4J_HTTP_URI**: Constructed as `http://localhost:${GRAPH_DB_HTTP_PORT}`
 
 ### Session Isolation Features
+
 - **Container Names**: Include session ID short form (e.g., `simbuilder-neo4j-a1b2c3d4`)
 - **Database Names**: Session-specific database names to prevent data mixing
 - **Volume Isolation**: Separate data volumes per session
 - **Network Isolation**: Session-specific Docker networks
 - **Connection String Management**: Environment-based configuration for session-aware connections
-```
+
+````
 
 ## Usage Examples
 
@@ -516,11 +595,11 @@ with Neo4jConnector() as connector:
         "MATCH (f:File) WHERE f.path CONTAINS $keyword RETURN f.path",
         {"keyword": "README"}
     )
-    
+
     # Print results
     for record in result:
         print(record["f.path"])
-```
+````
 
 ### Transaction Management
 
@@ -529,25 +608,29 @@ with Neo4jConnector() as connector:
 def create_class_hierarchy(connector, base_class, derived_classes):
     queries = []
     params_list = []
-    
+
     # Create base class
     queries.append("CREATE (c:Class {name: $name, module: $module})")
     params_list.append({"name": base_class["name"], "module": base_class["module"]})
-    
+
     # Create derived classes with inheritance relationships
     for derived in derived_classes:
-        queries.append("""
+        queries.append(
+            """
         MATCH (base:Class {name: $base_name, module: $base_module})
         CREATE (derived:Class {name: $derived_name, module: $derived_module})
         CREATE (derived)-[:INHERITS_FROM]->(base)
-        """)
-        params_list.append({
-            "base_name": base_class["name"],
-            "base_module": base_class["module"],
-            "derived_name": derived["name"],
-            "derived_module": derived["module"]
-        })
-    
+        """
+        )
+        params_list.append(
+            {
+                "base_name": base_class["name"],
+                "base_module": base_class["module"],
+                "derived_name": derived["name"],
+                "derived_module": derived["module"],
+            }
+        )
+
     # Execute all in one transaction
     connector.execute_many(queries, params_list, write=True)
 ```
@@ -561,24 +644,27 @@ from codestory.graphdb import Neo4jConnector
 app = FastAPI()
 connector = Neo4jConnector()
 
+
 @app.on_event("shutdown")
 async def shutdown():
     await connector.close_async()
+
 
 @app.get("/files/{path}")
 async def get_file_info(path: str):
     query = "MATCH (f:File {path: $path}) RETURN f"
     result = await connector.execute_query_async(query, {"path": path})
-    
+
     if not result:
         return {"error": "File not found"}
-    
+
     return {"file": dict(result[0]["f"])}
 ```
 
 ## Data Contracts / Schemas
 
 ### Node Types
+
 ```yaml
 Simulation:
   properties: [id, name, status, created_at, budget_limit, ttl]
@@ -602,6 +688,7 @@ TelemetryPoint:
 ```
 
 ### Relationship Types
+
 ```yaml
 DEPENDS_ON: Resource dependencies and deployment order
 CONTAINS: Hierarchical containment (tenant contains resources)
@@ -613,6 +700,7 @@ DISCOVERED_IN: Links resources to their source tenant discovery session
 ```
 
 ### TenantDiscoveryExport Schema
+
 ```json
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
@@ -708,6 +796,7 @@ CREATE INDEX IF NOT EXISTS FOR (s:Simulation) ON (s.created_at);
 ## Testing Strategy
 
 ### Unit Tests
+
 - Test [`Neo4jConnector`](neo4j_connector.py:1) methods with mocked driver
 - Test error handling and retry logic
 - Test vector search functionality
@@ -720,6 +809,7 @@ CREATE INDEX IF NOT EXISTS FOR (s:Simulation) ON (s.created_at);
 - Performance benchmarks for common query patterns
 
 ### Integration Tests
+
 - Use Neo4j Testcontainers to spin up actual database
 - Test schema initialization
 - Test data persistence between connections
@@ -731,10 +821,12 @@ CREATE INDEX IF NOT EXISTS FOR (s:Simulation) ON (s.created_at);
 - Concurrent access patterns with multiple agent connections
 - Large graph performance with 1000+ node simulations
 - Disaster recovery with actual backup/restore cycles
-- **Tenant Discovery Agent integration**: Run Tenant Discovery Agent on sample tenant, upload export via POST /tenant-discovery/import, assert node/edge count matches expected values
+- **Tenant Discovery Agent integration**: Run Tenant Discovery Agent on sample tenant, upload export
+  via POST /tenant-discovery/import, assert node/edge count matches expected values
 - Batch import performance testing with large tenant exports (10,000+ resources)
 
 ### Acceptance Tests
+
 - Complete simulation graph creation and traversal
 - Graph visualization data export for GUI rendering
 - Complex dependency resolution for multi-tenant scenarios
@@ -750,41 +842,57 @@ CREATE INDEX IF NOT EXISTS FOR (s:Simulation) ON (s.created_at);
 - **Security**: Encrypted connections, role-based access control, audit logging
 - **Backup**: Automated daily backups with point-in-time recovery capabilities
 - **Monitoring**: Health checks, performance metrics, and alerting integration
-- **Tenant Discovery Integration**: Ingest 10,000-resource tenant export in under 5 minutes with zero errors
+- **Tenant Discovery Integration**: Ingest 10,000-resource tenant export in under 5 minutes with
+  zero errors
 
 ## Open Questions
 
 ### Technical Decisions
+
 - What is the optimal indexing strategy for frequent relationship traversals?
 - How should we handle schema evolution and migration for existing simulations?
 - Should we implement read replicas for visualization queries vs. transactional operations?
 - What backup retention policy aligns with simulation lifecycle requirements?
 - How do we handle concurrent modifications to the same simulation graph?
-- **Graph Database Choice**: Neo4j vs. Amazon Neptune vs. Azure Cosmos DB (Gremlin API) - evaluate based on specific query patterns and scale requirements?
-- **Caching Strategy**: What specific caching patterns, TTL configurations, and cache invalidation strategies for different query types?
-- **Query Optimization**: Indexing strategies for large-scale graph traversals and analytical workloads?
+- **Graph Database Choice**: Neo4j vs. Amazon Neptune vs. Azure Cosmos DB (Gremlin API) - evaluate
+  based on specific query patterns and scale requirements?
+- **Caching Strategy**: What specific caching patterns, TTL configurations, and cache invalidation
+  strategies for different query types?
+- **Query Optimization**: Indexing strategies for large-scale graph traversals and analytical
+  workloads?
 
 ### Integration Patterns
-- **Event Sourcing**: Should we implement event sourcing for graph state changes to enable audit trails and replay capabilities?
-- **Data Synchronization**: How to handle real-time updates from multiple sources with conflict resolution?
-- **Conflict Resolution**: Strategies for handling concurrent updates to the same entities with merge algorithms?
+
+- **Event Sourcing**: Should we implement event sourcing for graph state changes to enable audit
+  trails and replay capabilities?
+- **Data Synchronization**: How to handle real-time updates from multiple sources with conflict
+  resolution?
+- **Conflict Resolution**: Strategies for handling concurrent updates to the same entities with
+  merge algorithms?
 - **Schema Evolution**: How to handle schema changes and migrations without downtime?
 
 ### Performance Optimization
+
 - **Query Caching**: Which queries should be cached, for how long, and what invalidation strategies?
-- **Memory Management**: Optimal memory allocation for graph operations and garbage collection tuning?
+- **Memory Management**: Optimal memory allocation for graph operations and garbage collection
+  tuning?
 - **Connection Pooling**: Optimal connection pool sizing and management strategies?
-- **Partitioning Strategy**: How to partition large graphs across multiple nodes for optimal performance?
+- **Partitioning Strategy**: How to partition large graphs across multiple nodes for optimal
+  performance?
 
 ### Operational Concerns
+
 - **Monitoring**: What specific metrics, alerts, and SLAs are most critical for graph operations?
-- **Disaster Recovery**: RTO and RPO requirements for the graph database with geographic considerations?
-- **Data Migration**: Strategies for schema evolution, data migration, and zero-downtime deployments?
+- **Disaster Recovery**: RTO and RPO requirements for the graph database with geographic
+  considerations?
+- **Data Migration**: Strategies for schema evolution, data migration, and zero-downtime
+  deployments?
 - **Capacity Planning**: How to predict and plan for storage and compute capacity growth?
 
 ## Source Alignment Note
 
-This specification was initially derived from the code-story project's Graph Database specification and adapted for SimBuilder's specific requirements. Key adaptations include:
+This specification was initially derived from the code-story project's Graph Database specification
+and adapted for SimBuilder's specific requirements. Key adaptations include:
 
 - Integration with SimBuilder's service bus architecture
 - Simulation-specific data models and operations
@@ -792,6 +900,10 @@ This specification was initially derived from the code-story project's Graph Dat
 - Performance requirements tailored to simulation workloads
 - Security integration with SimBuilder's authentication system
 
-The specification has been updated with enhanced external content while preserving SimBuilder-specific schema definitions and architectural considerations.
+The specification has been updated with enhanced external content while preserving
+SimBuilder-specific schema definitions and architectural considerations.
 
-*Last synchronized with external source: 2025-06-05 (second merge) - updated with external changes including enhanced performance requirements, comprehensive API specifications with HTTP endpoints, expanded technical stack details with Java 21/Spring Boot 3.2+, comprehensive non-functional requirements with security and compliance standards, and detailed operational excellence practices*
+*Last synchronized with external source: 2025-06-05 (second merge) - updated with external changes
+including enhanced performance requirements, comprehensive API specifications with HTTP endpoints,
+expanded technical stack details with Java 21/Spring Boot 3.2+, comprehensive non-functional
+requirements with security and compliance standards, and detailed operational excellence practices*

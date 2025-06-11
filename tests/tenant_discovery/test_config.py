@@ -202,13 +202,17 @@ class TestTenantDiscoverySettings:
             )
             assert settings.log_level == level
 
-    @patch.dict(os.environ, {
-        "TD_AZURE_TENANT_ID": "12345678-1234-1234-1234-123456789012",
-        "TD_AZURE_CLIENT_ID": "87654321-4321-4321-4321-210987654321",
-        "TD_AZURE_CLIENT_SECRET": "env-secret-123",
-        "TD_SUBSCRIPTION_ID": "11111111-2222-3333-4444-555555555555",
-        "TD_LOG_LEVEL": "DEBUG",
-    }, clear=True)
+    @patch.dict(
+        os.environ,
+        {
+            "TD_AZURE_TENANT_ID": "12345678-1234-1234-1234-123456789012",
+            "TD_AZURE_CLIENT_ID": "87654321-4321-4321-4321-210987654321",
+            "TD_AZURE_CLIENT_SECRET": "env-secret-123",
+            "TD_SUBSCRIPTION_ID": "11111111-2222-3333-4444-555555555555",
+            "TD_LOG_LEVEL": "DEBUG",
+        },
+        clear=True,
+    )
     def test_environment_variable_loading(self):
         """Test loading configuration from environment variables."""
         # Clear the cache to ensure fresh loading
@@ -235,12 +239,16 @@ class TestGetTdSettings:
         # Clear cache first
         get_td_settings.cache_clear()
 
-        with patch.dict(os.environ, {
-            "TD_AZURE_TENANT_ID": str(uuid.uuid4()),
-            "TD_AZURE_CLIENT_ID": str(uuid.uuid4()),
-            "TD_AZURE_CLIENT_SECRET": "test-secret",
-            "TD_SUBSCRIPTION_ID": str(uuid.uuid4()),
-        }, clear=True):
+        with patch.dict(
+            os.environ,
+            {
+                "TD_AZURE_TENANT_ID": str(uuid.uuid4()),
+                "TD_AZURE_CLIENT_ID": str(uuid.uuid4()),
+                "TD_AZURE_CLIENT_SECRET": "test-secret",
+                "TD_SUBSCRIPTION_ID": str(uuid.uuid4()),
+            },
+            clear=True,
+        ):
             settings1 = get_td_settings()
             settings2 = get_td_settings()
 
@@ -254,12 +262,16 @@ class TestTenantDiscoveryCLI:
         """Clear cache before each test."""
         get_td_settings.cache_clear()
 
-    @patch.dict(os.environ, {
-        "TD_AZURE_TENANT_ID": "12345678-1234-1234-1234-123456789012",
-        "TD_AZURE_CLIENT_ID": "87654321-4321-4321-4321-210987654321",
-        "TD_AZURE_CLIENT_SECRET": "test-secret-from-env",
-        "TD_SUBSCRIPTION_ID": "11111111-2222-3333-4444-555555555555",
-    }, clear=True)
+    @patch.dict(
+        os.environ,
+        {
+            "TD_AZURE_TENANT_ID": "12345678-1234-1234-1234-123456789012",
+            "TD_AZURE_CLIENT_ID": "87654321-4321-4321-4321-210987654321",
+            "TD_AZURE_CLIENT_SECRET": "test-secret-from-env",
+            "TD_SUBSCRIPTION_ID": "11111111-2222-3333-4444-555555555555",
+        },
+        clear=True,
+    )
     def test_info_command_success(self):
         """Test the info command with valid configuration."""
         get_td_settings.cache_clear()
@@ -272,12 +284,16 @@ class TestTenantDiscoveryCLI:
         assert "test-secret-from-env" not in result.stdout  # Secret should be masked
         assert "Configuration loaded successfully" in result.stdout
 
-    @patch.dict(os.environ, {
-        "TD_AZURE_TENANT_ID": "invalid-uuid",
-        "TD_AZURE_CLIENT_ID": "also-invalid",
-        "TD_AZURE_CLIENT_SECRET": "test-secret",
-        "TD_SUBSCRIPTION_ID": "still-invalid",
-    }, clear=True)
+    @patch.dict(
+        os.environ,
+        {
+            "TD_AZURE_TENANT_ID": "invalid-uuid",
+            "TD_AZURE_CLIENT_ID": "also-invalid",
+            "TD_AZURE_CLIENT_SECRET": "test-secret",
+            "TD_SUBSCRIPTION_ID": "still-invalid",
+        },
+        clear=True,
+    )
     def test_info_command_validation_error(self):
         """Test the info command with invalid configuration."""
         get_td_settings.cache_clear()
@@ -287,12 +303,16 @@ class TestTenantDiscoveryCLI:
         assert result.exit_code == 1
         assert "Configuration validation failed" in result.stdout
 
-    @patch.dict(os.environ, {
-        "TD_AZURE_TENANT_ID": "12345678-1234-1234-1234-123456789012",
-        "TD_AZURE_CLIENT_ID": "87654321-4321-4321-4321-210987654321",
-        "TD_AZURE_CLIENT_SECRET": "test-secret-from-env",
-        "TD_SUBSCRIPTION_ID": "11111111-2222-3333-4444-555555555555",
-    }, clear=True)
+    @patch.dict(
+        os.environ,
+        {
+            "TD_AZURE_TENANT_ID": "12345678-1234-1234-1234-123456789012",
+            "TD_AZURE_CLIENT_ID": "87654321-4321-4321-4321-210987654321",
+            "TD_AZURE_CLIENT_SECRET": "test-secret-from-env",
+            "TD_SUBSCRIPTION_ID": "11111111-2222-3333-4444-555555555555",
+        },
+        clear=True,
+    )
     def test_check_command_success(self):
         """Test the check command with valid configuration."""
         get_td_settings.cache_clear()
@@ -303,12 +323,16 @@ class TestTenantDiscoveryCLI:
         assert "Validating Tenant Discovery configuration" in result.stdout
         assert "All configuration checks passed" in result.stdout
 
-    @patch.dict(os.environ, {
-        "TD_AZURE_TENANT_ID": "invalid-uuid",
-        "TD_AZURE_CLIENT_ID": "also-invalid",
-        "TD_AZURE_CLIENT_SECRET": "test-secret",
-        "TD_SUBSCRIPTION_ID": "still-invalid",
-    }, clear=True)
+    @patch.dict(
+        os.environ,
+        {
+            "TD_AZURE_TENANT_ID": "invalid-uuid",
+            "TD_AZURE_CLIENT_ID": "also-invalid",
+            "TD_AZURE_CLIENT_SECRET": "test-secret",
+            "TD_SUBSCRIPTION_ID": "still-invalid",
+        },
+        clear=True,
+    )
     def test_check_command_validation_error(self):
         """Test the check command with invalid configuration."""
         get_td_settings.cache_clear()

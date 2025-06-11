@@ -106,3 +106,29 @@ class TestDiscoveryCommands:
 
         assert result.exit_code == 1
         assert "Error starting discovery: Configuration error" in result.stdout
+
+
+class TestGraphCommands:
+    """Test graph CLI commands."""
+
+    def test_graph_info_success(self, runner: CliRunner) -> None:
+        """Test graph info command succeeds and prints node count."""
+        result = runner.invoke(app, ["graph", "info"])
+
+        assert result.exit_code == 0
+        assert "Graph Database Information" in result.stdout
+        assert "Tenants" in result.stdout
+        assert "5" in result.stdout  # stub tenant count
+        assert "Subscriptions" in result.stdout
+        assert "12" in result.stdout  # stub subscription count
+        assert "✓ Connected" in result.stdout
+
+    def test_graph_check_success(self, runner: CliRunner) -> None:
+        """Test graph check command succeeds."""
+        result = runner.invoke(app, ["graph", "check"])
+
+        assert result.exit_code == 0
+        assert "✓ Database Connection" in result.stdout
+        assert "✓ Query Execution" in result.stdout
+        assert "✓ Node Count Query" in result.stdout
+        assert "All graph database checks passed!" in result.stdout

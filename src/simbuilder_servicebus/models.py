@@ -41,6 +41,7 @@ class MessageSchema(BaseModel):
 
     class Config:
         """Pydantic configuration."""
+
         json_encoders = {
             datetime: lambda v: v.isoformat(),
             UUID: str,
@@ -52,7 +53,9 @@ class ProgressMessage(MessageSchema):
 
     message_type: MessageType = Field(MessageType.PROGRESS_UPDATE, description="Fixed message type")
     operation: str = Field(..., description="Operation being tracked")
-    progress_percentage: float | None = Field(None, ge=0.0, le=100.0, description="Completion percentage (None for errors)")
+    progress_percentage: float | None = Field(
+        None, ge=0.0, le=100.0, description="Completion percentage (None for errors)"
+    )
     current_step: str = Field(..., description="Current operation step")
     total_steps: int | None = Field(None, description="Total number of steps")
     current_step_number: int | None = Field(None, description="Current step number")
@@ -86,6 +89,7 @@ class TopicDefinition(BaseModel):
 
     class Config:
         """Pydantic configuration."""
+
         use_enum_values = False
 
 
@@ -115,4 +119,5 @@ class ConnectionConfig(BaseModel):
 
     class Config:
         """Pydantic configuration."""
+
         validate_assignment = True

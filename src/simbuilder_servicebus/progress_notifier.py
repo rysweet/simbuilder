@@ -15,10 +15,7 @@ from .topics import discovery_subject
 class ProgressNotifier(LoggingMixin):
     """High-level interface for sending progress notifications."""
 
-    def __init__(self,
-                 session_id: str,
-                 operation: str,
-                 client: ServiceBusClient | None = None):
+    def __init__(self, session_id: str, operation: str, client: ServiceBusClient | None = None):
         """Initialize progress notifier.
 
         Args:
@@ -64,21 +61,23 @@ class ProgressNotifier(LoggingMixin):
         await self._send_progress_message(
             progress_percentage=0.0,
             current_step="Starting operation",
-            details=f"Beginning {self.operation}"
+            details=f"Beginning {self.operation}",
         )
 
         self.logger.info(
             "Operation started",
             session_id=self.session_id,
             operation=self.operation,
-            total_steps=total_steps
+            total_steps=total_steps,
         )
 
-    async def update_progress(self,
-                            progress_percentage: float | None = None,
-                            current_step: str | None = None,
-                            step_number: int | None = None,
-                            details: str | None = None) -> None:
+    async def update_progress(
+        self,
+        progress_percentage: float | None = None,
+        current_step: str | None = None,
+        step_number: int | None = None,
+        details: str | None = None,
+    ) -> None:
         """Update operation progress.
 
         Args:
@@ -106,7 +105,7 @@ class ProgressNotifier(LoggingMixin):
             current_step=current_step or f"Step {self._current_step}",
             step_number=step_number,
             estimated_completion=estimated_completion,
-            details=details
+            details=details,
         )
 
         self._last_update_time = datetime.utcnow()
@@ -116,12 +115,10 @@ class ProgressNotifier(LoggingMixin):
             session_id=self.session_id,
             operation=self.operation,
             progress_percentage=progress_percentage,
-            current_step=current_step
+            current_step=current_step,
         )
 
-    async def advance_step(self,
-                          step_description: str,
-                          details: str | None = None) -> None:
+    async def advance_step(self, step_description: str, details: str | None = None) -> None:
         """Advance to the next step and update progress.
 
         Args:
@@ -138,7 +135,7 @@ class ProgressNotifier(LoggingMixin):
             progress_percentage=progress_percentage,
             current_step=step_description,
             step_number=self._current_step,
-            details=details
+            details=details,
         )
 
     async def complete_operation(self, details: str | None = None) -> None:
@@ -159,7 +156,7 @@ class ProgressNotifier(LoggingMixin):
             progress_percentage=100.0,
             current_step="Operation completed",
             step_number=self._total_steps,
-            details=completion_details
+            details=completion_details,
         )
 
         self.logger.info(
@@ -167,13 +164,12 @@ class ProgressNotifier(LoggingMixin):
             session_id=self.session_id,
             operation=self.operation,
             duration_seconds=duration.total_seconds(),
-            total_steps=self._current_step
+            total_steps=self._current_step,
         )
 
-    async def error_occurred(self,
-                           error: Exception,
-                           current_step: str | None = None,
-                           details: str | None = None) -> None:
+    async def error_occurred(
+        self, error: Exception, current_step: str | None = None, details: str | None = None
+    ) -> None:
         """Signal that an error occurred during the operation.
 
         Args:
@@ -187,21 +183,26 @@ class ProgressNotifier(LoggingMixin):
             progress_percentage=None,  # Don't update percentage on error
             current_step=current_step or f"Error in step {self._current_step}",
             step_number=self._current_step,
-            details=error_details
+            details=error_details,
         )
 
-        self.log_error(error, {
-            "session_id": self.session_id,
-            "operation": self.operation,
-            "current_step": self._current_step
-        })
+        self.log_error(
+            error,
+            {
+                "session_id": self.session_id,
+                "operation": self.operation,
+                "current_step": self._current_step,
+            },
+        )
 
-    async def _send_progress_message(self,
-                                   progress_percentage: float | None,
-                                   current_step: str,
-                                   step_number: int | None = None,
-                                   estimated_completion: datetime | None = None,
-                                   details: str | None = None) -> None:
+    async def _send_progress_message(
+        self,
+        progress_percentage: float | None,
+        current_step: str,
+        step_number: int | None = None,
+        estimated_completion: datetime | None = None,
+        details: str | None = None,
+    ) -> None:
         """Send a progress message via Service Bus.
 
         Args:
@@ -218,6 +219,7 @@ class ProgressNotifier(LoggingMixin):
         try:
             from .models import MessagePriority
             from .models import MessageType
+
             message = ProgressMessage(
                 message_id=str(uuid.uuid4()),
                 message_type=MessageType.PROGRESS_UPDATE,
@@ -230,17 +232,14 @@ class ProgressNotifier(LoggingMixin):
                 total_steps=self._total_steps,
                 current_step_number=step_number,
                 estimated_completion=estimated_completion,
-                details=details
+                details=details,
             )
 
             subject = discovery_subject(self.session_id, "progress")
             await self._client.publish(subject, message)
 
         except Exception as e:
-            self.log_error(e, {
-                "operation": "send_progress_message",
-                "session_id": self.session_id
-            })
+            self.log_error(e, {"operation": "send_progress_message", "session_id": self.session_id})
             # Don't re-raise - progress notifications shouldn't break the main operation
 
     def get_elapsed_time(self) -> timedelta:
@@ -278,9 +277,9 @@ class ProgressNotifier(LoggingMixin):
 
 
 # Convenience function for simple progress tracking
-async def track_progress(session_id: str,
-                        operation: str,
-                        total_steps: int | None = None) -> ProgressNotifier:
+async def track_progress(
+    session_id: str, operation: str, total_steps: int | None = None
+) -> ProgressNotifier:
     """Create and initialize a progress notifier.
 
     Args:

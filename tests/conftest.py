@@ -22,6 +22,7 @@ def clear_caches():
     try:
         from simbuilder_api.dependencies import get_jwt_handler
         from simbuilder_api.dependencies import get_settings
+
         get_settings.cache_clear()
         get_jwt_handler.cache_clear()
     except ImportError:
@@ -30,6 +31,7 @@ def clear_caches():
 
     try:
         from scaffolding.config import get_settings as scaffolding_get_settings
+
         scaffolding_get_settings.cache_clear()
     except ImportError:
         pass

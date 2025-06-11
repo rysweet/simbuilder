@@ -17,6 +17,7 @@ try:
     from liquid import Template
     from liquid.exceptions import LiquidSyntaxError
     from liquid.exceptions import LiquidTypeError
+
     LIQUID_AVAILABLE = True
 except ImportError:
     # Create placeholder classes for when liquid is not available
@@ -41,6 +42,7 @@ from .models import TemplateRenderResult
 
 class TemplateLoaderError(Exception):
     """Exception raised for template loading operations."""
+
     pass
 
 
@@ -49,9 +51,7 @@ class TemplateLoader:
 
     @classmethod
     @functools.lru_cache(maxsize=1)
-    def get_repository(
-        cls, *args: Any, **kwargs: Any
-    ) -> "GitRepository":
+    def get_repository(cls, *args: Any, **kwargs: Any) -> "GitRepository":
         """Return a cached GitRepository instance. Used for testability/reset."""
         return GitRepository(*args, **kwargs)
 
@@ -72,7 +72,6 @@ class TemplateLoader:
         self._template_cache: dict[str, Any] = {}
         # Remove all dynamic cache_clear assignment and self.get_template_meta wrapper logic.
         # Tests should patch class-level methods directly if needed.
-
 
     def _get_environment(self) -> "Environment":
         """Get or create Liquid environment."""
@@ -103,8 +102,8 @@ class TemplateLoader:
             TemplateLoaderError: If template not found
         """
         # Ensure .liquid extension
-        if not template_name.endswith('.liquid'):
-            template_name += '.liquid'
+        if not template_name.endswith(".liquid"):
+            template_name += ".liquid"
 
         # Find template file in repository
         template_files = self.repository.list_templates()
@@ -151,10 +150,10 @@ class TemplateLoader:
 
         # Find variables in {{ variable }} and {% if variable %} patterns
         variable_patterns = [
-            r'\{\{\s*(\w+)',          # {{ variable }}
-            r'\{\%\s*if\s+(\w+)',     # {% if variable %}
-            r'\{\%\s*for\s+\w+\s+in\s+(\w+)',  # {% for item in items %}
-            r'\{\%\s*assign\s+\w+\s*=\s*(\w+)', # {% assign x = variable %}
+            r"\{\{\s*(\w+)",  # {{ variable }}
+            r"\{\%\s*if\s+(\w+)",  # {% if variable %}
+            r"\{\%\s*for\s+\w+\s+in\s+(\w+)",  # {% for item in items %}
+            r"\{\%\s*assign\s+\w+\s*=\s*(\w+)",  # {% assign x = variable %}
         ]
 
         variables = set()
@@ -163,9 +162,20 @@ class TemplateLoader:
             variables.update(matches)
 
         # Remove Liquid built-ins, keywords, and local variables
-        builtins = {'forloop', 'tablerow', 'cycle', 'unless', 'else', 'elseif', 'endif', 'endfor', 'item', 'greeting'}
+        builtins = {
+            "forloop",
+            "tablerow",
+            "cycle",
+            "unless",
+            "else",
+            "elseif",
+            "endif",
+            "endfor",
+            "item",
+            "greeting",
+        }
         # Also remove variables that are assigned within the template (they're local, not inputs)
-        assign_pattern = r'\{\%\s*assign\s+(\w+)'
+        assign_pattern = r"\{\%\s*assign\s+(\w+)"
         assigned_vars = set(re.findall(assign_pattern, content))
         variables = variables - builtins - assigned_vars
 
@@ -184,8 +194,8 @@ class TemplateLoader:
             TemplateLoaderError: If template loading fails
         """
         # Ensure .liquid extension
-        if not template_name.endswith('.liquid'):
-            template_name += '.liquid'
+        if not template_name.endswith(".liquid"):
+            template_name += ".liquid"
 
         # Check cache first
         if template_name in self._template_cache:
@@ -252,7 +262,7 @@ class TemplateLoader:
                         variables_missing=missing_vars,
                         render_time_ms=(time.time() - start_time) * 1000,
                         success=False,
-                        error_message=f"Missing required variables: {', '.join(missing_vars)}"
+                        error_message=f"Missing required variables: {', '.join(missing_vars)}",
                     )
 
             # Render template
@@ -266,7 +276,7 @@ class TemplateLoader:
                 variables_missing=missing_vars,
                 render_time_ms=(time.time() - start_time) * 1000,
                 success=True,
-                error_message=None
+                error_message=None,
             )
 
         except Exception as e:
@@ -278,7 +288,7 @@ class TemplateLoader:
                 variables_missing=[],
                 render_time_ms=(time.time() - start_time) * 1000,
                 success=False,
-                error_message=str(e)
+                error_message=str(e),
             )
 
     def list_templates(self) -> list[TemplateMeta]:
@@ -311,4 +321,3 @@ class TemplateLoader:
         meta_cache_clear = getattr(self.get_template_meta, "cache_clear", None)
         if callable(meta_cache_clear):
             meta_cache_clear()
-

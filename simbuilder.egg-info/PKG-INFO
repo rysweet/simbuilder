@@ -77,7 +77,7 @@ A foundational Python package that provides shared utilities, configuration mana
    ```bash
    # Install the package in development mode
    pip install -e .
-   
+
    # Create a new session with dynamic ports and start containers
    simbuilder session create --start-containers
    ```
@@ -329,7 +329,7 @@ class MyService(LoggingMixin):
     def __init__(self):
         super().__init__()
         self.settings = get_settings()
-        
+
     def process_data(self, data):
         self.log_method_call("process_data", data_size=len(data))
         try:

@@ -2,22 +2,33 @@
 
 ## Purpose / Overview
 
-The Terraform Runner component executes Terraform infrastructure-as-code templates for SimBuilder simulation environments. It manages Terraform state, workspace isolation, provider configurations, and deployment orchestration while providing robust error handling, rollback capabilities, and deployment monitoring. This component serves as the primary infrastructure deployment engine for complex multi-resource Azure environments.
+The Terraform Runner component executes Terraform infrastructure-as-code templates for SimBuilder
+simulation environments. It manages Terraform state, workspace isolation, provider configurations,
+and deployment orchestration while providing robust error handling, rollback capabilities, and
+deployment monitoring. This component serves as the primary infrastructure deployment engine for
+complex multi-resource Azure environments.
 
 ## Functional Requirements / User Stories
 
-- As an **Orchestrator Agent**, I need to deploy complex infrastructure using Terraform templates with proper state management
-- As a **Planner Agent**, I need to validate Terraform configurations and estimate deployment costs before execution
-- As an **Operations Team**, I need reliable rollback capabilities when deployments fail or environments need cleanup
+- As an **Orchestrator Agent**, I need to deploy complex infrastructure using Terraform templates
+  with proper state management
+- As a **Planner Agent**, I need to validate Terraform configurations and estimate deployment costs
+  before execution
+- As an **Operations Team**, I need reliable rollback capabilities when deployments fail or
+  environments need cleanup
 - As a **Security Officer**, I need audit trails of all infrastructure deployments and state changes
-- As a **Cost Manager**, I need real-time deployment progress and resource cost estimation during provisioning
+- As a **Cost Manager**, I need real-time deployment progress and resource cost estimation during
+  provisioning
 - As a **Developer**, I need isolated Terraform workspaces for concurrent simulation deployments
-- As a **Compliance Officer**, I need validation that deployed infrastructure meets governance policies and standards
-- As a **Support Engineer**, I need detailed deployment logs and error diagnostics for troubleshooting
+- As a **Compliance Officer**, I need validation that deployed infrastructure meets governance
+  policies and standards
+- As a **Support Engineer**, I need detailed deployment logs and error diagnostics for
+  troubleshooting
 
 ## Interfaces / APIs
 
 ### Inputs
+
 - **TerraformSpec objects**: Complete Terraform configurations with variables and provider settings
 - **WorkspaceConfig**: Terraform workspace and state management configuration
 - **DeploymentPlan**: Planned infrastructure changes and resource dependencies
@@ -25,6 +36,7 @@ The Terraform Runner component executes Terraform infrastructure-as-code templat
 - **ValidationRules**: Infrastructure compliance and governance validation criteria
 
 ### Outputs
+
 - **DeploymentResults**: Infrastructure deployment status with resource details and outputs
 - **StateSnapshots**: Terraform state backups and versioning information
 - **ResourceInventory**: Complete inventory of deployed resources with metadata
@@ -32,6 +44,7 @@ The Terraform Runner component executes Terraform infrastructure-as-code templat
 - **AuditLogs**: Detailed deployment activity logs for compliance and debugging
 
 ### Public Endpoints / CLI Commands
+
 ```
 POST /terraform/plan - Generate Terraform execution plan
 POST /terraform/apply - Execute Terraform deployment
@@ -48,17 +61,25 @@ GET /terraform/audit/{simulation_id} - Retrieve deployment audit logs
 - **Configuration Service**: For centralized configuration management and environment settings
 
 - **Terraform CLI**: Core Terraform execution engine (v1.5+)
+
 - **Azure Provider**: Terraform Azure Resource Manager provider
+
 - **Azure Storage**: For Terraform state backend and file storage
+
 - **Orchestrator Agent**: For deployment coordination and workflow management
+
 - **Core API Service**: For authentication and request processing
+
 - **Graph Database Service**: For storing deployment metadata and relationships
+
 - **FinOps Alerting**: For cost monitoring and budget enforcement integration
+
 - **Azure Key Vault**: For secure storage of provider credentials and secrets
 
 ## Data Contracts / Schemas
 
 ### TerraformSpec Schema
+
 ```yaml
 TerraformSpec:
   workspace_id: string
@@ -101,6 +122,7 @@ DeploymentResult:
 ```
 
 ### Terraform State Schema
+
 ```yaml
 TerraformState:
   workspace_id: string
@@ -139,6 +161,7 @@ WorkspaceConfig:
 ## Testing Strategy
 
 ### Unit Tests
+
 - Terraform configuration parsing and validation
 - Workspace creation and state management logic
 - Provider configuration and credential handling
@@ -147,6 +170,7 @@ WorkspaceConfig:
 - State backup and restoration functionality
 
 ### Integration Tests
+
 - **Live Azure deployment** - no mocking of Terraform or Azure services
 - Complete infrastructure deployment lifecycle testing
 - Multi-workspace concurrent deployment scenarios
@@ -155,6 +179,7 @@ WorkspaceConfig:
 - State corruption recovery and disaster scenarios
 
 ### End-to-End Acceptance Tests
+
 - Full simulation infrastructure deployment from specification to validation
 - Complex multi-tier application deployment scenarios
 - Integration with cost monitoring and governance enforcement

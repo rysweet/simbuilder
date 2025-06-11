@@ -106,9 +106,7 @@ class GraphService:
 
         with self.session() as session:
             session.run(
-                "MERGE (t:Tenant {id: $id}) SET t.name = $name",
-                id=tenant.id,
-                name=tenant.name
+                "MERGE (t:Tenant {id: $id}) SET t.name = $name", id=tenant.id, name=tenant.name
             )
 
         logger.info(f"Created/updated tenant: {id}")
@@ -135,7 +133,7 @@ class GraphService:
                 """,
                 sub_id=subscription.id,
                 sub_name=subscription.name,
-                tenant_id=subscription.tenant_id
+                tenant_id=subscription.tenant_id,
             )
 
         logger.info(f"Created/updated subscription: {id} for tenant: {tenant_id}")
@@ -150,10 +148,7 @@ class GraphService:
             bool: True if tenant exists, False otherwise
         """
         with self.session() as session:
-            result = session.run(
-                "MATCH (t:Tenant {id: $id}) RETURN count(t) as count",
-                id=id
-            )
+            result = session.run("MATCH (t:Tenant {id: $id}) RETURN count(t) as count", id=id)
             record = result.single()
             return record["count"] > 0 if record else False
 
@@ -172,16 +167,16 @@ class GraphService:
                 MATCH (t:Tenant {id: $tenant_id})-[:HAS_SUBSCRIPTION]->(s:Subscription)
                 RETURN s.id as id, s.name as name, s.tenant_id as tenant_id
                 """,
-                tenant_id=tenant_id
+                tenant_id=tenant_id,
             )
 
             subscriptions = []
             for record in result:
-                subscriptions.append(SubscriptionNode(
-                    id=record["id"],
-                    name=record["name"],
-                    tenant_id=record["tenant_id"]
-                ))
+                subscriptions.append(
+                    SubscriptionNode(
+                        id=record["id"], name=record["name"], tenant_id=record["tenant_id"]
+                    )
+                )
 
             return subscriptions
 
@@ -204,7 +199,7 @@ class GraphService:
             if record:
                 return {
                     "tenants": record["tenant_count"],
-                    "subscriptions": record["subscription_count"]
+                    "subscriptions": record["subscription_count"],
                 }
             return {"tenants": 0, "subscriptions": 0}
 

@@ -1,6 +1,7 @@
 # SimBuilder Scaffolding Package
 
-A foundational Python package that provides shared utilities, configuration management, and infrastructure components for the SimBuilder Azure tenant discovery and simulation platform.
+A foundational Python package that provides shared utilities, configuration management, and
+infrastructure components for the SimBuilder Azure tenant discovery and simulation platform.
 
 ## 🚀 Quick Start
 
@@ -13,33 +14,38 @@ A foundational Python package that provides shared utilities, configuration mana
 ### Installation
 
 1. **Clone the repository:**
+
    ```bash
    git clone <repository-url>
    cd simbuilder
    ```
 
-2. **Bootstrap the development environment:**
+1. **Bootstrap the development environment:**
+
    ```bash
    uv venv .venv --python 3.12
    uv pip install -r requirements.txt
    ```
 
    Or use the provided tasks:
+
    ```bash
    python tasks.py bootstrap
    ```
 
-3. **Configure environment:**
+1. **Configure environment:**
+
    ```bash
    cp .env.template .env
    # Edit .env with your configuration
    ```
 
-4. **Create a new session and start infrastructure services:**
+1. **Create a new session and start infrastructure services:**
+
    ```bash
    # Install the package in development mode
    pip install -e .
-   
+
    # Create a new session with dynamic ports and start containers
    simbuilder session create --start-containers
    ```
@@ -57,7 +63,8 @@ src/scaffolding/
 
 ## 🔧 Configuration
 
-The scaffolding package uses Pydantic Settings for configuration management with automatic environment variable loading.
+The scaffolding package uses Pydantic Settings for configuration management with automatic
+environment variable loading.
 
 ### Required Configuration
 
@@ -87,11 +94,13 @@ DEBUG_MODE=true
 
 ## 🛠️ CLI Usage
 
-The scaffolding package provides a CLI for system administration, session management, and health checks:
+The scaffolding package provides a CLI for system administration, session management, and health
+checks:
 
 ### Session Management
 
 Create a new session with dynamic port allocation:
+
 ```bash
 # Create session only
 simbuilder session create
@@ -107,26 +116,31 @@ simbuilder session create --start-containers --profile full
 ```
 
 List existing sessions:
+
 ```bash
 simbuilder session list
 ```
 
 Check session status:
+
 ```bash
 simbuilder session status <session-id>
 ```
 
 Clean up a session:
+
 ```bash
 simbuilder session cleanup <session-id>
 ```
 
 ### View Configuration
+
 ```bash
 simbuilder info
 ```
 
 ### Health Checks
+
 ```bash
 simbuilder check
 ```
@@ -135,13 +149,15 @@ simbuilder check
 
 ### Session-Aware Infrastructure
 
-SimBuilder uses a session-aware approach to infrastructure management with dynamic port allocation to avoid conflicts:
+SimBuilder uses a session-aware approach to infrastructure management with dynamic port allocation
+to avoid conflicts:
 
 1. **Create a session**: Generates unique ports and container names
-2. **Environment variables**: All configuration stored in `.env.session`
-3. **Docker Compose**: Uses environment variables for ports and project naming
+1. **Environment variables**: All configuration stored in `.env.session`
+1. **Docker Compose**: Uses environment variables for ports and project naming
 
 ### Start Services with Session
+
 ```bash
 # Create session and start services
 simbuilder session create --start-containers
@@ -151,6 +167,7 @@ docker compose -p simbuilder-<session-short> --env-file .env.session up -d
 ```
 
 The compose file includes:
+
 - **Neo4j** - Graph database with dynamic ports
 - **NATS** - Message bus with JetStream and dynamic ports
 - **Azurite** - Azure Storage emulator with dynamic ports
@@ -158,6 +175,7 @@ The compose file includes:
 - **API Gateway** - Placeholder service (profile: full)
 
 ### Stop Services
+
 ```bash
 # Using session management
 simbuilder session cleanup <session-id>
@@ -169,6 +187,7 @@ docker compose -p simbuilder-<session-short> --env-file .env.session down
 ### Environment Variables
 
 After creating a session, `.env.session` contains:
+
 ```bash
 SIMBUILDER_SESSION_ID=uuid-v4-session-id
 COMPOSE_PROJECT_NAME=simbuilder-<8-char-short-id>
@@ -184,12 +203,14 @@ NATS_HTTP_PORT=30005
 ### Code Quality
 
 The project uses modern Python tooling:
+
 - **Ruff** - Fast Python linter and formatter
 - **MyPy** - Static type checking
 - **Pytest** - Testing framework
 - **Pre-commit** - Git hooks for quality checks
 
 ### Run Tests
+
 ```bash
 # All tests
 uv run pytest
@@ -202,6 +223,7 @@ uv run pytest -m unit
 ```
 
 ### Linting and Formatting
+
 ```bash
 # Check code quality
 uv run ruff check src/
@@ -240,23 +262,27 @@ python tasks.py scaffolding-check
 ## 📊 Package Features
 
 ### Configuration Management
+
 - Type-safe Pydantic settings
 - Environment variable loading
 - Validation and error handling
 - Development/production modes
 
 ### Structured Logging
+
 - JSON output for production
 - Pretty console output for development
 - Contextual logging with metadata
 - Configurable log levels
 
 ### Error Handling
+
 - Custom exception hierarchy
 - Detailed error context
 - Service availability checking
 
 ### CLI Interface
+
 - Rich terminal output
 - Health monitoring
 - Configuration inspection
@@ -287,11 +313,12 @@ except ConfigurationError as e:
 from src.scaffolding.logging import LoggingMixin
 from src.scaffolding.config import get_settings
 
+
 class MyService(LoggingMixin):
     def __init__(self):
         super().__init__()
         self.settings = get_settings()
-        
+
     def process_data(self, data):
         self.log_method_call("process_data", data_size=len(data))
         try:
@@ -315,6 +342,7 @@ The scaffolding package follows these design principles:
 ## 📋 Requirements
 
 ### Runtime Dependencies
+
 - `pydantic>=2.5.0` - Data validation and settings
 - `structlog>=23.2.0` - Structured logging
 - `typer>=0.9.0` - CLI framework
@@ -323,6 +351,7 @@ The scaffolding package follows these design principles:
 - `nats-py>=2.6.0` - NATS message bus client
 
 ### Development Dependencies
+
 - `pytest>=7.4.0` - Testing framework
 - `ruff>=0.1.6` - Linting and formatting
 - `mypy>=1.7.0` - Type checking
@@ -331,9 +360,9 @@ The scaffolding package follows these design principles:
 ## 🤝 Contributing
 
 1. Install development dependencies: `python tasks.py bootstrap`
-2. Install pre-commit hooks: `pre-commit install`
-3. Run tests: `python tasks.py test`
-4. Check code quality: `python tasks.py lint`
+1. Install pre-commit hooks: `pre-commit install`
+1. Run tests: `python tasks.py test`
+1. Check code quality: `python tasks.py lint`
 
 ## 📄 License
 
@@ -341,12 +370,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## ☁️ GitHub Codespaces & Dev Containers
 
-SimBuilder includes full support for GitHub Codespaces and VS Code Dev Containers with Docker-in-Docker capability.
+SimBuilder includes full support for GitHub Codespaces and VS Code Dev Containers with
+Docker-in-Docker capability.
 
 ### Using GitHub Codespaces
 
 1. **Open in Codespaces**: Click "Code" → "Codespaces" → "Create codespace"
-2. **Automatic Setup**: The devcontainer will automatically:
+1. **Automatic Setup**: The devcontainer will automatically:
    - Install Python dependencies
    - Create a new session
    - Start Docker Compose services
@@ -355,12 +385,13 @@ SimBuilder includes full support for GitHub Codespaces and VS Code Dev Container
 ### Using VS Code Dev Containers
 
 1. **Open in VS Code**: Install the "Dev Containers" extension
-2. **Reopen in Container**: Command palette → "Dev Containers: Reopen in Container"
-3. **Automatic Setup**: Same as Codespaces
+1. **Reopen in Container**: Command palette → "Dev Containers: Reopen in Container"
+1. **Automatic Setup**: Same as Codespaces
 
 ### Port Forwarding
 
 The devcontainer automatically forwards these ports:
+
 - **7474**: Neo4j Browser (HTTP interface)
 - **7687**: Neo4j Bolt protocol
 - **4222**: NATS messaging
@@ -372,6 +403,7 @@ The devcontainer automatically forwards these ports:
 ### Manual Commands in Codespaces
 
 If you need to recreate the session:
+
 ```bash
 # Create new session and start containers
 simbuilder session create --start-containers

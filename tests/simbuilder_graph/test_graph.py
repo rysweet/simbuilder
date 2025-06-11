@@ -41,9 +41,7 @@ class TestSubscriptionNode:
     def test_subscription_node_creation(self):
         """Test valid subscription node creation."""
         subscription = SubscriptionNode(
-            id="sub-123",
-            tenant_id="tenant-123",
-            name="Test Subscription"
+            id="sub-123", tenant_id="tenant-123", name="Test Subscription"
         )
         assert subscription.id == "sub-123"
         assert subscription.tenant_id == "tenant-123"
@@ -52,9 +50,7 @@ class TestSubscriptionNode:
     def test_subscription_node_immutable(self):
         """Test that subscription nodes are immutable."""
         subscription = SubscriptionNode(
-            id="sub-123",
-            tenant_id="tenant-123",
-            name="Test Subscription"
+            id="sub-123", tenant_id="tenant-123", name="Test Subscription"
         )
         with pytest.raises(ValidationError):
             subscription.id = "new-id"  # type: ignore
@@ -66,7 +62,7 @@ class TestSubscriptionNode:
                 id="sub-123",
                 tenant_id="tenant-123",
                 name="Test Subscription",
-                extra="field"  # type: ignore
+                extra="field",  # type: ignore
             )
 
 
@@ -85,7 +81,7 @@ class TestGraphService:
         """Provide a GraphService instance with mock config."""
         return GraphService(config=mock_config)
 
-    @patch('src.simbuilder_graph.service.GraphDatabase.driver')
+    @patch("src.simbuilder_graph.service.GraphDatabase.driver")
     def test_connect_success(self, mock_driver_class, service):
         """Test successful database connection."""
         mock_driver = Mock()
@@ -98,13 +94,16 @@ class TestGraphService:
         service.connect()
 
         assert service._driver is mock_driver
-        mock_driver_class.assert_called_once_with("bolt://localhost:7687", auth=("neo4j", "password"))
+        mock_driver_class.assert_called_once_with(
+            "bolt://localhost:7687", auth=("neo4j", "password")
+        )
         mock_session.run.assert_called_once_with("RETURN 1")
 
-    @patch('src.simbuilder_graph.service.GraphDatabase.driver')
+    @patch("src.simbuilder_graph.service.GraphDatabase.driver")
     def test_connect_failure(self, mock_driver_class, service):
         """Test database connection failure."""
         from neo4j.exceptions import ServiceUnavailable
+
         mock_driver_class.side_effect = ServiceUnavailable("Connection failed")
 
         with pytest.raises(ConfigurationError, match="Cannot connect to graph database"):
@@ -119,7 +118,7 @@ class TestGraphService:
         with pytest.raises(ConfigurationError, match="Graph database URL not configured"):
             service.connect()
 
-    @patch('src.simbuilder_graph.service.GraphDatabase.driver')
+    @patch("src.simbuilder_graph.service.GraphDatabase.driver")
     def test_close(self, mock_driver_class, service):
         """Test closing database connection."""
         mock_driver = Mock()
@@ -131,7 +130,7 @@ class TestGraphService:
         mock_driver.close.assert_called_once()
         assert service._driver is None
 
-    @patch('src.simbuilder_graph.service.GraphDatabase.driver')
+    @patch("src.simbuilder_graph.service.GraphDatabase.driver")
     def test_context_manager(self, mock_driver_class, service):
         """Test using service as context manager."""
         mock_driver = Mock()
@@ -147,10 +146,12 @@ class TestGraphService:
 
     def test_session_not_connected(self, service):
         """Test session context manager when not connected."""
-        with pytest.raises(ConfigurationError, match="Not connected to database"), service.session():
+        with pytest.raises(
+            ConfigurationError, match="Not connected to database"
+        ), service.session():
             pass
 
-    @patch('src.simbuilder_graph.service.GraphDatabase.driver')
+    @patch("src.simbuilder_graph.service.GraphDatabase.driver")
     def test_create_tenant(self, mock_driver_class, service):
         """Test creating a tenant."""
         mock_driver = Mock()
@@ -162,12 +163,10 @@ class TestGraphService:
         service.create_tenant("tenant-123", "Test Tenant")
 
         mock_session.run.assert_called_once_with(
-            "MERGE (t:Tenant {id: $id}) SET t.name = $name",
-            id="tenant-123",
-            name="Test Tenant"
+            "MERGE (t:Tenant {id: $id}) SET t.name = $name", id="tenant-123", name="Test Tenant"
         )
 
-    @patch('src.simbuilder_graph.service.GraphDatabase.driver')
+    @patch("src.simbuilder_graph.service.GraphDatabase.driver")
     def test_create_subscription(self, mock_driver_class, service):
         """Test creating a subscription."""
         mock_driver = Mock()
@@ -186,13 +185,10 @@ class TestGraphService:
                 MERGE (t)-[:HAS_SUBSCRIPTION]->(s)
                 """
         mock_session.run.assert_called_once_with(
-            expected_query,
-            sub_id="sub-123",
-            sub_name="Test Subscription",
-            tenant_id="tenant-123"
+            expected_query, sub_id="sub-123", sub_name="Test Subscription", tenant_id="tenant-123"
         )
 
-    @patch('src.simbuilder_graph.service.GraphDatabase.driver')
+    @patch("src.simbuilder_graph.service.GraphDatabase.driver")
     def test_tenant_exists_true(self, mock_driver_class, service):
         """Test tenant_exists returns True when tenant exists."""
         mock_driver = Mock()
@@ -210,11 +206,10 @@ class TestGraphService:
 
         assert result is True
         mock_session.run.assert_called_once_with(
-            "MATCH (t:Tenant {id: $id}) RETURN count(t) as count",
-            id="tenant-123"
+            "MATCH (t:Tenant {id: $id}) RETURN count(t) as count", id="tenant-123"
         )
 
-    @patch('src.simbuilder_graph.service.GraphDatabase.driver')
+    @patch("src.simbuilder_graph.service.GraphDatabase.driver")
     def test_tenant_exists_false(self, mock_driver_class, service):
         """Test tenant_exists returns False when tenant doesn't exist."""
         mock_driver = Mock()
@@ -232,7 +227,7 @@ class TestGraphService:
 
         assert result is False
 
-    @patch('src.simbuilder_graph.service.GraphDatabase.driver')
+    @patch("src.simbuilder_graph.service.GraphDatabase.driver")
     def test_list_subscriptions(self, mock_driver_class, service):
         """Test listing subscriptions for a tenant."""
         mock_driver = Mock()
@@ -244,14 +239,14 @@ class TestGraphService:
         mock_record1.__getitem__.side_effect = lambda key: {
             "id": "sub-1",
             "name": "Subscription 1",
-            "tenant_id": "tenant-123"
+            "tenant_id": "tenant-123",
         }[key]
 
         mock_record2 = MagicMock()
         mock_record2.__getitem__.side_effect = lambda key: {
             "id": "sub-2",
             "name": "Subscription 2",
-            "tenant_id": "tenant-123"
+            "tenant_id": "tenant-123",
         }[key]
 
         mock_result.__iter__ = Mock(return_value=iter([mock_record1, mock_record2]))
@@ -268,14 +263,17 @@ class TestGraphService:
         assert result[1].id == "sub-2"
         assert result[1].name == "Subscription 2"
 
-    @patch('src.simbuilder_graph.service.GraphDatabase.driver')
+    @patch("src.simbuilder_graph.service.GraphDatabase.driver")
     def test_get_node_counts(self, mock_driver_class, service):
         """Test getting node counts."""
         mock_driver = Mock()
         mock_session = MagicMock()
         mock_result = Mock()
         mock_record = MagicMock()
-        mock_record.__getitem__.side_effect = lambda key: {"tenant_count": 5, "subscription_count": 12}[key]
+        mock_record.__getitem__.side_effect = lambda key: {
+            "tenant_count": 5,
+            "subscription_count": 12,
+        }[key]
         mock_result.single.return_value = mock_record
         mock_session.run.return_value = mock_result
         mock_driver.session.return_value = mock_session
@@ -286,7 +284,7 @@ class TestGraphService:
 
         assert result == {"tenants": 5, "subscriptions": 12}
 
-    @patch('src.simbuilder_graph.service.GraphDatabase.driver')
+    @patch("src.simbuilder_graph.service.GraphDatabase.driver")
     def test_check_connectivity_success(self, mock_driver_class, service):
         """Test successful connectivity check."""
         mock_driver = Mock()
@@ -309,7 +307,7 @@ class TestGraphService:
         result = service.check_connectivity()
         assert result is False
 
-    @patch('src.simbuilder_graph.service.GraphDatabase.driver')
+    @patch("src.simbuilder_graph.service.GraphDatabase.driver")
     def test_check_connectivity_exception(self, mock_driver_class, service):
         """Test connectivity check when exception occurs."""
         mock_driver = Mock()
@@ -331,7 +329,7 @@ class TestGraphCLI:
         """Set up test method."""
         self.runner = CliRunner()
 
-    @patch('src.simbuilder_graph.cli.get_graph_service')
+    @patch("src.simbuilder_graph.cli.get_graph_service")
     def test_graph_info_success(self, mock_get_service):
         """Test graph info command success."""
         mock_service = MagicMock()
@@ -341,6 +339,7 @@ class TestGraphCLI:
 
         # Import the app from scaffolding CLI
         from src.scaffolding.cli import app
+
         result = self.runner.invoke(app, ["graph", "info"])
 
         assert result.exit_code == 0
@@ -348,7 +347,7 @@ class TestGraphCLI:
         assert "3" in result.stdout  # tenant count
         assert "7" in result.stdout  # subscription count
 
-    @patch('src.simbuilder_graph.cli.get_graph_service')
+    @patch("src.simbuilder_graph.cli.get_graph_service")
     def test_graph_info_connection_failure(self, mock_get_service):
         """Test graph info command with connection failure."""
         mock_service = MagicMock()
@@ -356,23 +355,25 @@ class TestGraphCLI:
         mock_get_service.return_value = mock_service
 
         from src.scaffolding.cli import app
+
         result = self.runner.invoke(app, ["graph", "info"])
 
         assert result.exit_code == 1
         assert "Failed to connect" in result.stdout
 
-    @patch('src.simbuilder_graph.cli.get_graph_service')
+    @patch("src.simbuilder_graph.cli.get_graph_service")
     def test_graph_info_configuration_error(self, mock_get_service):
         """Test graph info command with configuration error."""
         mock_get_service.side_effect = ConfigurationError("Config error")
 
         from src.scaffolding.cli import app
+
         result = self.runner.invoke(app, ["graph", "info"])
 
         assert result.exit_code == 1
         assert "Configuration error" in result.stdout
 
-    @patch('src.simbuilder_graph.cli.get_graph_service')
+    @patch("src.simbuilder_graph.cli.get_graph_service")
     def test_graph_check_success(self, mock_get_service):
         """Test graph check command success."""
         mock_service = MagicMock()
@@ -381,12 +382,13 @@ class TestGraphCLI:
         mock_get_service.return_value = mock_service
 
         from src.scaffolding.cli import app
+
         result = self.runner.invoke(app, ["graph", "check"])
 
         assert result.exit_code == 0
         assert "All graph database checks passed!" in result.stdout
 
-    @patch('src.simbuilder_graph.cli.get_graph_service')
+    @patch("src.simbuilder_graph.cli.get_graph_service")
     def test_graph_check_failure(self, mock_get_service):
         """Test graph check command failure."""
         mock_service = MagicMock()
@@ -394,17 +396,19 @@ class TestGraphCLI:
         mock_get_service.return_value = mock_service
 
         from src.scaffolding.cli import app
+
         result = self.runner.invoke(app, ["graph", "check"])
 
         assert result.exit_code == 1
         assert "Some graph database checks failed!" in result.stdout
 
-    @patch('src.simbuilder_graph.cli.get_graph_service')
+    @patch("src.simbuilder_graph.cli.get_graph_service")
     def test_graph_check_configuration_error(self, mock_get_service):
         """Test graph check command with configuration error."""
         mock_get_service.side_effect = ConfigurationError("Config error")
 
         from src.scaffolding.cli import app
+
         result = self.runner.invoke(app, ["graph", "check"])
 
         assert result.exit_code == 1

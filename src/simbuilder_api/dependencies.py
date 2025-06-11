@@ -9,9 +9,9 @@ from fastapi import Depends
 from fastapi import Header
 from fastapi import HTTPException
 from jose import JWTError
-
 from simbuilder_graph.service import GraphService  # type: ignore[import-not-found]
 from simbuilder_servicebus.client import ServiceBusClient  # type: ignore[import-not-found]
+
 from src.scaffolding.config import Settings
 from src.scaffolding.config import get_settings as _get_settings
 
@@ -44,7 +44,7 @@ def get_graph_service(settings: Settings = Depends(get_settings)) -> GraphServic
         uri=settings.neo4j_uri,
         user=settings.neo4j_user,
         password=settings.neo4j_password,
-        database=settings.neo4j_database
+        database=settings.neo4j_database,
     )
 
 
@@ -58,14 +58,13 @@ def get_service_bus(settings: Settings = Depends(get_settings)) -> ServiceBusCli
         Service bus client instance
     """
     return ServiceBusClient(
-        server_url=settings.service_bus_url,
-        cluster_id=settings.service_bus_cluster_id
+        server_url=settings.service_bus_url, cluster_id=settings.service_bus_cluster_id
     )
 
 
 def get_current_user(
     authorization: Annotated[str | None, Header()] = None,
-    jwt_handler: JWTHandler = Depends(get_jwt_handler)
+    jwt_handler: JWTHandler = Depends(get_jwt_handler),
 ) -> str:
     """Get current authenticated user from JWT token.
 
@@ -83,7 +82,7 @@ def get_current_user(
         raise HTTPException(
             status_code=401,
             detail="Authorization header required",
-            headers={"WWW-Authenticate": "Bearer"}
+            headers={"WWW-Authenticate": "Bearer"},
         )
 
     try:
@@ -100,13 +99,13 @@ def get_current_user(
         raise HTTPException(
             status_code=401,
             detail=f"Invalid token: {str(e)}",
-            headers={"WWW-Authenticate": "Bearer"}
+            headers={"WWW-Authenticate": "Bearer"},
         ) from e
 
 
 def get_optional_user(
     authorization: Annotated[str | None, Header()] = None,
-    jwt_handler: JWTHandler = Depends(get_jwt_handler)
+    jwt_handler: JWTHandler = Depends(get_jwt_handler),
 ) -> str | None:
     """Get current user if authenticated, None otherwise.
 

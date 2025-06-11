@@ -25,7 +25,6 @@ class TopicManager:
             max_messages=50000,
             replicas=1,
         ),
-
         "system_events": TopicDefinition(
             name="system_events",
             subject_pattern="system.*",
@@ -38,7 +37,6 @@ class TopicManager:
             max_messages=10000,
             replicas=1,
         ),
-
         "simulation_events": TopicDefinition(
             name="simulation_events",
             subject_pattern="simulation.*",

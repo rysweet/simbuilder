@@ -24,9 +24,8 @@ class TemplateMeta(BaseModel):
 
     class Config:
         """Pydantic configuration."""
-        json_encoders = {
-            datetime: lambda v: v.isoformat() if v else None
-        }
+
+        json_encoders = {datetime: lambda v: v.isoformat() if v else None}
 
 
 class TemplateRenderRequest(BaseModel):
@@ -38,6 +37,7 @@ class TemplateRenderRequest(BaseModel):
 
     class Config:
         """Pydantic configuration."""
+
         extra = "forbid"
 
 
@@ -47,14 +47,19 @@ class TemplateRenderResult(BaseModel):
     rendered_content: str = Field(..., description="Rendered template content")
     template_name: str = Field(..., description="Name of rendered template")
     context_used: dict[str, Any] = Field(..., description="Context variables used in rendering")
-    variables_required: list[str] = Field(default_factory=list, description="Variables required by template")
-    variables_missing: list[str] = Field(default_factory=list, description="Missing required variables")
+    variables_required: list[str] = Field(
+        default_factory=list, description="Variables required by template"
+    )
+    variables_missing: list[str] = Field(
+        default_factory=list, description="Missing required variables"
+    )
     render_time_ms: float = Field(..., description="Rendering time in milliseconds")
     success: bool = Field(..., description="Whether rendering was successful")
     error_message: str | None = Field(None, description="Error message if rendering failed")
 
     class Config:
         """Pydantic configuration."""
+
         extra = "forbid"
 
 
@@ -69,9 +74,10 @@ class GitRepositoryInfo(BaseModel):
 
     class Config:
         """Pydantic configuration."""
+
         json_encoders = {
             datetime: lambda v: v.isoformat() if v else None,
-            Path: lambda v: str(v) if v else None
+            Path: lambda v: str(v) if v else None,
         }
 
 
@@ -81,10 +87,13 @@ class ValidationResult(BaseModel):
     template_name: str = Field(..., description="Name of validated template")
     is_valid: bool = Field(..., description="Whether template is valid")
     syntax_errors: list[str] = Field(default_factory=list, description="Syntax error messages")
-    missing_variables: list[str] = Field(default_factory=list, description="Missing required variables")
+    missing_variables: list[str] = Field(
+        default_factory=list, description="Missing required variables"
+    )
     warnings: list[str] = Field(default_factory=list, description="Warning messages")
     suggestions: list[str] = Field(default_factory=list, description="Improvement suggestions")
 
     class Config:
         """Pydantic configuration."""
+
         extra = "forbid"

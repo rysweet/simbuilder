@@ -56,7 +56,7 @@ class TestAzureOpenAIClient:
         assert client._settings == mock_settings
         assert client._client is None
 
-    @patch('src.simbuilder_llm.client.get_settings')
+    @patch("src.simbuilder_llm.client.get_settings")
     def test_init_without_settings(self, mock_get_settings):
         """Test client initialization without provided settings."""
         mock_get_settings.return_value = MockSettings()
@@ -78,7 +78,7 @@ class TestAzureOpenAIClient:
         repr_str = repr(client)
         assert "api_key=None" in repr_str
 
-    @patch('src.simbuilder_llm.client.AsyncAzureOpenAI')
+    @patch("src.simbuilder_llm.client.AsyncAzureOpenAI")
     def test_client_property_creates_client(self, mock_azure_openai, client):
         """Test that client property creates AsyncAzureOpenAI instance."""
         mock_instance = MagicMock()
@@ -93,7 +93,7 @@ class TestAzureOpenAIClient:
             azure_endpoint="https://test.openai.azure.com/",
         )
 
-    @patch('src.simbuilder_llm.client.AsyncAzureOpenAI')
+    @patch("src.simbuilder_llm.client.AsyncAzureOpenAI")
     def test_client_property_caches_client(self, mock_azure_openai, client):
         """Test that client property caches the client instance."""
         mock_instance = MagicMock()
@@ -118,7 +118,7 @@ class TestAzureOpenAIClient:
                 Choice(
                     index=0,
                     message=ChatCompletionMessage(role="assistant", content="Test response"),
-                    finish_reason="stop"
+                    finish_reason="stop",
                 )
             ],
             created=1234567890,
@@ -150,7 +150,7 @@ class TestAzureOpenAIClient:
                 Choice(
                     index=0,
                     message=ChatCompletionMessage(role="assistant", content="Test response"),
-                    finish_reason="stop"
+                    finish_reason="stop",
                 )
             ],
             created=1234567890,
@@ -182,7 +182,7 @@ class TestAzureOpenAIClient:
                 Choice(
                     index=0,
                     message=ChatCompletionMessage(role="assistant", content="Test response"),
-                    finish_reason="stop"
+                    finish_reason="stop",
                 )
             ],
             created=1234567890,
@@ -194,11 +194,7 @@ class TestAzureOpenAIClient:
 
         messages = [ChatMessage(role="user", content="Hello")]
         result = await client.create_chat_completion(
-            messages,
-            model="custom-model",
-            temperature=0.5,
-            max_tokens=100,
-            top_p=0.9
+            messages, model="custom-model", temperature=0.5, max_tokens=100, top_p=0.9
         )
 
         assert result == mock_response
@@ -221,11 +217,7 @@ class TestAzureOpenAIClient:
             yield ChatCompletionChunk(
                 id="test-id",
                 choices=[
-                    ChunkChoice(
-                        index=0,
-                        delta=ChoiceDelta(content="Hello"),
-                        finish_reason=None
-                    )
+                    ChunkChoice(index=0, delta=ChoiceDelta(content="Hello"), finish_reason=None)
                 ],
                 created=1234567890,
                 model="gpt-4o",
@@ -234,11 +226,7 @@ class TestAzureOpenAIClient:
             yield ChatCompletionChunk(
                 id="test-id",
                 choices=[
-                    ChunkChoice(
-                        index=0,
-                        delta=ChoiceDelta(content=" world"),
-                        finish_reason="stop"
-                    )
+                    ChunkChoice(index=0, delta=ChoiceDelta(content=" world"), finish_reason="stop")
                 ],
                 created=1234567890,
                 model="gpt-4o",
@@ -266,7 +254,9 @@ class TestAzureOpenAIClient:
         mock_client = AsyncMock()
         # Create a mock request for APIError
         mock_request = httpx.Request("POST", "https://api.openai.com/v1/chat/completions")
-        mock_client.chat.completions.create.side_effect = APIError("API Error", request=mock_request, body=None)
+        mock_client.chat.completions.create.side_effect = APIError(
+            "API Error", request=mock_request, body=None
+        )
         client._client = mock_client
 
         messages = [ChatMessage(role="user", content="Hello")]
@@ -289,7 +279,7 @@ class TestAzureOpenAIClient:
                 Choice(
                     index=0,
                     message=ChatCompletionMessage(role="assistant", content="Test response"),
-                    finish_reason="stop"
+                    finish_reason="stop",
                 )
             ],
             created=1234567890,
@@ -299,11 +289,13 @@ class TestAzureOpenAIClient:
 
         # Create a mock response for RateLimitError
         mock_response_obj = MagicMock()
-        mock_response_obj.request = httpx.Request("POST", "https://api.openai.com/v1/chat/completions")
+        mock_response_obj.request = httpx.Request(
+            "POST", "https://api.openai.com/v1/chat/completions"
+        )
 
         mock_client.chat.completions.create.side_effect = [
             RateLimitError("Rate limit exceeded", response=mock_response_obj, body=None),
-            mock_response
+            mock_response,
         ]
         client._client = mock_client
 
@@ -320,15 +312,9 @@ class TestAzureOpenAIClient:
         mock_client = AsyncMock()
         mock_response = CreateEmbeddingResponse(
             object="list",
-            data=[
-                Embedding(
-                    object="embedding",
-                    embedding=[0.1, 0.2, 0.3],
-                    index=0
-                )
-            ],
+            data=[Embedding(object="embedding", embedding=[0.1, 0.2, 0.3], index=0)],
             model="gpt-4o",
-            usage={"prompt_tokens": 5, "total_tokens": 5}
+            usage={"prompt_tokens": 5, "total_tokens": 5},
         )
         mock_client.embeddings.create.return_value = mock_response
         client._client = mock_client
@@ -349,10 +335,10 @@ class TestAzureOpenAIClient:
             object="list",
             data=[
                 Embedding(object="embedding", embedding=[0.1, 0.2, 0.3], index=0),
-                Embedding(object="embedding", embedding=[0.4, 0.5, 0.6], index=1)
+                Embedding(object="embedding", embedding=[0.4, 0.5, 0.6], index=1),
             ],
             model="gpt-4o",
-            usage={"prompt_tokens": 10, "total_tokens": 10}
+            usage={"prompt_tokens": 10, "total_tokens": 10},
         )
         mock_client.embeddings.create.return_value = mock_response
         client._client = mock_client
@@ -370,7 +356,9 @@ class TestAzureOpenAIClient:
         """Test embedding creation with API error."""
         mock_client = AsyncMock()
         mock_request = httpx.Request("POST", "https://api.openai.com/v1/embeddings")
-        mock_client.embeddings.create.side_effect = APIError("API Error", request=mock_request, body=None)
+        mock_client.embeddings.create.side_effect = APIError(
+            "API Error", request=mock_request, body=None
+        )
         client._client = mock_client
 
         with pytest.raises(LLMError) as exc_info:
@@ -388,7 +376,7 @@ class TestAzureOpenAIClient:
                 Choice(
                     index=0,
                     message=ChatCompletionMessage(role="assistant", content="Hi"),
-                    finish_reason="stop"
+                    finish_reason="stop",
                 )
             ],
             created=1234567890,
@@ -409,7 +397,9 @@ class TestAzureOpenAIClient:
         """Test health check failure."""
         mock_client = AsyncMock()
         mock_request = httpx.Request("POST", "https://api.openai.com/v1/chat/completions")
-        mock_client.chat.completions.create.side_effect = APIError("API Error", request=mock_request, body=None)
+        mock_client.chat.completions.create.side_effect = APIError(
+            "API Error", request=mock_request, body=None
+        )
         client._client = mock_client
 
         result = await client.check_health()

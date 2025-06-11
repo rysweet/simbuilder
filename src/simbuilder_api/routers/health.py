@@ -36,8 +36,7 @@ class ReadinessResponse(BaseModel):
 
 @router.get("/healthz", response_model=HealthResponse)
 async def health_check(
-    request: Request,
-    settings: Settings = Depends(get_settings)
+    request: Request, settings: Settings = Depends(get_settings)
 ) -> HealthResponse:
     """Basic health check endpoint.
 
@@ -45,16 +44,13 @@ async def health_check(
         Health status information
     """
     return HealthResponse(
-        status="healthy",
-        timestamp=datetime.utcnow(),
-        environment=settings.environment
+        status="healthy", timestamp=datetime.utcnow(), environment=settings.environment
     )
 
 
 @router.get("/readyz", response_model=ReadinessResponse)
 async def readiness_check(
-    request: Request,
-    settings: Settings = Depends(get_settings)
+    request: Request, settings: Settings = Depends(get_settings)
 ) -> ReadinessResponse:
     """Readiness check endpoint with dependency validation.
 
@@ -64,15 +60,11 @@ async def readiness_check(
     checks = {
         "database": "healthy",  # TODO: Add actual Neo4j health check
         "service_bus": "healthy",  # TODO: Add actual NATS health check
-        "configuration": "healthy"
+        "configuration": "healthy",
     }
 
     # Determine overall status
     all_healthy = all(status == "healthy" for status in checks.values())
     status = "ready" if all_healthy else "not_ready"
 
-    return ReadinessResponse(
-        status=status,
-        timestamp=datetime.utcnow(),
-        checks=checks
-    )
+    return ReadinessResponse(status=status, timestamp=datetime.utcnow(), checks=checks)

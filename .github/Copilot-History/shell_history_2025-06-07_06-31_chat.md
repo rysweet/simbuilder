@@ -2,7 +2,7 @@
 
 ## 2025-06-07
 
-```bash
+````bash
 # Fixed indentation errors in port_manager.py
 .venv/bin/python -m pytest tests -q
 # Failed with filelock import error
@@ -57,7 +57,8 @@ uv run pytest tests/simbuilder_specs/test_template_loader.py::TestTemplateLoader
 # Confirmed soft dependency fix works - package imports successfully
 uv run python -c "from src.simbuilder_specs import TemplateMeta, TemplateRenderRequest; print('Import successful')"
 # Success - import works without hard liquid dependency failure
-```
+````
+
 ## 2025-06-09
 
 ```bash

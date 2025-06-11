@@ -2,22 +2,36 @@
 
 ## Purpose / Overview
 
-The Auto Cleanup Scheduler component manages the automated lifecycle and resource cleanup of SimBuilder simulation environments. It enforces time-to-live (TTL) policies, monitors resource usage patterns, implements cost-based cleanup triggers, and ensures complete resource decommissioning when simulations are no longer needed. This component is critical for cost control, resource optimization, and maintaining clean cloud environments by preventing resource sprawl and abandoned simulations.
+The Auto Cleanup Scheduler component manages the automated lifecycle and resource cleanup of
+SimBuilder simulation environments. It enforces time-to-live (TTL) policies, monitors resource usage
+patterns, implements cost-based cleanup triggers, and ensures complete resource decommissioning when
+simulations are no longer needed. This component is critical for cost control, resource
+optimization, and maintaining clean cloud environments by preventing resource sprawl and abandoned
+simulations.
 
 ## Functional Requirements / User Stories
 
-- As a **Cost Manager**, I need automated cleanup of simulation resources when TTL expires to prevent unnecessary spending
-- As an **Operations Team**, I need reliable resource cleanup that handles complex dependency chains and cleanup ordering
-- As a **Project Manager**, I need configurable cleanup policies based on simulation type, usage patterns, and business requirements
-- As a **Security Officer**, I need assured data destruction and resource cleanup to meet compliance requirements
-- As a **Developer**, I need cleanup notifications and grace periods to extend simulations that are still actively used
-- As an **Finance Team**, I need cleanup verification and reporting to ensure accurate cost allocation and budget compliance
-- As a **System Administrator**, I need emergency cleanup capabilities for budget violations and resource limit breaches
-- As a **Compliance Officer**, I need audit trails of all cleanup activities and data destruction verification
+- As a **Cost Manager**, I need automated cleanup of simulation resources when TTL expires to
+  prevent unnecessary spending
+- As an **Operations Team**, I need reliable resource cleanup that handles complex dependency chains
+  and cleanup ordering
+- As a **Project Manager**, I need configurable cleanup policies based on simulation type, usage
+  patterns, and business requirements
+- As a **Security Officer**, I need assured data destruction and resource cleanup to meet compliance
+  requirements
+- As a **Developer**, I need cleanup notifications and grace periods to extend simulations that are
+  still actively used
+- As an **Finance Team**, I need cleanup verification and reporting to ensure accurate cost
+  allocation and budget compliance
+- As a **System Administrator**, I need emergency cleanup capabilities for budget violations and
+  resource limit breaches
+- As a **Compliance Officer**, I need audit trails of all cleanup activities and data destruction
+  verification
 
 ## Interfaces / APIs
 
 ### Inputs
+
 - **CleanupPolicies**: TTL rules, cost thresholds, and cleanup trigger conditions
 - **SimulationMetadata**: Active simulation inventory with usage patterns and lifecycle information
 - **ResourceDependencies**: Dependency graphs for proper cleanup ordering and coordination
@@ -25,6 +39,7 @@ The Auto Cleanup Scheduler component manages the automated lifecycle and resourc
 - **ManualOverrides**: User-initiated cleanup requests and policy exceptions
 
 ### Outputs
+
 - **CleanupSchedules**: Planned cleanup activities with timing and resource details
 - **CleanupResults**: Completion status and verification of resource destruction
 - **CostSavings**: Financial impact reports of cleanup activities and resource optimization
@@ -32,6 +47,7 @@ The Auto Cleanup Scheduler component manages the automated lifecycle and resourc
 - **Notifications**: Cleanup warnings, completion alerts, and escalation messages
 
 ### Public Endpoints / CLI Commands
+
 ```
 POST /cleanup/policies - Configure cleanup rules and TTL policies
 GET /cleanup/schedule/{simulation_id} - Retrieve cleanup schedule and timeline
@@ -48,17 +64,25 @@ GET /cleanup/audit/{timeframe} - Retrieve cleanup audit logs
 - **Configuration Service**: For centralized configuration management and environment settings
 
 - **Orchestrator Agent**: For coordinated cleanup workflows and dependency management
+
 - **FinOps Alerting**: For cost-based cleanup triggers and budget enforcement
+
 - **Graph Database Service**: For dependency tracking and cleanup relationship management
+
 - **Azure Resource Manager**: For actual resource deletion and decommissioning
+
 - **Terraform Runner**: For Infrastructure-as-Code cleanup and state management
+
 - **ARM/Bicep Runner**: For Azure-native resource cleanup and dependency handling
+
 - **Core API Service**: For authentication and cleanup coordination
+
 - **Service Bus**: For asynchronous cleanup processing and status updates
 
 ## Data Contracts / Schemas
 
 ### Cleanup Policy Schema
+
 ```yaml
 CleanupPolicy:
   policy_id: string
@@ -99,6 +123,7 @@ CleanupSchedule:
 ```
 
 ### Cleanup Result Schema
+
 ```yaml
 CleanupResult:
   cleanup_id: string
@@ -143,6 +168,7 @@ DeletedResource:
 ## Testing Strategy
 
 ### Unit Tests
+
 - Cleanup policy evaluation and trigger logic
 - Resource dependency analysis and ordering algorithms
 - TTL calculation and expiration detection
@@ -151,6 +177,7 @@ DeletedResource:
 - Notification scheduling and delivery logic
 
 ### Integration Tests
+
 - **Live Azure resource cleanup** - no mocking of resource deletion operations
 - Complete cleanup workflow testing with real infrastructure teardown
 - Complex dependency chain resolution with multi-tier applications
@@ -159,6 +186,7 @@ DeletedResource:
 - Large-scale cleanup performance with hundreds of resources
 
 ### End-to-End Acceptance Tests
+
 - Full simulation lifecycle with automated cleanup verification
 - Emergency cleanup scenarios triggered by budget violations
 - Data destruction compliance validation and audit trail verification
@@ -183,7 +211,8 @@ DeletedResource:
 - Should we implement predictive cleanup recommendations based on historical simulation data?
 - How do we handle cleanup of shared resources across multiple simulations?
 - What disaster recovery procedures should we implement for failed cleanup operations?
-- Should we implement graduated cleanup policies with different retention periods for different data types?
+- Should we implement graduated cleanup policies with different retention periods for different data
+  types?
 - How do we handle cleanup coordination across multiple Azure subscriptions and tenants?
 - What integration approach should we use with enterprise asset management and CMDB systems?
 - Should we implement cleanup simulation and dry-run capabilities for testing cleanup policies?

@@ -2,22 +2,35 @@
 
 ## Purpose / Overview
 
-The FinOps Alerting component provides comprehensive cost monitoring, budget enforcement, and financial governance for SimBuilder simulation environments. It tracks real-time Azure spending, enforces budget limits, generates predictive cost alerts, and provides optimization recommendations to ensure cost-effective simulation operations. This component serves as the financial control plane for all simulation environments with automated enforcement and detailed cost analytics.
+The FinOps Alerting component provides comprehensive cost monitoring, budget enforcement, and
+financial governance for SimBuilder simulation environments. It tracks real-time Azure spending,
+enforces budget limits, generates predictive cost alerts, and provides optimization recommendations
+to ensure cost-effective simulation operations. This component serves as the financial control plane
+for all simulation environments with automated enforcement and detailed cost analytics.
 
 ## Functional Requirements / User Stories
 
-- As a **Cost Manager**, I need real-time monitoring of simulation costs with alerts when spending approaches budget limits
-- As a **Finance Team**, I need detailed cost breakdowns by simulation, resource type, and organizational unit for accurate billing
-- As an **Operations Team**, I need automated budget enforcement that can pause or terminate expensive simulations before overspend
-- As a **Project Manager**, I need cost projections and burn rate analysis to plan simulation timelines and resource allocation
-- As a **Compliance Officer**, I need audit trails of all cost-related decisions and budget enforcement actions
-- As a **Resource Planner**, I need cost optimization recommendations based on actual usage patterns and resource efficiency
-- As a **Executive Sponsor**, I need executive dashboards with cost trends, budget variance, and ROI metrics for simulation programs
-- As a **Developer**, I need cost feedback during simulation planning to make informed resource allocation decisions
+- As a **Cost Manager**, I need real-time monitoring of simulation costs with alerts when spending
+  approaches budget limits
+- As a **Finance Team**, I need detailed cost breakdowns by simulation, resource type, and
+  organizational unit for accurate billing
+- As an **Operations Team**, I need automated budget enforcement that can pause or terminate
+  expensive simulations before overspend
+- As a **Project Manager**, I need cost projections and burn rate analysis to plan simulation
+  timelines and resource allocation
+- As a **Compliance Officer**, I need audit trails of all cost-related decisions and budget
+  enforcement actions
+- As a **Resource Planner**, I need cost optimization recommendations based on actual usage patterns
+  and resource efficiency
+- As a **Executive Sponsor**, I need executive dashboards with cost trends, budget variance, and ROI
+  metrics for simulation programs
+- As a **Developer**, I need cost feedback during simulation planning to make informed resource
+  allocation decisions
 
 ## Interfaces / APIs
 
 ### Inputs
+
 - **BudgetConfiguration**: Budget limits, thresholds, and enforcement policies for simulations
 - **CostAllocation**: Cost center assignments and organizational billing structures
 - **UsageMetrics**: Resource utilization data from Azure Cost Management APIs
@@ -25,13 +38,16 @@ The FinOps Alerting component provides comprehensive cost monitoring, budget enf
 - **OptimizationPolicies**: Automated cost optimization rules and recommendations
 
 ### Outputs
+
 - **CostAlerts**: Real-time notifications for budget violations and spending anomalies
 - **FinancialReports**: Detailed cost analysis reports with trend analysis and projections
 - **BudgetEnforcement**: Automated actions taken to enforce spending limits
-- **OptimizationRecommendations**: AI-driven suggestions for cost reduction and efficiency improvements
+- **OptimizationRecommendations**: AI-driven suggestions for cost reduction and efficiency
+  improvements
 - **AuditTrails**: Complete financial audit logs for compliance and governance
 
 ### Public Endpoints / CLI Commands
+
 ```
 POST /finops/budgets - Create and configure simulation budgets
 GET /finops/costs/{simulation_id} - Retrieve current cost data and projections
@@ -48,17 +64,25 @@ POST /finops/forecasts - Generate cost forecasting models
 - **Configuration Service**: For centralized configuration management and environment settings
 
 - **Azure Cost Management APIs**: For real-time cost data and billing information
+
 - **Azure Monitor**: For resource utilization metrics and performance data
+
 - **Core API Service**: For authentication and orchestration integration
+
 - **Orchestrator Agent**: For budget enforcement actions and simulation control
+
 - **Graph Database Service**: For storing cost relationships and historical data
+
 - **Service Bus**: For asynchronous alert processing and notification delivery
+
 - **Azure Policy**: For automated governance and cost control enforcement
+
 - **Power BI/Analytics**: For advanced reporting and dashboard generation
 
 ## Data Contracts / Schemas
 
 ### Budget Configuration Schema
+
 ```yaml
 BudgetConfiguration:
   budget_id: string
@@ -96,6 +120,7 @@ CostAlert:
 ```
 
 ### Financial Report Schema
+
 ```yaml
 FinancialReport:
   report_id: string
@@ -137,6 +162,7 @@ CostOptimization:
 ## Testing Strategy
 
 ### Unit Tests
+
 - Budget calculation and threshold monitoring logic
 - Cost alert generation and severity classification
 - Financial report generation and data aggregation
@@ -145,6 +171,7 @@ CostOptimization:
 - Data validation and error handling for cost APIs
 
 ### Integration Tests
+
 - **Live Azure Cost Management integration** - no mocking of billing APIs
 - Real-time cost monitoring with actual Azure resource consumption
 - Budget enforcement testing with live simulation environments
@@ -153,6 +180,7 @@ CostOptimization:
 - Cross-component integration with orchestration and governance systems
 
 ### End-to-End Acceptance Tests
+
 - Complete financial lifecycle management for simulation environments
 - Budget enforcement accuracy under various spending scenarios
 - Cost optimization recommendation effectiveness validation
@@ -176,7 +204,8 @@ CostOptimization:
 - What machine learning models should we implement for cost anomaly detection and forecasting?
 - How should we handle cost allocation for shared resources across multiple simulations?
 - Should we implement dynamic budget adjustments based on simulation complexity and duration?
-- What integration approach should we use for enterprise financial systems and procurement workflows?
+- What integration approach should we use for enterprise financial systems and procurement
+  workflows?
 - How do we handle cost optimization for specialized Azure services with unique pricing models?
 - Should we implement predictive scaling recommendations based on historical usage patterns?
 - What governance mechanisms should we use for budget approval and modification workflows?

@@ -38,12 +38,11 @@ def setup_logging() -> FilteringBoundLogger:
             structlog.contextvars.merge_contextvars,
             structlog.processors.StackInfoRenderer(),
             # JSON formatting for production, pretty printing for development
-            structlog.dev.ConsoleRenderer() if settings.is_development
+            structlog.dev.ConsoleRenderer()
+            if settings.is_development
             else structlog.processors.JSONRenderer(),
         ],
-        wrapper_class=structlog.make_filtering_bound_logger(
-            getattr(logging, settings.log_level)
-        ),
+        wrapper_class=structlog.make_filtering_bound_logger(getattr(logging, settings.log_level)),
         logger_factory=structlog.stdlib.LoggerFactory(),
         cache_logger_on_first_use=True,
     )
@@ -62,11 +61,7 @@ def get_logger(name: str = "simbuilder") -> FilteringBoundLogger:
     return structlog.get_logger(name)  # type: ignore[no-any-return]
 
 
-def log_function_call(
-    logger: FilteringBoundLogger,
-    function_name: str,
-    **kwargs: Any
-) -> None:
+def log_function_call(logger: FilteringBoundLogger, function_name: str, **kwargs: Any) -> None:
     """
     Log a function call with parameters.
     Args:
@@ -74,17 +69,11 @@ def log_function_call(
         function_name: Name of the function being called
         **kwargs: Function parameters to log
     """
-    logger.debug(
-        "Function called",
-        function=function_name,
-        parameters=kwargs
-    )
+    logger.debug("Function called", function=function_name, parameters=kwargs)
 
 
 def log_error_with_context(
-    logger: FilteringBoundLogger,
-    error: Exception,
-    context: dict[str, Any] | None = None
+    logger: FilteringBoundLogger, error: Exception, context: dict[str, Any] | None = None
 ) -> None:
     """
     Log an error with additional context.

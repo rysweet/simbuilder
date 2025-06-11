@@ -19,19 +19,23 @@ class SimBuilderError(Exception):
 
 class ConfigurationError(SimBuilderError):
     """Raised when configuration is invalid or missing."""
+
     pass
 
 
 class DependencyError(SimBuilderError):
     """Raised when a required dependency is unavailable or misconfigured."""
+
     pass
 
 
 class ServiceUnavailableError(SimBuilderError):
     """Raised when a required service (Neo4j, NATS, etc.) is unavailable."""
+
     pass
 
 
 class AuthenticationError(SimBuilderError):
     """Raised when authentication fails."""
+
     pass

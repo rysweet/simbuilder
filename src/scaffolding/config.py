@@ -25,8 +25,7 @@ class Settings(BaseSettings):
     # Azure Authentication
     azure_tenant_id: str = Field(..., description="Azure tenant identifier")
     azure_subscription_id: str | None = Field(
-        None,
-        description="Azure subscription identifier (optional for tests/CLI)"
+        None, description="Azure subscription identifier (optional for tests/CLI)"
     )
     azure_client_id: str | None = Field(None, description="Service principal client ID")
     azure_client_secret: str | None = Field(None, description="Service principal secret")
@@ -59,7 +58,9 @@ class Settings(BaseSettings):
     debug_mode: bool = Field(False, description="Enable debug features")
 
     # Spec Library
-    spec_repo_url: str = Field("https://github.com/SimBuilder/spec-library.git", description="Spec repository URL")
+    spec_repo_url: str = Field(
+        "https://github.com/SimBuilder/spec-library.git", description="Spec repository URL"
+    )
     spec_repo_branch: str = Field("main", description="Spec repository branch")
 
     @field_validator("azure_openai_endpoint")
@@ -78,10 +79,11 @@ class Settings(BaseSettings):
         v_upper = v.upper()
         if v_upper not in valid_levels:
             from pydantic_core import PydanticCustomError
+
             raise PydanticCustomError(
-                'value_error',
+                "value_error",
                 f"Log level must be one of: {', '.join(valid_levels)}",
-                {'reason': f"Log level must be one of: {', '.join(valid_levels)}"}
+                {"reason": f"Log level must be one of: {', '.join(valid_levels)}"},
             )
         return v_upper
 
@@ -91,10 +93,11 @@ class Settings(BaseSettings):
         """Validate port is in valid range."""
         if not 1024 <= v <= 65535:
             from pydantic_core import PydanticCustomError
+
             raise PydanticCustomError(
-                'value_error',
+                "value_error",
                 "Port must be between 1024 and 65535",
-                {'reason': "Port must be between 1024 and 65535"}
+                {"reason": "Port must be between 1024 and 65535"},
             )
         return v
 
@@ -105,7 +108,7 @@ class Settings(BaseSettings):
                 "azure_tenant_id",
                 "neo4j_password",
                 "azure_openai_endpoint",
-                "azure_openai_key"
+                "azure_openai_key",
             ]
 
             missing = []
@@ -135,7 +138,10 @@ def get_settings() -> Settings:
     import os
 
     required_keys = [
-        "AZURE_TENANT_ID", "NEO4J_PASSWORD", "AZURE_OPENAI_ENDPOINT", "AZURE_OPENAI_KEY"
+        "AZURE_TENANT_ID",
+        "NEO4J_PASSWORD",
+        "AZURE_OPENAI_ENDPOINT",
+        "AZURE_OPENAI_KEY",
     ]
     # Patch environment with dummy test values if any required key is missing
     for key in required_keys:
@@ -154,11 +160,15 @@ def get_settings() -> Settings:
             neo4j_database=os.environ.get("NEO4J_DATABASE", "simbuilder"),
             service_bus_url=os.environ.get("SERVICE_BUS_URL", "nats://localhost:4222"),
             service_bus_cluster_id=os.environ.get("SERVICE_BUS_CLUSTER_ID", "simbuilder-local"),
-            azure_openai_endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT", "https://dummy.endpoint/"),
+            azure_openai_endpoint=os.environ.get(
+                "AZURE_OPENAI_ENDPOINT", "https://dummy.endpoint/"
+            ),
             azure_openai_key=os.environ.get("AZURE_OPENAI_KEY", "dummy-openaikey"),
             azure_openai_api_version=os.environ.get("AZURE_OPENAI_API_VERSION", "test-version"),
             azure_openai_model_chat=os.environ.get("AZURE_OPENAI_MODEL_CHAT", "test-chat"),
-            azure_openai_model_reasoning=os.environ.get("AZURE_OPENAI_MODEL_REASONING", "test-reasoning"),
+            azure_openai_model_reasoning=os.environ.get(
+                "AZURE_OPENAI_MODEL_REASONING", "test-reasoning"
+            ),
             core_api_url=os.environ.get("CORE_API_URL", "http://localhost:7000"),
             core_api_port=int(os.environ.get("CORE_API_PORT", "7000")),
             jwt_secret=os.environ.get("JWT_SECRET", "test-jwt"),

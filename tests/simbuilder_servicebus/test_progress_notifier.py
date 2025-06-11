@@ -65,7 +65,9 @@ class TestProgressNotifier:
         session_id = "test-session-789"
         operation = "test_operation"
 
-        with patch('src.simbuilder_servicebus.progress_notifier.ServiceBusClient') as mock_client_class:
+        with patch(
+            "src.simbuilder_servicebus.progress_notifier.ServiceBusClient"
+        ) as mock_client_class:
             mock_client = AsyncMock()
             mock_client_class.return_value = mock_client
 
@@ -122,7 +124,7 @@ class TestProgressNotifier:
             progress_percentage=50.0,
             current_step="Processing data",
             step_number=5,
-            details="Halfway through processing"
+            details="Halfway through processing",
         )
 
         assert notifier._current_step == 5
@@ -304,7 +306,9 @@ class TestTrackProgressConvenienceFunction:
         operation = "test_operation"
         total_steps = 5
 
-        with patch('src.simbuilder_servicebus.progress_notifier.ProgressNotifier') as mock_notifier_class:
+        with patch(
+            "src.simbuilder_servicebus.progress_notifier.ProgressNotifier"
+        ) as mock_notifier_class:
             mock_notifier = AsyncMock()
             mock_notifier_class.return_value = mock_notifier
 
@@ -341,7 +345,9 @@ class TestProgressNotifierIntegration:
         await notifier.complete_operation("Successfully completed all steps")
 
         # Verify all messages were published
-        assert mock_client.publish.call_count == 5  # start + 3 steps + complete (complete does its own publish after progress)
+        assert (
+            mock_client.publish.call_count == 5
+        )  # start + 3 steps + complete (complete does its own publish after progress)
 
         # Check final state
         assert notifier.current_step_number == 3
@@ -375,7 +381,9 @@ class TestProgressNotifierIntegration:
         await notifier.complete_operation("Completed with error recovery")
 
         # Verify all messages were published
-        assert mock_client.publish.call_count == 7  # start + 2 steps + error + 2 steps + complete (complete triggers extra publish)
+        assert (
+            mock_client.publish.call_count == 7
+        )  # start + 2 steps + error + 2 steps + complete (complete triggers extra publish)
 
     @pytest.mark.asyncio
     async def test_concurrent_notifiers(self, mock_client):
@@ -387,21 +395,19 @@ class TestProgressNotifierIntegration:
         ]
 
         # Start all operations concurrently
-        await asyncio.gather(*[
-            notifier.start_operation(total_steps=2)
-            for notifier in notifiers
-        ])
+        await asyncio.gather(*[notifier.start_operation(total_steps=2) for notifier in notifiers])
 
         # Update progress concurrently
-        await asyncio.gather(*[
-            notifier.advance_step(f"Step 1 for {notifier.session_id}")
-            for notifier in notifiers
-        ])
+        await asyncio.gather(
+            *[notifier.advance_step(f"Step 1 for {notifier.session_id}") for notifier in notifiers]
+        )
 
-        await asyncio.gather(*[
-            notifier.complete_operation(f"Completed {notifier.session_id}")
-            for notifier in notifiers
-        ])
+        await asyncio.gather(
+            *[
+                notifier.complete_operation(f"Completed {notifier.session_id}")
+                for notifier in notifiers
+            ]
+        )
 
         # Verify all messages were published (3 notifiers * 3 messages each)
         assert mock_client.publish.call_count == 9

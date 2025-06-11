@@ -7,6 +7,8 @@ from pydantic import ValidationError
 from rich.console import Console
 from rich.table import Table
 
+from src.simbuilder_graph.cli import app as graph_app
+
 from .config import get_td_settings
 
 app = typer.Typer(
@@ -21,6 +23,7 @@ discovery_app = typer.Typer(name="discovery", help="Tenant discovery management 
 
 app.add_typer(config_app, name="config")
 app.add_typer(discovery_app, name="discovery")
+app.add_typer(graph_app, name="graph")
 
 console = Console()
 

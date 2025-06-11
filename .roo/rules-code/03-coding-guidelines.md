@@ -11,7 +11,8 @@
 
 ## Modularity
 
-- Maintain clear separation between different concerns (e.g., knowledge ingestion, code ingestion, analysis)
+- Maintain clear separation between different concerns (e.g., knowledge ingestion, code ingestion,
+  analysis)
 - Create dedicated modules for distinct functionality
 - Use composition over inheritance where appropriate
 - Design for extensibility with interfaces and dependency injection

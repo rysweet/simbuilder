@@ -2,9 +2,11 @@
 
 ## Session Management Commands
 
-The CLI Interface provides comprehensive session management capabilities to support multiple concurrent SimBuilder instances with isolated resources and dynamic port allocation.
+The CLI Interface provides comprehensive session management capabilities to support multiple
+concurrent SimBuilder instances with isolated resources and dynamic port allocation.
 
 ### Session Management Commands
+
 ```bash
 # Create new session with automatic port allocation
 sim session create [--ports=custom-range]
@@ -26,13 +28,16 @@ sim session env [--session-id=UUID] [--format=bash|powershell|json]
 ```
 
 ### Session-Aware Command Execution
+
 All CLI commands automatically detect and use the current session context through:
+
 - **Environment Variables**: `SIMBUILDER_SESSION_ID` and related session variables
 - **Session File**: `.env.session` containing session-specific configuration
 - **Port Discovery**: Automatic detection of allocated ports for service connections
 - **Container Management**: Session-specific container operations and health checks
 
 ### Multi-Instance Support Features
+
 - **Port Conflict Prevention**: Automatic port allocation and conflict resolution
 - **Resource Isolation**: Session-specific containers, networks, and volumes
 - **Concurrent Operations**: Support for multiple simultaneous SimBuilder instances
@@ -41,20 +46,29 @@ All CLI commands automatically detect and use the current session context throug
 
 ## Purpose / Overview
 
-The CLI Interface provides a rich command-line experience for SimBuilder, enabling developers, security researchers, and operations teams to manage simulation environments through an intuitive terminal interface. Built with Python's Rich library, it offers interactive workflows, real-time progress visualization, and comprehensive simulation management capabilities while maintaining the power and scriptability expected from enterprise CLI tools.
+The CLI Interface provides a rich command-line experience for SimBuilder, enabling developers,
+security researchers, and operations teams to manage simulation environments through an intuitive
+terminal interface. Built with Python's Rich library, it offers interactive workflows, real-time
+progress visualization, and comprehensive simulation management capabilities while maintaining the
+power and scriptability expected from enterprise CLI tools.
 
 ## Functional Requirements / User Stories
 
-- As a **Developer**, I need a simple `simbuilder create` command to quickly spin up attack simulations
-- As a **Security Researcher**, I need interactive prompts that guide me through attack scenario definition
-- As a **Operations Engineer**, I need bulk operations and scripting capabilities for managing multiple simulations
-- As a **System Administrator**, I need monitoring commands to track system health and resource usage
+- As a **Developer**, I need a simple `simbuilder create` command to quickly spin up attack
+  simulations
+- As a **Security Researcher**, I need interactive prompts that guide me through attack scenario
+  definition
+- As a **Operations Engineer**, I need bulk operations and scripting capabilities for managing
+  multiple simulations
+- As a **System Administrator**, I need monitoring commands to track system health and resource
+  usage
 - As a **CI/CD Pipeline**, I need non-interactive modes for automated simulation testing
 - As a **Team Lead**, I need reporting commands that generate summaries and cost breakdowns
 
 ## Interfaces / APIs
 
 ### Inputs
+
 - **Command Line Arguments**: Simulation parameters, configuration files, and operation flags
 - **Interactive Prompts**: User responses to clarification questions and configuration choices
 - **Configuration Files**: YAML/JSON files with simulation specifications and preferences
@@ -62,6 +76,7 @@ The CLI Interface provides a rich command-line experience for SimBuilder, enabli
 - **Stdin Pipes**: Batch operations and scripted automation inputs
 
 ### Outputs
+
 - **Rich Console Output**: Formatted tables, progress bars, and status indicators
 - **JSON/YAML Export**: Machine-readable output for automation and integration
 - **Log Files**: Detailed operation logs for debugging and audit trails
@@ -69,7 +84,8 @@ The CLI Interface provides a rich command-line experience for SimBuilder, enabli
 - **Exit Codes**: Standard exit codes for scripting and automation integration
 
 ### Public REST / gRPC / CLI commands
-```bash
+
+````bash
 # Simulation Management
 simbuilder create [scenario-file] [--interactive] [--budget AMOUNT] [--ttl HOURS]
 simbuilder list [--status STATUS] [--format json|table] [--all]
@@ -99,56 +115,66 @@ simbuilder export <simulation-id> [--format yaml|json] [--include-secrets]
 ```python
 class SimBuilderCLI:
     """Main CLI application class with command groups and context management."""
-    
+
     def __init__(self, config: CLIConfig):
         """Initialize CLI with configuration and API client."""
-        
+
     def create_simulation(self, scenario_file: str = None, interactive: bool = False, **kwargs) -> str:
         """Create new simulation via Core API Service."""
-        
+
     def list_simulations(self, status: str = None, format: str = "table") -> None:
         """List simulations with formatting options."""
-        
+
     def show_simulation(self, simulation_id: str, graph: bool = False, costs: bool = False) -> None:
         """Display detailed simulation information."""
-        
+
     def deploy_simulation(self, simulation_id: str, wait: bool = False) -> bool:
         """Start simulation deployment and optionally wait for completion."""
-        
+
     def configure_system(self, key: str = None, value: str = None) -> None:
         """Manage system configuration via Configuration Service."""
-```
+````
 
 ### API Client Interface
+
 ```python
 class APIClient:
     """HTTP client for Core API Service communication."""
-    
+
     def authenticate(self) -> bool:
         """Authenticate with Core API Service using configured method."""
-        
+
     def create_simulation(self, request: SimulationRequest) -> SimulationResponse:
         """Create simulation via POST /api/v1/simulations."""
-        
+
     def get_simulations(self, filters: Dict[str, Any]) -> List[SimulationResponse]:
         """List simulations via GET /api/v1/simulations."""
-        
+
     def get_simulation_status(self, simulation_id: str) -> SimulationStatus:
         """Get simulation status via GET /api/v1/simulations/{id}/status."""
-        
+
     def stream_logs(self, simulation_id: str) -> Iterator[LogEntry]:
         """Stream simulation logs via WebSocket connection."""
 ```
 
 ### Consumer Components
+
 The CLI Interface provides command-line access to:
-- **Core API Service**: All simulation operations via [`APIClient.create_simulation()`](api_client.py:23) and management endpoints
-- **Configuration Service**: System configuration via [`simbuilder config`](cli_commands.py:156) and [`ConfigurationPrompt.prompt_missing_config()`](config_prompt.py:12)
-- **LLM Foundry Integration**: Interactive assistance via [`simbuilder create --interactive`](cli_commands.py:45) and chat completions
-- **Spec Library**: Template management via [`simbuilder templates`](cli_commands.py:89) and specification operations
-- **Tenant Discovery Agent**: Discovery operations via [`simbuilder discover`](cli_commands.py:123) command group
-- **Graph Database Service**: Visualization via [`simbuilder show --graph`](cli_commands.py:67) and graph queries
-```
+
+- **Core API Service**: All simulation operations via
+  [`APIClient.create_simulation()`](api_client.py:23) and management endpoints
+- **Configuration Service**: System configuration via [`simbuilder config`](cli_commands.py:156) and
+  [`ConfigurationPrompt.prompt_missing_config()`](config_prompt.py:12)
+- **LLM Foundry Integration**: Interactive assistance via
+  [`simbuilder create --interactive`](cli_commands.py:45) and chat completions
+- **Spec Library**: Template management via [`simbuilder templates`](cli_commands.py:89) and
+  specification operations
+- **Tenant Discovery Agent**: Discovery operations via [`simbuilder discover`](cli_commands.py:123)
+  command group
+- **Graph Database Service**: Visualization via [`simbuilder show --graph`](cli_commands.py:67) and
+  graph queries
+
+````
 
 ## Dependencies
 
@@ -184,9 +210,10 @@ class CommandContext(BaseModel):
     current_simulation: Optional[str]
     verbose: bool = False
     non_interactive: bool = False
-```
+````
 
 ### Interactive Workflow Data
+
 ```python
 class InteractiveSession(BaseModel):
     session_id: str
@@ -194,6 +221,7 @@ class InteractiveSession(BaseModel):
     collected_data: Dict[str, Any]
     remaining_questions: List[str]
     progress_percentage: float
+
 
 class ProgressTracker(BaseModel):
     operation: str
@@ -216,6 +244,7 @@ class ProgressTracker(BaseModel):
 ## Testing Strategy
 
 ### Unit Tests
+
 - Command parsing and validation logic
 - API client integration and error handling
 - Configuration file loading and validation
@@ -224,6 +253,7 @@ class ProgressTracker(BaseModel):
 - Authentication token management and refresh
 
 ### Integration Tests
+
 - **Live Core API Service required** - no mocking of backend API calls
 - End-to-end simulation workflows from CLI commands
 - Interactive session handling with real user input simulation
@@ -232,6 +262,7 @@ class ProgressTracker(BaseModel):
 - Progress tracking and real-time updates during long operations
 
 ### Acceptance Tests
+
 - Complete simulation lifecycle through CLI commands
 - Bulk operations and scripting scenarios
 - Cross-platform compatibility (Windows, macOS, Linux)

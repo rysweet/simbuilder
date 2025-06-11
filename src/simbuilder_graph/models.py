@@ -12,6 +12,7 @@ class TenantNode(BaseModel):
 
     class Config:
         """Pydantic configuration."""
+
         frozen = True
         extra = "forbid"
 
@@ -25,5 +26,6 @@ class SubscriptionNode(BaseModel):
 
     class Config:
         """Pydantic configuration."""
+
         frozen = True
         extra = "forbid"

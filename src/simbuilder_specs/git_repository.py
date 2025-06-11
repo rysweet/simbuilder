@@ -13,6 +13,7 @@ from .models import GitRepositoryInfo
 
 class GitRepositoryError(Exception):
     """Exception raised for Git repository operations."""
+
     pass
 
 
@@ -72,13 +73,7 @@ class GitRepository:
         cmd = ["git", "clone", clone_url, str(self.local_path)]
         # For cloning, cwd must be None, not non-existing local_path
         try:
-            subprocess.run(
-                cmd,
-                cwd=None,
-                check=True,
-                capture_output=True,
-                text=True
-            )
+            subprocess.run(cmd, cwd=None, check=True, capture_output=True, text=True)
         except subprocess.CalledProcessError as e:
             raise GitRepositoryError(f"Git clone failed: {e.stderr or e}") from e
         except FileNotFoundError as e:
@@ -128,11 +123,7 @@ class GitRepository:
         cmd = ["git"] + args
         try:
             return subprocess.run(
-                cmd,
-                cwd=self.local_path,
-                check=True,
-                capture_output=True,
-                text=True
+                cmd, cwd=self.local_path, check=True, capture_output=True, text=True
             )
         except subprocess.CalledProcessError as e:
             raise GitRepositoryError(f"Git command failed: {' '.join(cmd)}\n{e.stderr or e}") from e
@@ -149,8 +140,7 @@ class GitRepository:
         # Handle GitHub URLs with token
         if "github.com" in self.repo_url and self.repo_url.startswith("https://"):
             return self.repo_url.replace(
-                "https://github.com/",
-                f"https://{self._auth_token}@github.com/"
+                "https://github.com/", f"https://{self._auth_token}@github.com/"
             )
 
         return self.repo_url
@@ -167,7 +157,7 @@ class GitRepository:
                 branch=self.branch,
                 commit_hash=commit_hash,
                 last_updated=datetime.now(),
-                local_path=self.local_path
+                local_path=self.local_path,
             )
         except subprocess.CalledProcessError as e:
             raise GitRepositoryError(f"Failed to get repository info: {e}") from e

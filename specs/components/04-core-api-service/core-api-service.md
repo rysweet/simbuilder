@@ -2,16 +2,21 @@
 
 ## Session ID Handling and Dynamic Port Allocation
 
-The Core API Service supports multi-instance deployment through session-aware configuration and dynamic port allocation, enabling multiple SimBuilder instances to run concurrently without conflicts.
+The Core API Service supports multi-instance deployment through session-aware configuration and
+dynamic port allocation, enabling multiple SimBuilder instances to run concurrently without
+conflicts.
 
 ### Session-Aware Features
-- **Dynamic Port Binding**: Uses `API_GATEWAY_PORT` environment variable for conflict-free port allocation
+
+- **Dynamic Port Binding**: Uses `API_GATEWAY_PORT` environment variable for conflict-free port
+  allocation
 - **Session Context**: Maintains session ID in request context for downstream service communication
 - **Database Connections**: Uses session-specific connection strings with allocated ports
 - **Service Discovery**: Routes requests to session-specific backend services
 - **Container Naming**: Follows `simbuilder-api-<session_id_short>` naming convention
 
 ### Environment Variables
+
 ```bash
 # Session identification
 SIMBUILDER_SESSION_ID=a1b2c3d4-e5f6-7890-abcd-ef1234567890
@@ -24,21 +29,30 @@ NATS_URL=nats://localhost:${NATS_CLIENT_PORT}
 
 ## Purpose / Overview
 
-The Core API Service serves as the central orchestration and coordination layer for SimBuilder, providing a unified REST API that coordinates all agent interactions, manages simulation lifecycle, and provides authentication/authorization. Built with FastAPI, it acts as the primary interface between user-facing applications (CLI, GUI, MCP) and the distributed agent architecture, ensuring consistent state management and workflow coordination.
+The Core API Service serves as the central orchestration and coordination layer for SimBuilder,
+providing a unified REST API that coordinates all agent interactions, manages simulation lifecycle,
+and provides authentication/authorization. Built with FastAPI, it acts as the primary interface
+between user-facing applications (CLI, GUI, MCP) and the distributed agent architecture, ensuring
+consistent state management and workflow coordination.
 
 ## Functional Requirements / User Stories
 
-- As a **CLI Interface**, I need a REST API to submit attack scenarios and monitor simulation progress
-- As a **GUI Interface**, I need API endpoints to display simulation status, graphs, and management dashboards
+- As a **CLI Interface**, I need a REST API to submit attack scenarios and monitor simulation
+  progress
+- As a **GUI Interface**, I need API endpoints to display simulation status, graphs, and management
+  dashboards
 - As an **MCP Service**, I need programmatic access to simulation creation, querying, and management
-- As a **System Administrator**, I need API endpoints for user management, monitoring, and system configuration
-- As **AI Agents**, I need authenticated API access to update simulation state and retrieve configuration
+- As a **System Administrator**, I need API endpoints for user management, monitoring, and system
+  configuration
+- As **AI Agents**, I need authenticated API access to update simulation state and retrieve
+  configuration
 - As a **Security Team**, I need audit logging and access control for all API operations
 - As a **Developer**, I need comprehensive API documentation and testing capabilities
 
 ## Interfaces / APIs
 
 ### Inputs
+
 - **Attack Scenarios**: Text descriptions or structured specifications for simulation creation
 - **User Authentication**: OAuth2/JWT tokens for API access control
 - **Agent Registration**: Agent service discovery and capability registration
@@ -46,6 +60,7 @@ The Core API Service serves as the central orchestration and coordination layer 
 - **Query Requests**: Simulation status, graph data, and reporting requests
 
 ### Outputs
+
 - **REST API Responses**: JSON responses with simulation data, status, and metadata
 - **WebSocket Events**: Real-time updates for simulation progress and agent status
 - **Authentication Tokens**: JWT tokens for service-to-service communication
@@ -53,6 +68,7 @@ The Core API Service serves as the central orchestration and coordination layer 
 - **Audit Logs**: Structured logging for all API operations and access patterns
 
 ### Public REST / gRPC / CLI commands
+
 ```http
 # Simulation Management
 POST /api/v1/simulations
@@ -174,11 +190,13 @@ GET /api/v1/agents
 - **Azure Active Directory**: User authentication and authorization
 - **Azure Key Vault**: API keys and service credential management
 - **Redis**: Session management and caching layer
-- **External Prompt Templates**: All AI agent prompts are externalized to Liquid template files under `prompts/` directory
+- **External Prompt Templates**: All AI agent prompts are externalized to Liquid template files
+  under `prompts/` directory
 
 ## Data Contracts / Schemas
 
 ### API Request/Response Models
+
 ```python
 class SimulationRequest(BaseModel):
     name: str
@@ -187,6 +205,7 @@ class SimulationRequest(BaseModel):
     budget_limit: Optional[float] = None
     ttl_hours: Optional[int] = 24
     tags: List[str] = []
+
 
 class SimulationResponse(BaseModel):
     id: str
@@ -198,6 +217,7 @@ class SimulationResponse(BaseModel):
     estimated_completion: Optional[datetime]
     costs: CostBreakdown
     resources: List[ResourceSummary]
+
 
 class SimulationStatus(str, Enum):
     CREATED = "created"
@@ -211,6 +231,7 @@ class SimulationStatus(str, Enum):
     FAILED = "failed"
     CLEANUP = "cleanup"
 
+
 class AgentRegistration(BaseModel):
     agent_id: str
     agent_type: str
@@ -220,12 +241,14 @@ class AgentRegistration(BaseModel):
 ```
 
 ### Authentication and Authorization
+
 ```python
 class UserContext(BaseModel):
     user_id: str
     tenant_id: str
     roles: List[str]
     permissions: List[str]
+
 
 class APIKey(BaseModel):
     key_id: str
@@ -246,6 +269,7 @@ class APIKey(BaseModel):
 ## Testing Strategy
 
 ### Unit Tests
+
 - API endpoint functionality and parameter validation
 - Authentication and authorization logic
 - Request/response serialization and deserialization
@@ -254,6 +278,7 @@ class APIKey(BaseModel):
 - WebSocket connection management
 
 ### Integration Tests
+
 - **Live dependency services required** - no mocking of Graph DB, Service Bus, or Spec Library
 - End-to-end simulation creation and management workflows
 - Agent registration and communication patterns
@@ -262,6 +287,7 @@ class APIKey(BaseModel):
 - Performance testing under high load conditions
 
 ### Acceptance Tests
+
 - Complete simulation lifecycle through API calls
 - Multi-user concurrent access and data isolation
 - Real-time updates via WebSocket connections

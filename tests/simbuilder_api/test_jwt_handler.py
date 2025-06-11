@@ -8,7 +8,6 @@ from datetime import timedelta
 
 import pytest
 from jose import JWTError
-
 from simbuilder_api.auth.jwt_handler import JWTHandler
 from simbuilder_api.auth.jwt_handler import TokenData
 
