@@ -116,3 +116,57 @@ uv run mypy src/
 ```
 
 # SUCCESS: Fixed all remaining LLM client and CLI type issues - 0 errors! Complete mypy type checking cleanup achieved!
+
+```bash
+gh issue create --title "Implement tdcli discovery commands (start, list, status)" --body "..." --label "enhancement"
+```
+
+# Created GitHub issue #28 for missing discovery commands
+
+```bash
+gh issue create --title "Integrate graph commands into tdcli (info, check)" --body "..." --label "enhancement"
+```
+
+# Created GitHub issue #29 for missing graph command integration
+
+```bash
+gh pr create --title "Stub: Implement tdcli discovery commands" --body "..." --draft
+```
+
+# Created draft PR #30 for discovery commands stub (branch: fix/implement-tdcli-discovery-commands)
+
+```bash
+gh pr create --title "Stub: Integrate graph commands into tdcli" --body "..." --draft
+```
+
+# Created draft PR #31 for graph commands integration stub (branch: fix/integrate-graph-commands-into-tdcli)
+
+```bash
+git status
+```
+
+# Checking git status before starting tdcli discovery command implementation task
+
+```bash
+git checkout -b fix/tdcli-discovery-cli
+```
+
+# Created new branch for implementing tdcli discovery command group
+
+```bash
+uv run pytest tests/tenant_discovery/test_cli.py -v
+```
+
+# Ran tests for new discovery CLI commands - all 7 tests passed successfully
+
+```bash
+uv run ruff check --fix src/tenant_discovery/cli.py tests/tenant_discovery/test_cli.py
+```
+
+# Fixed linting issues in discovery CLI test file
+
+```bash
+uv run pytest tests/tenant_discovery/test_cli.py -v
+```
+
+# Verified tests still pass after linting fixes - all 7 tests passed
