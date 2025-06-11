@@ -146,3 +146,27 @@ git status
 ```
 
 # Checking git status before starting tdcli discovery command implementation task
+
+```bash
+git checkout -b fix/tdcli-discovery-cli
+```
+
+# Created new branch for implementing tdcli discovery command group
+
+```bash
+uv run pytest tests/tenant_discovery/test_cli.py -v
+```
+
+# Ran tests for new discovery CLI commands - all 7 tests passed successfully
+
+```bash
+uv run ruff check --fix src/tenant_discovery/cli.py tests/tenant_discovery/test_cli.py
+```
+
+# Fixed linting issues in discovery CLI test file
+
+```bash
+uv run pytest tests/tenant_discovery/test_cli.py -v
+```
+
+# Verified tests still pass after linting fixes - all 7 tests passed
