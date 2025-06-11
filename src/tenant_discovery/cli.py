@@ -60,7 +60,7 @@ def info() -> None:
                 else "***"
             )
         else:
-            masked_secret = "[not set]"
+            masked_secret = "[not set]"  # noqa: S105
 
         cid = None if is_missing(settings.azure_client_id) else settings.azure_client_id
         subid = None if is_missing(settings.subscription_id) else settings.subscription_id
@@ -186,9 +186,10 @@ def check() -> None:
         sys.exit(1)
 
 
-def get_td_settings():
+def get_td_settings():  # type: ignore
     """Helper function to get tenant discovery settings."""
     from src.tenant_discovery.config import TenantDiscoverySettings
+
     return TenantDiscoverySettings(_env_file=None)  # type: ignore
 
 
