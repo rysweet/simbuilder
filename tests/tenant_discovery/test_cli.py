@@ -106,3 +106,38 @@ class TestDiscoveryCommands:
 
         assert result.exit_code == 1
         assert "Error starting discovery: Configuration error" in result.stdout
+
+
+@pytest.mark.usefixtures("runner")
+def test_start_subcommand_success(runner):
+    """
+    Test 'tenant-discovery start --name smoke' sends correct POST and prints response.
+    """
+    import httpx
+    import respx
+
+    api_base_url = "http://localhost:8000"
+    session_response = {
+        "id": "s123",
+        "name": "smoke",
+        "description": "test session",
+        "created": "2025-06-12T12:00:00Z",
+    }
+
+    with respx.mock(assert_all_called=True) as respx_mock:
+        route = respx_mock.post(f"{api_base_url}/tenant-discovery/sessions").mock(
+            return_value=httpx.Response(201, json=session_response)
+        )
+        result = runner.invoke(app, ["start", "--name", "smoke", "--description", "test session"])
+        assert result.exit_code == 0, f"CLI exited {result.exit_code}, output: {result.stdout}"
+        assert "✓ Discovery session started!" in result.stdout
+        assert "s123" in result.stdout
+        assert route.called, "API endpoint was not called"
+
+
+def test_start_subcommand_arg_required(runner):
+    """Test start subcommand fails if --name argument is missing (Typer parsing)."""
+    result = runner.invoke(app, ["start"])
+    # Typer/Click usually reports exit_code 2 for usage error
+    assert result.exit_code == 2
+    assert "--name" in result.output or "Missing option" in result.output

@@ -1,4 +1,10 @@
 [console_scripts]
-scaffolding = src.scaffolding.cli:main
-simbuilder = src.scaffolding.cli:main
-tdcli = src.tenant_discovery.cli:app
+scaffolding = scaffolding.cli:main
+simbuilder = scaffolding.cli:main
+simbuilder-api = simbuilder_api.cli:app
+simbuilder-graph = simbuilder_graph.cli:app
+simbuilder-llm = simbuilder_llm.cli:app
+simbuilder-servicebus = simbuilder_servicebus.cli:app
+simbuilder-specs = simbuilder_specs.cli:app
+tdcli = tenant_discovery.cli:app
+tenant-discovery = tenant_discovery.cli:app
