@@ -8,3 +8,11 @@ git checkout -b fix/tenant-discovery-cli-entry-point
 pip install -e .
 # Activated editable install for simbuilder package to enable new/updated console scripts, including tenant-discovery.
 ````
+```bash
+git checkout -b feat/tenant-discovery-offline-mode
+# Attempted to create new branch for offline CLI mode (issue #39); failed (already exists).
+```
+```bash
+git checkout feat/tenant-discovery-offline-mode
+# Switched to existing branch for tenant-discovery offline/demo mode (per issue #39 requirements).
+```

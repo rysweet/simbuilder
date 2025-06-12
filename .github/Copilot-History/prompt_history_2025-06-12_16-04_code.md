@@ -40,3 +40,12 @@ described.
 - Recorded command in new shell history file for session/date
 - Created prompt history file and added first entry
 - Ready to inspect and update pyproject.toml for CLI entry-points
+## Prompt 2 (2025-06-12 16:14 UTC)
+
+**Prompt**: Issue #39: When API is unavailable, `tenant-discovery` CLI demo fails. Subtask: Create `feat/tenant-discovery-offline-mode` branch to implement an offline/mock mode (CLI flag/env), stubbed responses if API cannot be reached, graceful network error handling, unit tests for offline/error, help/docs update, validated with pytest/manual, PR referencing #39.
+
+**Response**:
+- Located latest prompt history file and prepared to add next entry
+- Added prompt entry documenting offline mode branch requirement
+- Will create the feature branch before proceeding with implementation
+- Will update shell history after branch is created
