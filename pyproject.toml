@@ -42,17 +42,23 @@ dev = [
 ]
 
 [project.scripts]
-scaffolding = "src.scaffolding.cli:main"
-simbuilder = "src.scaffolding.cli:main"
-tdcli = "src.tenant_discovery.cli:app"
+tenant-discovery = "tenant_discovery.cli:app"
+tdcli = "tenant_discovery.cli:app"
+simbuilder-api = "simbuilder_api.cli:app"
+simbuilder-specs = "simbuilder_specs.cli:app"
+simbuilder-graph = "simbuilder_graph.cli:app"
+simbuilder-llm = "simbuilder_llm.cli:app"
+simbuilder-servicebus = "simbuilder_servicebus.cli:app"
+scaffolding = "scaffolding.cli:main"
+simbuilder = "scaffolding.cli:main"
 
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
-where = ["."]
-include = ["src*"]
+where = ["src"]
+namespaces = false
 
 [tool.poetry]
 name = "simbuilder"
@@ -85,7 +91,15 @@ pre-commit = "^3.5.0"
 mdformat = "^0.7.17"
 
 [tool.poetry.scripts]
-scaffolding = "src.scaffolding.cli:main"
+tenant-discovery = "tenant_discovery.cli:app"
+tdcli = "tenant_discovery.cli:app"
+simbuilder-api = "simbuilder_api.cli:app"
+simbuilder-specs = "simbuilder_specs.cli:app"
+simbuilder-graph = "simbuilder_graph.cli:app"
+simbuilder-llm = "simbuilder_llm.cli:app"
+simbuilder-servicebus = "simbuilder_servicebus.cli:app"
+scaffolding = "scaffolding.cli:main"
+simbuilder = "scaffolding.cli:main"
 
 [tool.ruff]
 target-version = "py312"
