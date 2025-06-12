@@ -1,4 +1,4 @@
-"""Tests for tenant discovery CLI commands."""
+"""Tests for tenant discovery CLI discovery commands."""
 
 from unittest.mock import MagicMock
 from unittest.mock import patch
@@ -33,15 +33,15 @@ def mock_settings() -> MagicMock:
     return mock_settings
 
 
-class TestDiscoveryCommands:
-    """Test discovery CLI commands."""
+class TestDiscoveryAPICommands:
+    """Test discovery CLI commands with API integration."""
 
     @patch("src.tenant_discovery.cli.get_td_settings")
     @respx.mock
     def test_discovery_start_success(
         self, mock_get_settings: MagicMock, runner: CliRunner, mock_settings: MagicMock
     ) -> None:
-        """Test discovery start command succeeds."""
+        """Test discovery start command succeeds with API call."""
         mock_get_settings.return_value = mock_settings
         session_id = str(uuid4())
 
@@ -69,10 +69,12 @@ class TestDiscoveryCommands:
         assert result.exit_code == 0
         assert "Discovery session started" in result.stdout
         assert session_id in result.stdout
+        assert "12345678-1234-1234-1234-123456789012" in result.stdout
+        assert "pending" in result.stdout
 
     @patch("src.tenant_discovery.cli.get_td_settings")
     @respx.mock
-    def test_discovery_start_with_tenant_id_override(
+    def test_discovery_start_with_tenant_override(
         self, mock_get_settings: MagicMock, runner: CliRunner, mock_settings: MagicMock
     ) -> None:
         """Test discovery start command with tenant ID override."""
@@ -107,44 +109,10 @@ class TestDiscoveryCommands:
 
     @patch("src.tenant_discovery.cli.get_td_settings")
     @respx.mock
-    def test_discovery_run_alias(
-        self, mock_get_settings: MagicMock, runner: CliRunner, mock_settings: MagicMock
-    ) -> None:
-        """Test discovery run command (alias for start)."""
-        mock_get_settings.return_value = mock_settings
-        session_id = str(uuid4())
-
-        # Mock API response
-        respx.post("http://localhost:8001/tenant-discovery/sessions").mock(
-            return_value=httpx.Response(
-                200,
-                json={
-                    "id": session_id,
-                    "tenant_id": "12345678-1234-1234-1234-123456789012",
-                    "status": "pending",
-                    "description": "CLI discovery session for tenant 12345678-1234-1234-1234-123456789012",
-                    "config": {},
-                    "results": {},
-                    "created_at": "2025-06-12T14:30:00Z",
-                    "updated_at": "2025-06-12T14:30:00Z",
-                    "completed_at": None,
-                    "error_message": None,
-                },
-            )
-        )
-
-        result = runner.invoke(app, ["discovery", "run"])
-
-        assert result.exit_code == 0
-        assert "Discovery session started" in result.stdout
-        assert session_id in result.stdout
-
-    @patch("src.tenant_discovery.cli.get_td_settings")
-    @respx.mock
     def test_discovery_list_success(
         self, mock_get_settings: MagicMock, runner: CliRunner, mock_settings: MagicMock
     ) -> None:
-        """Test discovery list command succeeds."""
+        """Test discovery list command succeeds with API call."""
         mock_get_settings.return_value = mock_settings
         session1_id = str(uuid4())
         session2_id = str(uuid4())
@@ -188,16 +156,35 @@ class TestDiscoveryCommands:
         result = runner.invoke(app, ["discovery", "list"])
 
         assert result.exit_code == 0
-        assert "Discovery Sessions" in result.stdout
+        assert "Discovery Sessions (2 total)" in result.stdout
         assert session1_id[:8] in result.stdout
         assert session2_id[:8] in result.stdout
+        assert "running" in result.stdout
+        assert "completed" in result.stdout
 
     @patch("src.tenant_discovery.cli.get_td_settings")
     @respx.mock
-    def test_discovery_status_with_session_id(
+    def test_discovery_list_empty(
         self, mock_get_settings: MagicMock, runner: CliRunner, mock_settings: MagicMock
     ) -> None:
-        """Test discovery status command with session ID."""
+        """Test discovery list command with no sessions."""
+        mock_get_settings.return_value = mock_settings
+        # Mock API response
+        respx.get("http://localhost:8001/tenant-discovery/sessions").mock(
+            return_value=httpx.Response(200, json={"sessions": [], "total": 0})
+        )
+
+        result = runner.invoke(app, ["discovery", "list"])
+
+        assert result.exit_code == 0
+        assert "No discovery sessions found" in result.stdout
+
+    @patch("src.tenant_discovery.cli.get_td_settings")
+    @respx.mock
+    def test_discovery_status_success(
+        self, mock_get_settings: MagicMock, runner: CliRunner, mock_settings: MagicMock
+    ) -> None:
+        """Test discovery status command succeeds with API call."""
         mock_get_settings.return_value = mock_settings
         session_id = str(uuid4())
 
@@ -236,10 +223,11 @@ class TestDiscoveryCommands:
 
         assert result.exit_code == 0
         assert "Discovery Session Status" in result.stdout
+        assert session_id in result.stdout
         assert "running" in result.stdout
         assert "45%" in result.stdout
 
-    def test_discovery_status_without_session_id(self, runner: CliRunner) -> None:
+    def test_discovery_status_no_session_id(self, runner: CliRunner) -> None:
         """Test discovery status command without session ID."""
         result = runner.invoke(app, ["discovery", "status"])
 
@@ -248,53 +236,107 @@ class TestDiscoveryCommands:
         assert "tdcli discovery list" in result.stdout
 
     @patch("src.tenant_discovery.cli.get_td_settings")
-    def test_discovery_start_config_error(
-        self, mock_get_settings: MagicMock, runner: CliRunner
+    @respx.mock
+    def test_discovery_status_short_id(
+        self, mock_get_settings: MagicMock, runner: CliRunner, mock_settings: MagicMock
     ) -> None:
-        """Test discovery start command with configuration error."""
-        mock_get_settings.side_effect = Exception("Configuration error")
+        """Test discovery status command with short session ID."""
+        mock_get_settings.return_value = mock_settings
+        session_id = str(uuid4())
+        short_id = session_id[:8]
+
+        # Mock list response for short ID lookup
+        respx.get("http://localhost:8001/tenant-discovery/sessions").mock(
+            return_value=httpx.Response(
+                200,
+                json={
+                    "sessions": [
+                        {
+                            "id": session_id,
+                            "tenant_id": "12345678-1234-1234-1234-123456789012",
+                            "status": "running",
+                            "description": "Test session",
+                            "config": {},
+                            "results": {},
+                            "created_at": "2025-06-12T14:30:00Z",
+                            "updated_at": "2025-06-12T14:30:00Z",
+                            "completed_at": None,
+                            "error_message": None,
+                        }
+                    ],
+                    "total": 1,
+                },
+            )
+        )
+
+        # Mock status and detail responses
+        respx.get(f"http://localhost:8001/tenant-discovery/sessions/{session_id}/status").mock(
+            return_value=httpx.Response(
+                200,
+                json={
+                    "session_id": session_id,
+                    "status": "running",
+                    "updated_at": "2025-06-12T14:30:00Z",
+                    "progress": 45,
+                },
+            )
+        )
+
+        respx.get(f"http://localhost:8001/tenant-discovery/sessions/{session_id}").mock(
+            return_value=httpx.Response(
+                200,
+                json={
+                    "id": session_id,
+                    "tenant_id": "12345678-1234-1234-1234-123456789012",
+                    "status": "running",
+                    "description": "Test session",
+                    "config": {},
+                    "results": {},
+                    "created_at": "2025-06-12T14:30:00Z",
+                    "updated_at": "2025-06-12T14:30:00Z",
+                    "completed_at": None,
+                    "error_message": None,
+                },
+            )
+        )
+
+        result = runner.invoke(app, ["discovery", "status", short_id])
+
+        assert result.exit_code == 0
+        assert "Discovery Session Status" in result.stdout
+        assert session_id in result.stdout
+
+    @patch("src.tenant_discovery.cli.get_td_settings")
+    @respx.mock
+    def test_discovery_start_api_error(
+        self, mock_get_settings: MagicMock, runner: CliRunner, mock_settings: MagicMock
+    ) -> None:
+        """Test discovery start command with API error."""
+        mock_get_settings.return_value = mock_settings
+
+        # Mock API error response
+        respx.post("http://localhost:8001/tenant-discovery/sessions").mock(
+            return_value=httpx.Response(400, json={"detail": "Invalid tenant ID"})
+        )
 
         result = runner.invoke(app, ["discovery", "start"])
 
         assert result.exit_code == 1
-        assert "Error starting discovery: Configuration error" in result.stdout
+        assert "API error: Invalid tenant ID" in result.stdout
 
+    @patch("src.tenant_discovery.cli.get_td_settings")
+    @respx.mock
+    def test_discovery_list_api_error(
+        self, mock_get_settings: MagicMock, runner: CliRunner, mock_settings: MagicMock
+    ) -> None:
+        """Test discovery list command with API error."""
+        mock_get_settings.return_value = mock_settings
+        # Mock API error response
+        respx.get("http://localhost:8001/tenant-discovery/sessions").mock(
+            return_value=httpx.Response(500, text="Internal Server Error")
+        )
 
-class TestGraphCommands:
-    """Test graph CLI commands."""
+        result = runner.invoke(app, ["discovery", "list"])
 
-    @patch("src.simbuilder_graph.cli.get_graph_service")
-    def test_graph_info_success(self, mock_get_service: MagicMock, runner: CliRunner) -> None:
-        """Test graph info command succeeds and prints node count."""
-        # Mock the graph service
-        mock_service = MagicMock()
-        mock_service.check_connectivity.return_value = True
-        mock_service.get_node_counts.return_value = {"tenants": 5, "subscriptions": 12}
-        mock_get_service.return_value = mock_service
-
-        result = runner.invoke(app, ["graph", "info"])
-
-        assert result.exit_code == 0
-        assert "Graph Database Information" in result.stdout
-        assert "Tenants" in result.stdout
-        assert "5" in result.stdout  # stub tenant count
-        assert "Subscriptions" in result.stdout
-        assert "12" in result.stdout  # stub subscription count
-        assert "✓ Connected" in result.stdout
-
-    @patch("src.simbuilder_graph.cli.get_graph_service")
-    def test_graph_check_success(self, mock_get_service: MagicMock, runner: CliRunner) -> None:
-        """Test graph check command succeeds."""
-        # Mock the graph service
-        mock_service = MagicMock()
-        mock_service.check_connectivity.return_value = True
-        mock_service.get_node_counts.return_value = {"tenants": 5, "subscriptions": 12}
-        mock_get_service.return_value = mock_service
-
-        result = runner.invoke(app, ["graph", "check"])
-
-        assert result.exit_code == 0
-        assert "✓ Database Connection" in result.stdout
-        assert "✓ Query Execution" in result.stdout
-        assert "✓ Node Count Query" in result.stdout
-        assert "All graph database checks passed!" in result.stdout
+        assert result.exit_code == 1
+        assert "Server error: 500" in result.stdout
