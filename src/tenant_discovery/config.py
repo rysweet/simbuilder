@@ -33,6 +33,9 @@ class TenantDiscoverySettings(BaseSettings):
     service_bus_url: str = Field(
         default="nats://localhost:30002", description="NATS service bus connection URL"
     )
+    api_base_url: str = Field(
+        default="http://localhost:8001", description="SimBuilder API base URL"
+    )
     log_level: LogLevel = Field(default=LogLevel.INFO, description="Logging level for the service")
 
     model_config = {
@@ -73,6 +76,15 @@ class TenantDiscoverySettings(BaseSettings):
         parsed = urlparse(v)
         if parsed.scheme not in ["nats", "nats+tls"]:
             raise ValueError("service_bus_url must use nats:// or nats+tls:// scheme")
+        return v
+
+    @field_validator("api_base_url")
+    @classmethod
+    def validate_api_base_url(cls, v: str) -> str:
+        """Validate that api_base_url has correct scheme."""
+        parsed = urlparse(v)
+        if parsed.scheme not in ["http", "https"]:
+            raise ValueError("api_base_url must use http:// or https:// scheme")
         return v
 
 
