@@ -283,15 +283,13 @@ def _check_nats(settings: Any) -> tuple[str, str]:
 
 @session_app.command()
 def create(
-    services: str
-    | None = typer.Option(
+    services: str | None = typer.Option(
         None, "--services", help="Comma-separated list of services to allocate ports for"
     ),
     start_containers: bool = typer.Option(
         False, "--start-containers", help="Start Docker Compose containers after creating session"
     ),
-    profile: str
-    | None = typer.Option(
+    profile: str | None = typer.Option(
         None, "--profile", help="Docker Compose profile to use when starting containers"
     ),
 ) -> None:
