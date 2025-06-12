@@ -1,163 +1,238 @@
-# Tenant Discovery CLI Demo
+# Tenant Discovery Demo Walk-Through
 
-This document demonstrates the successful implementation of the tdcli discovery command group.
+**Date:** 2025-06-10 **Environment:**
 
-## Discovery Commands Available
+- `AZURE_TENANT_ID=3cd87a41-1f61-4aef-a212-cefdecd9a2d1` (from project `.env`)
+- All commands run in the project root with environment variables set
 
-The discovery command group provides three main commands:
+This document demonstrates step-by-step use of the tenant-discovery CLI with the configured tenant.
 
-### 1. Discovery Start Command
+## Current CLI Status
+
+**Available Commands:**
+
+- `tdcli config info` - Display current configuration settings
+- `tdcli config check` - Validate configuration and environment variables
+
+**Missing Commands (Not Yet Implemented):**
+
+- `tdcli discovery start` - Start tenant discovery job
+- `tdcli discovery list` - List discovery jobs
+- `tdcli discovery status` - Check discovery job status
+- `tdcli graph info` - Show graph database information and node counts
+- `tdcli graph check` - Run graph connectivity and consistency checks
+
+______________________________________________________________________
+
+## Step 1: Environment Setup
+
+**Command:**
 
 ```bash
-$ tdcli discovery start
-Discovery started for 12345678-1234-1234-1234-123456789012
+export TD_AZURE_TENANT_ID=3cd87a41-1f61-4aef-a212-cefdecd9a2d1
+export TD_AZURE_CLIENT_SECRET=demo-secret
 ```
 
-The `start` command also has an alias `run`:
+**Result:** Environment variables set for tenant discovery demo
+
+______________________________________________________________________
+
+## Step 2: Discovery Start
+
+**Command:**
 
 ```bash
-$ tdcli discovery run
-Discovery started for 12345678-1234-1234-1234-123456789012
+TD_AZURE_TENANT_ID=3cd87a41-1f61-4aef-a212-cefdecd9a2d1 TD_AZURE_CLIENT_SECRET=demo-secret uv run tdcli discovery start
 ```
 
-You can override the tenant ID:
+**Output:**
 
-```bash
-$ tdcli discovery start --tenant-id 99999999-8888-7777-6666-555555555555
-Discovery started for 99999999-8888-7777-6666-555555555555
+```text
+Usage: tdcli [OPTIONS] COMMAND [ARGS]...
+Try 'tdcli --help' for help.
+╭─ Error ─────────────────────────────────────────────────────╮
+│ No such command 'discovery'.                                │
+╰─────────────────────────────────────────────────────────────╯
+
+[exit code: 2]
 ```
 
-### 2. Discovery List Command
+**Result:** FAILED (command not implemented)
+
+**GitHub Tracking:**
+
+- Issue needed: Discovery command not implemented
+- PR needed: Stub implementation for discovery commands
+
+______________________________________________________________________
+
+## Step 3: Discovery Status Poll
+
+**Command:**
 
 ```bash
-$ tdcli discovery list
-                      Discovery Sessions
-┏━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━┓
-┃ Session ID  ┃ Tenant ID       ┃ Status    ┃ Started         ┃
-┡━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━┩
-│ session-001 │ 12345678-1234-… │ Running   │ 2025-06-10      │
-│             │                 │           │ 23:45:00        │
-│ session-002 │ 87654321-4321-… │ Completed │ 2025-06-10      │
-│             │                 │           │ 23:30:00        │
-└─────────────┴─────────────────┴───────────┴─────────────────┘
+TD_AZURE_TENANT_ID=3cd87a41-1f61-4aef-a212-cefdecd9a2d1 TD_AZURE_CLIENT_SECRET=demo-secret uv run tdcli discovery list
 ```
 
-### 3. Discovery Status Command
+**Output:**
 
-The status command is currently stubbed and shows sample output:
+```text
+Usage: tdcli [OPTIONS] COMMAND [ARGS]...
+Try 'tdcli --help' for help.
+╭─ Error ─────────────────────────────────────────────────────╮
+│ No such command 'discovery'.                                │
+╰─────────────────────────────────────────────────────────────╯
 
-```bash
-$ tdcli discovery status session-001
-Status for session session-001:
-Status: Running
-Progress: 45% (23 of 51 resources discovered)
-Started: 2025-06-10 23:45:00
+[exit code: 2]
 ```
 
-When called without a session ID:
+**Result:** FAILED (command not implemented)
+
+______________________________________________________________________
+
+## Step 4: Graph Info
+
+**Command:**
 
 ```bash
-$ tdcli discovery status
-No session ID provided. Use 'tdcli discovery list' to see available sessions.
+TD_AZURE_TENANT_ID=3cd87a41-1f61-4aef-a212-cefdecd9a2d1 TD_AZURE_CLIENT_SECRET=demo-secret uv run tdcli graph info
 ```
 
-## Help Information
+**Output:**
+
+```text
+Usage: tdcli [OPTIONS] COMMAND [ARGS]...
+Try 'tdcli --help' for help.
+╭─ Error ─────────────────────────────────────────────────────╮
+│ No such command 'graph'.                                    │
+╰─────────────────────────────────────────────────────────────╯
+
+[exit code: 2]
+```
+
+**Result:** FAILED (command not implemented)
+
+**Note:** Graph functionality exists in `src/simbuilder_graph/cli.py` (`graph_info()` and
+`graph_check()` functions) but is not integrated into the tdcli command structure.
+
+______________________________________________________________________
+
+## Step 5: Graph Check
+
+**Command:**
 
 ```bash
-$ tdcli discovery --help
+TD_AZURE_TENANT_ID=3cd87a41-1f61-4aef-a212-cefdecd9a2d1 TD_AZURE_CLIENT_SECRET=demo-secret uv run tdcli graph check
+```
 
- Usage: tdcli discovery [OPTIONS] COMMAND [ARGS]...
+**Output:**
 
- Tenant discovery management commands
+```text
+Usage: tdcli [OPTIONS] COMMAND [ARGS]...
+Try 'tdcli --help' for help.
+╭─ Error ─────────────────────────────────────────────────────╮
+│ No such command 'graph'.                                    │
+╰─────────────────────────────────────────────────────────────╯
+
+[exit code: 2]
+```
+
+**Result:** FAILED (command not implemented)
+
+______________________________________________________________________
+
+## Available Commands Verification
+
+**Command:**
+
+```bash
+uv run tdcli --help
+```
+
+**Output:**
+
+```text
+ Usage: tdcli [OPTIONS] COMMAND [ARGS]...
+
+ Tenant Discovery CLI
+
+╭─ Options ───────────────────────────────────────────────────╮
+│ --install-completion          Install completion for the    │
+│                               current shell.                │
+│ --show-completion             Show completion for the       │
+│                               current shell, to copy it or  │
+│                               customize the installation.   │
+│ --help                        Show this message and exit.   │
+╰─────────────────────────────────────────────────────────────╯
+╭─ Commands ──────────────────────────────────────────────────╮
+│ config   Configuration management commands                  │
+╰─────────────────────────────────────────────────────────────╯
+```
+
+**Available Config Commands:**
+
+```bash
+uv run tdcli config --help
+```
+
+**Output:**
+
+```text
+ Usage: tdcli config [OPTIONS] COMMAND [ARGS]...
+
+ Configuration management commands
 
 ╭─ Options ───────────────────────────────────────────────────╮
 │ --help          Show this message and exit.                 │
 ╰─────────────────────────────────────────────────────────────╯
 ╭─ Commands ──────────────────────────────────────────────────╮
-│ run      Start tenant resource discovery.                   │
-│ start    Start tenant resource discovery.                   │
-│ list     List discovery sessions.                           │
-│ status   Show status of a discovery session.                │
+│ info    Display current configuration settings.             │
+│ check   Validate configuration and environment variables.   │
 ╰─────────────────────────────────────────────────────────────╯
 ```
 
-## Implementation Status
+______________________________________________________________________
 
-✅ **Discovery command group successfully implemented**
+## Demo Results Summary
 
-- All three commands (start, list, status) are functional
-- Tenant ID parameter wiring works from settings or --tenant-id option
-- `start` command has the `run` alias as requested
-- Comprehensive test coverage with 7 test cases
-- All tests pass successfully
+### Command Results:
 
-The discovery commands are now ready for use and can be extended with real implementation details in
-future iterations.
+- **tdcli discovery start**: ❌ FAILED (exit code: 2) - Command not implemented
+- **tdcli discovery list**: ❌ FAILED (exit code: 2) - Command not implemented
+- **tdcli graph info**: ❌ FAILED (exit code: 2) - Command not implemented
+- **tdcli graph check**: ❌ FAILED (exit code: 2) - Command not implemented
 
-## Graph Commands Available
+### Available Functionality:
 
-The graph command group provides database management commands:
+- ✅ **tdcli config info**: Available (displays configuration)
+- ✅ **tdcli config check**: Available (validates environment)
 
-### 1. Graph Info Command
+### Issues Identified:
 
-```bash
-$ tdcli graph info
-Connecting to graph database...
-                  Graph Database Information
-┏━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ Metric            ┃ Value       ┃ Description               ┃
-┡━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│ Connection Status │ ✓ Connected │ Database connectivity     │
-│ Tenants           │ 5           │ Number of tenant nodes    │
-│ Subscriptions     │ 12          │ Number of subscription    │
-│                   │             │ nodes                     │
-└───────────────────┴─────────────┴───────────────────────────┘
+1. **Discovery commands missing**: No `discovery` subcommand group in tdcli
+1. **Graph commands missing**: No `graph` subcommand group in tdcli
+1. **Integration gap**: Graph functions exist in `src/simbuilder_graph/cli.py` but not connected to
+   main CLI
 
-✓ Graph database information retrieved successfully
-```
+### Required GitHub Issues/PRs:
 
-### 2. Graph Check Command
+- **Issue**: "Implement tdcli discovery commands (start, list, status)"
+- **Issue**: "Integrate graph commands into tdcli (info, check)"
+- **PR**: "Add discovery subcommand group to tdcli"
+- **PR**: "Add graph subcommand group to tdcli"
 
-```bash
-$ tdcli graph check
-Checking graph database connectivity...
+### Graph Node Counts:
 
-✓ Database Connection
-✓ Query Execution
-✓ Node Count Query
+**Status**: Unable to verify - graph commands not accessible through CLI
 
-✓ All graph database checks passed!
-```
+### Next Steps:
 
-### 3. Graph Help
+1. Create GitHub issues for missing functionality
+1. Implement discovery and graph subcommand groups in tdcli
+1. Re-run demo once commands are implemented
+1. Verify graph database connectivity and node counts
 
-```bash
-$ tdcli graph --help
+______________________________________________________________________
 
- Usage: python -m src.tenant_discovery.cli graph
-            [OPTIONS] COMMAND [ARGS]...
-
- Graph database management commands
-
-╭─ Options ───────────────────────────────────────────────────╮
-│ --help          Show this message and exit.                 │
-╰─────────────────────────────────────────────────────────────╯
-╭─ Commands ──────────────────────────────────────────────────╮
-│ info    Display graph database information and statistics.  │
-│ check   Check graph database connectivity and health.       │
-╰─────────────────────────────────────────────────────────────╯
-```
-
-## Graph Commands Implementation Status
-
-✅ **Graph command group successfully implemented**
-
-- Both commands (info, check) are functional with stub data
-- `info` command shows database connectivity and node counts
-- `check` command validates database connectivity and operations
-- All commands exit with status 0 and display expected output
-- Comprehensive test coverage with 2 test cases
-- All tests pass successfully
-
-The graph commands are now integrated and ready for use. The current implementation uses stub data
-for demonstration purposes and can be extended with real database connectivity in future iterations.
+*Demo completed on 2025-06-10 23:51 UTC* *All command failures documented and ready for
+implementation tracking*

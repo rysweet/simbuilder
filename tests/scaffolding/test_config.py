@@ -212,8 +212,9 @@ class TestConfigHelpers:
 
     def test_create_env_template(self):
         """Test creation of .env.template file."""
-        with tempfile.TemporaryDirectory() as temp_dir, patch(
-            "src.scaffolding.config.get_project_root", return_value=Path(temp_dir)
+        with (
+            tempfile.TemporaryDirectory() as temp_dir,
+            patch("src.scaffolding.config.get_project_root", return_value=Path(temp_dir)),
         ):
             # Mock get_project_root to return temp directory
             create_env_template()

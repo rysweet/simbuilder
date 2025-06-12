@@ -93,8 +93,9 @@ class TestTemplateLoader:
 
     def test_init_without_liquid_raises_error(self, mock_repository):
         """Test that TemplateLoader raises error when liquid is not available."""
-        with patch("src.simbuilder_specs.template_loader.LIQUID_AVAILABLE", False), pytest.raises(
-            TemplateLoaderError, match="liquid package is required"
+        with (
+            patch("src.simbuilder_specs.template_loader.LIQUID_AVAILABLE", False),
+            pytest.raises(TemplateLoaderError, match="liquid package is required"),
         ):
             TemplateLoader(mock_repository)
 
@@ -110,11 +111,13 @@ class TestTemplateLoader:
     @patch("src.simbuilder_specs.template_loader.LIQUID_AVAILABLE", True)
     def test_get_environment_creates_environment(self, mock_repository_with_real_path):
         """Test that _get_environment creates Liquid environment."""
-        with patch.object(
-            type(mock_repository_with_real_path.local_path), "exists", return_value=True
-        ), patch("src.simbuilder_specs.template_loader.FileSystemLoader") as mock_loader_cls, patch(
-            "src.simbuilder_specs.template_loader.Environment"
-        ) as mock_env_cls:
+        with (
+            patch.object(
+                type(mock_repository_with_real_path.local_path), "exists", return_value=True
+            ),
+            patch("src.simbuilder_specs.template_loader.FileSystemLoader") as mock_loader_cls,
+            patch("src.simbuilder_specs.template_loader.Environment") as mock_env_cls,
+        ):
             loader = TemplateLoader(mock_repository_with_real_path)
             env = loader._get_environment()
             mock_loader_cls.assert_called_once_with(str(mock_repository_with_real_path.local_path))
@@ -144,10 +147,22 @@ class TestTemplateLoader:
     @patch("src.simbuilder_specs.template_loader.LIQUID_AVAILABLE", True)
     def test_get_template_meta(self, mock_repository):
         """Test getting template metadata."""
+        from src.simbuilder_specs.models import TemplateMeta
+
         loader = TemplateLoader(mock_repository)
 
-        # Mock file stat
-        with patch("pathlib.Path.stat"):
+        # Mock the static method directly to avoid GitRepository creation
+        mock_meta = TemplateMeta(
+            name="simple",
+            path="simple.liquid",
+            description=None,
+            variables=["name"],
+            version=None,
+            created_at=None,
+            modified_at=None,
+        )
+
+        with patch.object(TemplateLoader, "_get_template_meta_cached", return_value=mock_meta):
             meta = loader.get_template_meta("simple")
 
             assert meta.name == "simple"
@@ -157,9 +172,22 @@ class TestTemplateLoader:
     @patch("src.simbuilder_specs.template_loader.LIQUID_AVAILABLE", True)
     def test_get_template_meta_with_extension(self, mock_repository):
         """Test getting template metadata when name already has extension."""
+        from src.simbuilder_specs.models import TemplateMeta
+
         loader = TemplateLoader(mock_repository)
 
-        with patch("pathlib.Path.stat"):
+        # Mock the static method directly to avoid GitRepository creation
+        mock_meta = TemplateMeta(
+            name="simple",
+            path="simple.liquid",
+            description=None,
+            variables=["name"],
+            version=None,
+            created_at=None,
+            modified_at=None,
+        )
+
+        with patch.object(TemplateLoader, "_get_template_meta_cached", return_value=mock_meta):
             meta = loader.get_template_meta("simple.liquid")
 
             assert meta.name == "simple"
@@ -205,13 +233,13 @@ class TestTemplateLoader:
     @patch("src.simbuilder_specs.template_loader.LIQUID_AVAILABLE", True)
     def test_load_template(self, mock_repository_with_real_path):
         """Test loading and compiling a template."""
-        with patch.object(
-            type(mock_repository_with_real_path.local_path), "exists", return_value=True
-        ), patch(
-            "src.simbuilder_specs.template_loader.FileSystemLoader"
-        ) as _mock_loader_cls, patch(
-            "src.simbuilder_specs.template_loader.Environment"
-        ) as mock_env_cls:
+        with (
+            patch.object(
+                type(mock_repository_with_real_path.local_path), "exists", return_value=True
+            ),
+            patch("src.simbuilder_specs.template_loader.FileSystemLoader") as _mock_loader_cls,
+            patch("src.simbuilder_specs.template_loader.Environment") as mock_env_cls,
+        ):
             mock_template = Mock()
             mock_env = Mock()
             mock_env.get_template.return_value = mock_template
@@ -236,11 +264,13 @@ class TestTemplateLoader:
     @patch("src.simbuilder_specs.template_loader.LIQUID_AVAILABLE", True)
     def test_render(self, mock_repository_with_real_path):
         """Test rendering a template."""
-        with patch.object(
-            type(mock_repository_with_real_path.local_path), "exists", return_value=True
-        ), patch("src.simbuilder_specs.template_loader.FileSystemLoader"), patch(
-            "src.simbuilder_specs.template_loader.Environment"
-        ) as mock_env_cls:
+        with (
+            patch.object(
+                type(mock_repository_with_real_path.local_path), "exists", return_value=True
+            ),
+            patch("src.simbuilder_specs.template_loader.FileSystemLoader"),
+            patch("src.simbuilder_specs.template_loader.Environment") as mock_env_cls,
+        ):
             mock_template = Mock()
             mock_template.render.return_value = "Hello John!"
             mock_env = Mock()

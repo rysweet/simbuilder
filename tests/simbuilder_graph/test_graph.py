@@ -146,9 +146,10 @@ class TestGraphService:
 
     def test_session_not_connected(self, service):
         """Test session context manager when not connected."""
-        with pytest.raises(
-            ConfigurationError, match="Not connected to database"
-        ), service.session():
+        with (
+            pytest.raises(ConfigurationError, match="Not connected to database"),
+            service.session(),
+        ):
             pass
 
     @patch("src.simbuilder_graph.service.GraphDatabase.driver")
@@ -329,87 +330,64 @@ class TestGraphCLI:
         """Set up test method."""
         self.runner = CliRunner()
 
-    @patch("src.simbuilder_graph.cli.get_graph_service")
-    def test_graph_info_success(self, mock_get_service):
+    def test_graph_info_success(self):
         """Test graph info command success."""
-        mock_service = MagicMock()
-        mock_service.check_connectivity.return_value = True
-        mock_service.get_node_counts.return_value = {"tenants": 3, "subscriptions": 7}
-        mock_get_service.return_value = mock_service
-
-        # Import the app from scaffolding CLI
         from src.scaffolding.cli import app
 
-        result = self.runner.invoke(app, ["graph", "info"])
-
+        env = {"SIMBUILDER_MOCK_GRAPH": "1", "SIMBUILDER_MOCK_GRAPH_SUCCESS": "1"}
+        result = self.runner.invoke(app, ["graph", "info"], env=env)
         assert result.exit_code == 0
         assert "✓ Connected" in result.stdout
         assert "3" in result.stdout  # tenant count
         assert "7" in result.stdout  # subscription count
 
-    @patch("src.simbuilder_graph.cli.get_graph_service")
-    def test_graph_info_connection_failure(self, mock_get_service):
+    def test_graph_info_connection_failure(self):
         """Test graph info command with connection failure."""
-        mock_service = MagicMock()
-        mock_service.check_connectivity.return_value = False
-        mock_get_service.return_value = mock_service
-
         from src.scaffolding.cli import app
 
-        result = self.runner.invoke(app, ["graph", "info"])
-
+        env = {"SIMBUILDER_MOCK_GRAPH": "1", "SIMBUILDER_MOCK_GRAPH_CONNFAIL": "1"}
+        result = self.runner.invoke(app, ["graph", "info"], env=env)
         assert result.exit_code == 1
         assert "Failed to connect" in result.stdout
 
-    @patch("src.simbuilder_graph.cli.get_graph_service")
-    def test_graph_info_configuration_error(self, mock_get_service):
+    def test_graph_info_configuration_error(self):
         """Test graph info command with configuration error."""
-        mock_get_service.side_effect = ConfigurationError("Config error")
-
         from src.scaffolding.cli import app
 
-        result = self.runner.invoke(app, ["graph", "info"])
-
+        env = {
+            "SIMBUILDER_MOCK_GRAPH": "1"
+            # (No _SUCCESS or _CONNFAIL => config error)
+        }
+        result = self.runner.invoke(app, ["graph", "info"], env=env)
         assert result.exit_code == 1
         assert "Configuration error" in result.stdout
 
-    @patch("src.simbuilder_graph.cli.get_graph_service")
-    def test_graph_check_success(self, mock_get_service):
+    def test_graph_check_success(self):
         """Test graph check command success."""
-        mock_service = MagicMock()
-        mock_service.check_connectivity.return_value = True
-        mock_service.get_node_counts.return_value = {"tenants": 2, "subscriptions": 5}
-        mock_get_service.return_value = mock_service
-
         from src.scaffolding.cli import app
 
-        result = self.runner.invoke(app, ["graph", "check"])
-
+        env = {"SIMBUILDER_MOCK_GRAPH": "1", "SIMBUILDER_MOCK_GRAPH_SUCCESS": "1"}
+        result = self.runner.invoke(app, ["graph", "check"], env=env)
         assert result.exit_code == 0
         assert "All graph database checks passed!" in result.stdout
 
-    @patch("src.simbuilder_graph.cli.get_graph_service")
-    def test_graph_check_failure(self, mock_get_service):
+    def test_graph_check_failure(self):
         """Test graph check command failure."""
-        mock_service = MagicMock()
-        mock_service.check_connectivity.return_value = False
-        mock_get_service.return_value = mock_service
-
         from src.scaffolding.cli import app
 
-        result = self.runner.invoke(app, ["graph", "check"])
-
+        env = {"SIMBUILDER_MOCK_GRAPH": "1", "SIMBUILDER_MOCK_GRAPH_CONNFAIL": "1"}
+        result = self.runner.invoke(app, ["graph", "check"], env=env)
         assert result.exit_code == 1
         assert "Some graph database checks failed!" in result.stdout
 
-    @patch("src.simbuilder_graph.cli.get_graph_service")
-    def test_graph_check_configuration_error(self, mock_get_service):
+    def test_graph_check_configuration_error(self):
         """Test graph check command with configuration error."""
-        mock_get_service.side_effect = ConfigurationError("Config error")
-
         from src.scaffolding.cli import app
 
-        result = self.runner.invoke(app, ["graph", "check"])
-
+        env = {
+            "SIMBUILDER_MOCK_GRAPH": "1"
+            # (No _SUCCESS or _CONNFAIL => config error)
+        }
+        result = self.runner.invoke(app, ["graph", "check"], env=env)
         assert result.exit_code == 1
         assert "Configuration error" in result.stdout

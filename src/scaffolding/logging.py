@@ -5,6 +5,7 @@ Structured logging setup for SimBuilder using structlog.
 import logging
 import sys
 from typing import Any
+from typing import cast
 
 import structlog
 from structlog.typing import FilteringBoundLogger
@@ -38,9 +39,14 @@ def setup_logging() -> FilteringBoundLogger:
             structlog.contextvars.merge_contextvars,
             structlog.processors.StackInfoRenderer(),
             # JSON formatting for production, pretty printing for development
-            structlog.dev.ConsoleRenderer()
-            if settings.is_development
-            else structlog.processors.JSONRenderer(),
+            cast(
+                Any,
+                (
+                    structlog.dev.ConsoleRenderer()
+                    if settings.is_development
+                    else structlog.processors.JSONRenderer()
+                ),
+            ),
         ],
         wrapper_class=structlog.make_filtering_bound_logger(getattr(logging, settings.log_level)),
         logger_factory=structlog.stdlib.LoggerFactory(),

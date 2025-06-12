@@ -270,9 +270,11 @@ def _check_configuration(settings: Any) -> list[tuple[str, bool, str]]:
         (
             "API Version",
             bool(settings.azure_openai_api_version),
-            settings.azure_openai_api_version
-            if settings.azure_openai_api_version
-            else "Not configured",
+            (
+                settings.azure_openai_api_version
+                if settings.azure_openai_api_version
+                else "Not configured"
+            ),
         )
     )
 
@@ -280,9 +282,11 @@ def _check_configuration(settings: Any) -> list[tuple[str, bool, str]]:
         (
             "Chat Model",
             bool(settings.azure_openai_model_chat),
-            settings.azure_openai_model_chat
-            if settings.azure_openai_model_chat
-            else "Not configured",
+            (
+                settings.azure_openai_model_chat
+                if settings.azure_openai_model_chat
+                else "Not configured"
+            ),
         )
     )
 

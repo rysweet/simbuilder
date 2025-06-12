@@ -201,9 +201,10 @@ class PortManager(LoggingMixin):
     def _save_global_state(self) -> None:
         """Persist global port usage to disk under a file lock."""
         try:
-            with FileLock(str(self.lock_file), timeout=10), self.global_file.open(
-                "w", encoding="utf-8"
-            ) as f:
+            with (
+                FileLock(str(self.lock_file), timeout=10),
+                self.global_file.open("w", encoding="utf-8") as f,
+            ):
                 json.dump({"used_ports": list(self.used_ports)}, f, indent=2)
         except Exception as e:
             self.log_error(e, {"operation": "save_global_state", "file": str(self.global_file)})

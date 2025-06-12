@@ -301,9 +301,10 @@ class TestSpecsValidate:
             context_file = f.name
 
         try:
-            with patch("src.simbuilder_specs.cli._get_template_loader") as mock_get_loader, patch(
-                "src.simbuilder_specs.cli.SpecValidator"
-            ) as mock_validator_cls:
+            with (
+                patch("src.simbuilder_specs.cli._get_template_loader") as mock_get_loader,
+                patch("src.simbuilder_specs.cli.SpecValidator") as mock_validator_cls,
+            ):
                 mock_loader = Mock()
                 mock_get_loader.return_value = mock_loader
 
@@ -347,9 +348,10 @@ class TestSpecsValidate:
             context_file = f.name
 
         try:
-            with patch("src.simbuilder_specs.cli._get_template_loader") as mock_get_loader, patch(
-                "src.simbuilder_specs.cli.SpecValidator"
-            ) as mock_validator_cls:
+            with (
+                patch("src.simbuilder_specs.cli._get_template_loader") as mock_get_loader,
+                patch("src.simbuilder_specs.cli.SpecValidator") as mock_validator_cls,
+            ):
                 mock_loader = Mock()
                 mock_get_loader.return_value = mock_loader
 

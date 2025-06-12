@@ -1,6 +1,5 @@
 """Topic definitions and routing for Service Bus messaging."""
 
-
 from .models import MessageType
 from .models import TopicDefinition
 

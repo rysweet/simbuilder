@@ -1,6 +1,7 @@
 """
 Tests for the SessionManager module.
 """
+
 # ruff: noqa: SIM117
 
 import json
@@ -19,8 +20,9 @@ class TestSessionManager:
 
     def test_init(self):
         """Test SessionManager initialization."""
-        with tempfile.TemporaryDirectory() as temp_dir, patch(
-            "src.scaffolding.session.get_project_root", return_value=Path(temp_dir)
+        with (
+            tempfile.TemporaryDirectory() as temp_dir,
+            patch("src.scaffolding.session.get_project_root", return_value=Path(temp_dir)),
         ):
             session_manager = SessionManager()
 
@@ -33,8 +35,9 @@ class TestSessionManager:
     @patch.object(PortManager, "save_to_file")
     def test_create_session_default_services(self, mock_save_to_file, mock_get_port, mock_uuid):
         """Test create_session with default services."""
-        with tempfile.TemporaryDirectory() as temp_dir, patch(
-            "src.scaffolding.session.get_project_root", return_value=Path(temp_dir)
+        with (
+            tempfile.TemporaryDirectory() as temp_dir,
+            patch("src.scaffolding.session.get_project_root", return_value=Path(temp_dir)),
         ):
             # Mock UUID generation
             test_uuid = uuid.UUID("12345678-1234-5678-9012-123456789012")
@@ -125,8 +128,9 @@ class TestSessionManager:
 
     def test_list_sessions_empty(self):
         """Test list_sessions returns empty list when no sessions exist."""
-        with tempfile.TemporaryDirectory() as temp_dir, patch(
-            "src.scaffolding.session.get_project_root", return_value=Path(temp_dir)
+        with (
+            tempfile.TemporaryDirectory() as temp_dir,
+            patch("src.scaffolding.session.get_project_root", return_value=Path(temp_dir)),
         ):
             session_manager = SessionManager()
             sessions = session_manager.list_sessions()
@@ -135,8 +139,9 @@ class TestSessionManager:
 
     def test_list_sessions_with_sessions(self):
         """Test list_sessions returns list of sessions."""
-        with tempfile.TemporaryDirectory() as temp_dir, patch(
-            "src.scaffolding.session.get_project_root", return_value=Path(temp_dir)
+        with (
+            tempfile.TemporaryDirectory() as temp_dir,
+            patch("src.scaffolding.session.get_project_root", return_value=Path(temp_dir)),
         ):
             session_manager = SessionManager()
 
@@ -165,8 +170,9 @@ class TestSessionManager:
 
     def test_get_session_status_nonexistent(self):
         """Test get_session_status returns None for nonexistent session."""
-        with tempfile.TemporaryDirectory() as temp_dir, patch(
-            "src.scaffolding.session.get_project_root", return_value=Path(temp_dir)
+        with (
+            tempfile.TemporaryDirectory() as temp_dir,
+            patch("src.scaffolding.session.get_project_root", return_value=Path(temp_dir)),
         ):
             session_manager = SessionManager()
             status = session_manager.get_session_status("nonexistent-session")
@@ -176,8 +182,9 @@ class TestSessionManager:
     @patch.object(SessionManager, "_check_containers_running")
     def test_get_session_status_existing(self, mock_check_containers):
         """Test get_session_status returns status for existing session."""
-        with tempfile.TemporaryDirectory() as temp_dir, patch(
-            "src.scaffolding.session.get_project_root", return_value=Path(temp_dir)
+        with (
+            tempfile.TemporaryDirectory() as temp_dir,
+            patch("src.scaffolding.session.get_project_root", return_value=Path(temp_dir)),
         ):
             session_manager = SessionManager()
             mock_check_containers.return_value = False

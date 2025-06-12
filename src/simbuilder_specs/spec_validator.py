@@ -24,8 +24,8 @@ except ImportError:
     class Environment:  # type: ignore
         pass
 
-    LiquidSyntaxError = Exception  # type: ignore
-    LiquidTypeError = Exception  # type: ignore
+    LiquidSyntaxError: type[Exception] = Exception  # type: ignore[no-redef]
+    LiquidTypeError: type[Exception] = Exception  # type: ignore[no-redef]
     LIQUID_AVAILABLE = False
 
 from .models import ValidationResult
@@ -272,8 +272,7 @@ def validate_repo(
 
     if not LIQUID_AVAILABLE:
         raise ValueError(
-            "liquid package is required for template validation. "
-            "Install with: pip install liquid"
+            "liquid package is required for template validation. Install with: pip install liquid"
         )
 
     # Create repository and template loader

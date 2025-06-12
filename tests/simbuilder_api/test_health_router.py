@@ -32,8 +32,9 @@ def client(mock_settings):
     scaffolding_get_settings.cache_clear()
 
     # Patch both get_settings functions
-    with patch("simbuilder_api.dependencies.get_settings", return_value=mock_settings), patch(
-        "scaffolding.config.get_settings", return_value=mock_settings
+    with (
+        patch("simbuilder_api.dependencies.get_settings", return_value=mock_settings),
+        patch("scaffolding.config.get_settings", return_value=mock_settings),
     ):
         app = create_app()
         return TestClient(app)

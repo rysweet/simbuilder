@@ -2,7 +2,6 @@
 CLI commands for SimBuilder API service.
 """
 
-
 import typer
 import uvicorn
 from rich.console import Console

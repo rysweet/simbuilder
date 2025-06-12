@@ -1,0 +1,2 @@
+Stub PR for env config failure in `tdcli config info`.
+Related to https://github.com/rysweet/simbuilder/issues/21
