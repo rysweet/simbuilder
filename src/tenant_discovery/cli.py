@@ -415,5 +415,61 @@ def status(
         sys.exit(1)
 
 
+@app.command("start")
+def start_command(
+    name: str = typer.Option(..., "--name", help="Session name (required)"),
+    description: str = typer.Option(None, "--description", help="Optional session description"),
+) -> None:
+    """
+    Start a new tenant discovery session.
+
+    Uses settings from environment (.env or TD_API_BASE_URL).
+    POSTs to /tenant-discovery/sessions with name/description.
+
+    Example:
+      tenant-discovery start --name demo-session --description demo
+    """
+    import httpx
+
+    # Prefer env var, fallback to localhost for API endpoint root
+    api_base_url = os.environ.get("TD_API_BASE_URL", "http://localhost:8000")
+    url = f"{api_base_url.rstrip('/')}/tenant-discovery/sessions"
+    payload = {"name": name}
+    if description is not None:
+        payload["description"] = description
+
+    try:
+        with httpx.Client(timeout=15) as client:
+            resp = client.post(url, json=payload)
+        if resp.status_code in (200, 201):
+            data = resp.json()
+            session_id = data.get("id", "[unknown id]")
+            console.print("[green]✓ Discovery session started![/green]")
+            console.print(f"[bold]Session ID:[/bold] {session_id}")
+            table = Table(title="Session Details", show_header=True)
+            for k, v in data.items():
+                table.add_row(str(k), str(v))
+            console.print(table)
+            sys.exit(0)
+        else:
+            try:
+                err = resp.json()
+            except Exception:
+                err = resp.text
+            console.print(f"[red]✗ Failed to start session: {resp.status_code}[/red]")
+            console.print(f"[yellow]Details:[/yellow] {err}")
+            sys.exit(resp.status_code or 1)
+    except httpx.HTTPStatusError as e:
+        console.print(f"[red]✗ Server returned HTTP error: {e.response.status_code}[/red]")
+        console.print(e.response.text)
+        sys.exit(e.response.status_code or 1)
+    except Exception as e:
+        import traceback
+
+        console.print(f"[red]✗ Network or unexpected error: {e}[/red]")
+        console.print(f"[yellow]TRACEBACK:[/yellow]\n{traceback.format_exc()}")
+        sys.exit(1)
+
+
 if __name__ == "__main__":
     app()
