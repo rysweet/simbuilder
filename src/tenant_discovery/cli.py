@@ -15,14 +15,63 @@ app = typer.Typer(
     name="tdcli",
     help="Tenant Discovery CLI",
     no_args_is_help=True,
+    add_completion=False,
 )
+
+
+# Add global --offline option to the main app only
+@app.callback()
+def main_callback(
+    ctx: typer.Context,
+    offline: bool = typer.Option(
+        False,
+        "--offline",
+        help="Run CLI in offline/mock mode (no API calls)",
+        envvar=None,  # Remove autoload so only checked by get_offline_value
+        show_envvar=True,
+    ),
+) -> None:
+    """Set offline mode in global context for all sub-apps/commands."""
+    ctx.obj = {"offline": get_offline_value(offline) or bool(os.getenv("TENANT_DISCOVERY_OFFLINE"))}
+
+
+# Global offline mode management
+def get_offline_value(offline_flag: bool) -> bool:
+    env_offline = os.environ.get("TENANT_DISCOVERY_OFFLINE", None)
+    if env_offline is not None:
+        if env_offline.strip() in ("1", "true", "True", "yes", "on", "YES", "TRUE", "ON"):
+            return True
+        if env_offline.strip() in ("0", "false", "False", "no", "off", "NO", "FALSE", "OFF"):
+            return False
+    return offline_flag
+
 
 # Create subcommands
 config_app = typer.Typer(name="config", help="Configuration management commands")
-discovery_app = typer.Typer(name="discovery", help="Tenant discovery management commands")
+discovery_app = typer.Typer(
+    name="discovery",
+    help="Tenant discovery management commands",
+    add_completion=False,
+    no_args_is_help=True,
+    context_settings={"allow_extra_args": True, "ignore_unknown_options": True, "obj": {}},
+)
+
+
+@discovery_app.callback(invoke_without_command=True, no_args_is_help=True)
+def discovery_callback(ctx: typer.Context) -> None:
+    # Propagate parent ctx.obj to sub-ctx.obj so offline setting persists into subcommands
+    parent = ctx.parent
+    if parent and parent.obj is not None:
+        ctx.obj = parent.obj
+
 
 app.add_typer(config_app, name="config")
-app.add_typer(discovery_app, name="discovery")
+# Ensure context is always inherited by subcommands for discovery_app
+app.add_typer(
+    discovery_app,
+    name="discovery",
+    context_settings={"allow_extra_args": True, "ignore_unknown_options": True},
+)
 
 console = Console()
 
@@ -224,15 +273,21 @@ def check() -> None:
 @discovery_app.command()
 @discovery_app.command("run")  # Alias for start
 def start(
-    tenant_id: str = typer.Option(
+    ctx: typer.Context,
+    tenant_id: str
+    | None = typer.Option(
         None, "--tenant-id", help="Azure tenant ID for discovery (overrides config)"
     ),
 ) -> None:
     """Start tenant resource discovery."""
+    offline_mode = ctx.obj.get("offline", False)
     try:
-        settings = get_td_settings()
-        # Use provided tenant_id or fall back to settings
-        effective_tenant_id = tenant_id or settings.azure_tenant_id
+        if offline_mode:
+            _stub_discovery_start(tenant_id)
+        else:
+            settings = get_td_settings()
+            # Use provided tenant_id or fall back to settings
+            effective_tenant_id = tenant_id or settings.azure_tenant_id
 
         # Create discovery session via API
         session_data = {
@@ -264,8 +319,13 @@ def start(
 
 
 @discovery_app.command()
-def list() -> None:
-    """List discovery sessions."""
+def list(ctx: typer.Context) -> None:
+    """List discovery sessions. When offline, returns a single stub/demo session."""
+    import httpx
+
+    offline_mode = ctx.obj.get("offline", False)
+    if offline_mode:
+        _stub_discovery_list()
     try:
         with _get_api_client() as client:
             response = client.get("/tenant-discovery/sessions")
@@ -323,9 +383,18 @@ def list() -> None:
 
 @discovery_app.command()
 def status(
-    session_id: str = typer.Argument(None, help="Session ID to check status for (optional)")
+    ctx: typer.Context,
+    session_id: str | None = typer.Argument(None, help="Session ID to check status for (optional)"),
 ) -> None:
-    """Show status of a discovery session."""
+    """
+    Show status of a discovery session.
+    When offline, always returns 'pending' for demo.
+    """
+    import httpx
+
+    offline_mode = ctx.obj.get("offline", False)
+    if offline_mode:
+        _stub_discovery_status(session_id)
     try:
         if not session_id:
             console.print(
@@ -419,19 +488,47 @@ def status(
 def start_command(
     name: str = typer.Option(..., "--name", help="Session name (required)"),
     description: str = typer.Option(None, "--description", help="Optional session description"),
+    offline: bool = typer.Option(
+        False,
+        "--offline",
+        help="Run CLI in offline/mock mode (no API calls)",
+        envvar="TENANT_DISCOVERY_OFFLINE",
+        show_envvar=True,
+    ),
 ) -> None:
-    """
-    Start a new tenant discovery session.
+    """Start a new tenant discovery session."""
 
-    Uses settings from environment (.env or TD_API_BASE_URL).
-    POSTs to /tenant-discovery/sessions with name/description.
+    # Uses settings from environment (.env or TD_API_BASE_URL) unless --offline or TENANT_DISCOVERY_OFFLINE=1.
+    # POSTs to /tenant-discovery/sessions with name/description, or returns stub when offline.
 
-    Example:
-      tenant-discovery start --name demo-session --description demo
-    """
+    # Example:
+    #   tenant-discovery start --name demo-session --description demo
+    #   tenant-discovery start --offline --name smoke
     import httpx
 
-    # Prefer env var, fallback to localhost for API endpoint root
+    offline_mode = get_offline_value(offline)
+    if offline_mode:
+        # STUB/OFFLINE mode: generate a fake UUID and minimally stubbed response
+        session_id = str(uuid.uuid4())
+        data = {
+            "id": session_id,
+            "name": name,
+            "description": description or "",
+            "status": "pending",
+            "offline": True,
+        }
+        console.print(
+            "[yellow]Running in offline/mock mode – no network/API call performed[/yellow]"
+        )
+        console.print("[green]✓ Discovery session started (OFFLINE)![/green]")
+        console.print(f"[bold]Session ID:[/bold] {session_id}")
+        table = Table(title="Stubbed Session Details", show_header=True)
+        for k, v in data.items():
+            table.add_row(str(k), str(v))
+        console.print(table)
+        sys.exit(0)
+
+    # Otherwise - real API call
     api_base_url = os.environ.get("TD_API_BASE_URL", "http://localhost:8000")
     url = f"{api_base_url.rstrip('/')}/tenant-discovery/sessions"
     payload = {"name": name}
@@ -443,7 +540,7 @@ def start_command(
             resp = client.post(url, json=payload)
         if resp.status_code in (200, 201):
             data = resp.json()
-            session_id = data.get("id", "[unknown id]")
+            session_id = str(data.get("id", "[unknown id]"))
             console.print("[green]✓ Discovery session started![/green]")
             console.print(f"[bold]Session ID:[/bold] {session_id}")
             table = Table(title="Session Details", show_header=True)
@@ -459,10 +556,14 @@ def start_command(
             console.print(f"[red]✗ Failed to start session: {resp.status_code}[/red]")
             console.print(f"[yellow]Details:[/yellow] {err}")
             sys.exit(resp.status_code or 1)
-    except httpx.HTTPStatusError as e:
-        console.print(f"[red]✗ Server returned HTTP error: {e.response.status_code}[/red]")
-        console.print(e.response.text)
-        sys.exit(e.response.status_code or 1)
+    except httpx.RequestError as e:
+        # Connection/network error: print a friendly offline suggestion, exit code 2
+        console.print(f"[red]✗ Could not connect to backend API: {e}[/red]")
+        console.print(
+            "[yellow]You can retry after starting the API service,[/yellow] "
+            "or run with [bold]--offline[/bold] for demo mode (no backend required)."
+        )
+        sys.exit(2)
     except Exception as e:
         import traceback
 
