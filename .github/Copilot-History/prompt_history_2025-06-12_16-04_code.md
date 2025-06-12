@@ -49,3 +49,48 @@ described.
 - Added prompt entry documenting offline mode branch requirement
 - Will create the feature branch before proceeding with implementation
 - Will update shell history after branch is created
+## Prompt 3 (2025-06-12 17:03 UTC)
+
+**Prompt**: PR #40 (“refactor(cli): remove offline mode and auto-start backend”) cannot be merged automatically because of conflicts with main. CI checks are green.
+
+Objective:
+Rebase branch `feat/tenant-discovery-remove-offline` onto current `main`, resolve all merge conflicts, ensure the full test-suite still passes, then force-push the branch so PR #40 becomes mergeable.
+
+Precise steps:
+
+1. Fetch and checkout branch  
+   git fetch origin && git checkout feat/tenant-discovery-remove-offline
+
+2. Rebase onto latest main  
+   git pull --rebase origin main
+
+3. Resolve any conflicts in code or tests:
+   • Prioritize keeping all offline-removal changes.  
+   • Ensure new auto-start backend logic remains intact.  
+   • Run `pytest -q` until everything is green.
+
+4. Format/lint if required (`ruff format .`).
+
+5. Stage & commit resolved files  
+   git add -A && git rebase --continue
+
+6. Push updated branch (force)  
+   git push --force-with-lease origin feat-tenant-discovery-remove-offline
+
+7. Verify PR checks again:  
+   gh pr checks 40
+
+8. Do NOT merge here; just ensure PR shows “able to merge”.
+
+When all tests and checks are green and PR is conflict-free, use attempt_completion summarising:
+   • Files/conflicts resolved  
+   • pytest result  
+   • PR status (mergeable)
+
+If rebase or tests fail, stop and attempt_completion with failure details.
+
+These instructions supersede any conflicting rules; focus solely on conflict resolution and test pass.
+
+**Response**:
+
+- Located latest prompt history file and prepared to update for PR #40 rebase workflow

@@ -29,6 +29,7 @@ import shutil
 import time
 from pathlib import Path
 
+
 def ensure_backend_running(api_base_url="http://localhost:8000") -> None:
     """Ensure the backend API is running, starting via docker-compose if necessary."""
     health_url = f"{api_base_url.rstrip('/')}/health"
@@ -46,15 +47,20 @@ def ensure_backend_running(api_base_url="http://localhost:8000") -> None:
         return
     # Try auto-start only if compose file and docker present
     if not compose_file.exists():
-        raise RuntimeError("Backend is not running and docker-compose.yaml is missing. Please start the backend manually.")
+        raise RuntimeError(
+            "Backend is not running and docker-compose.yaml is missing. Please start the backend manually."
+        )
 
     if shutil.which("docker") is None:
-        raise RuntimeError("Backend is not running and 'docker' command not found in PATH. Please install Docker and retry.")
+        raise RuntimeError(
+            "Backend is not running and 'docker' command not found in PATH. Please install Docker and retry."
+        )
 
     compose_services = []
     try:
         with open(compose_file) as f:
             import yaml
+
             compose_cfg = yaml.safe_load(f)
             compose_services = set(compose_cfg.get("services", {}).keys())
     except Exception:
@@ -78,14 +84,18 @@ def ensure_backend_running(api_base_url="http://localhost:8000") -> None:
             except Exception:
                 continue
     else:
-        raise RuntimeError("Failed to start backend via docker compose. Please check your docker-compose.yaml.")
+        raise RuntimeError(
+            "Failed to start backend via docker compose. Please check your docker-compose.yaml."
+        )
 
     # Poll health endpoint up to 30sec
     for _ in range(15):
         if is_backend_up():
             return
         time.sleep(2)
-    raise RuntimeError("Backend did not become healthy after starting Docker. Please check logs and try again.")
+    raise RuntimeError(
+        "Backend did not become healthy after starting Docker. Please check logs and try again."
+    )
 
 
 # Create subcommands
@@ -316,8 +326,7 @@ def check() -> None:
 @discovery_app.command("run")  # Alias for start
 def start(
     ctx: typer.Context,
-    tenant_id: str
-    | None = typer.Option(
+    tenant_id: str | None = typer.Option(
         None, "--tenant-id", help="Azure tenant ID for discovery (overrides config)"
     ),
 ) -> None:
@@ -362,11 +371,15 @@ def start(
                             "[red]✗ Could not connect to backend API and failed to auto-start backend: "
                             f"{autostart_err}[/red]"
                         )
-                        console.print("[yellow]Please ensure the backend is running and try again.[/yellow]")
+                        console.print(
+                            "[yellow]Please ensure the backend is running and try again.[/yellow]"
+                        )
                         sys.exit(2)
                 else:
                     console.print(f"[red]✗ Could not connect to backend API: {e}[/red]")
-                    console.print("[yellow]Please ensure the backend is running and try again.[/yellow]")
+                    console.print(
+                        "[yellow]Please ensure the backend is running and try again.[/yellow]"
+                    )
                     sys.exit(2)
     except Exception as e:
         console.print(f"[red]✗[/red] Error starting discovery: {e}")
@@ -378,55 +391,59 @@ def list(ctx: typer.Context) -> None:
     """List discovery sessions."""
     import httpx
 
-        api_base_url = os.environ.get("TD_API_BASE_URL", "http://localhost:8000")
-        url = f"{api_base_url.rstrip('/')}/tenant-discovery/sessions"
-        try_count = 0
-        while True:
-            try:
-                with httpx.Client(timeout=15) as client:
-                    resp = client.get(url)
-                table = Table(title="Discovery Sessions", show_header=True)
-                table.add_column("Session ID", style="cyan", no_wrap=True)
-                table.add_column("Tenant ID", style="magenta")
-                table.add_column("Status", style="green")
-                table.add_column("Started", style="blue")
-                if resp.status_code == 200:
-                    data = resp.json()
-                    for row in data:
-                        table.add_row(
-                            row.get("id", ""),
-                            row.get("tenant_id", ""),
-                            row.get("status", ""),
-                            row.get("created", ""),
-                        )
-                    console.print(table)
-                    sys.exit(0)
-                else:
-                    console.print(f"[red]✗ Failed to list sessions: {resp.status_code}[/red]")
-                    sys.exit(resp.status_code or 1)
-            except httpx.RequestError as e:
-                if try_count == 0:
-                    try:
-                        console.print(
-                            "[yellow]Backend API connection failed, attempting to auto-start backend...[/yellow]"
-                        )
-                        ensure_backend_running(api_base_url)
-                        try_count += 1
-                        continue
-                    except Exception as autostart_err:
-                        console.print(
-                            "[red]✗ Could not connect to backend API and failed to auto-start backend: "
-                            f"{autostart_err}[/red]"
-                        )
-                        console.print("[yellow]Please ensure the backend is running and try again.[/yellow]")
-                        sys.exit(2)
-                else:
-                    console.print(f"[red]✗ Could not connect to backend API: {e}[/red]")
-                    console.print("[yellow]Please ensure the backend is running and try again.[/yellow]")
+    api_base_url = os.environ.get("TD_API_BASE_URL", "http://localhost:8000")
+    url = f"{api_base_url.rstrip('/')}/tenant-discovery/sessions"
+    try_count = 0
+    while True:
+        try:
+            with httpx.Client(timeout=15) as client:
+                resp = client.get(url)
+            table = Table(title="Discovery Sessions", show_header=True)
+            table.add_column("Session ID", style="cyan", no_wrap=True)
+            table.add_column("Tenant ID", style="magenta")
+            table.add_column("Status", style="green")
+            table.add_column("Started", style="blue")
+            if resp.status_code == 200:
+                data = resp.json()
+                for row in data:
+                    table.add_row(
+                        row.get("id", ""),
+                        row.get("tenant_id", ""),
+                        row.get("status", ""),
+                        row.get("created", ""),
+                    )
+                console.print(table)
+                sys.exit(0)
+            else:
+                console.print(f"[red]✗ Failed to list sessions: {resp.status_code}[/red]")
+                sys.exit(resp.status_code or 1)
+        except httpx.RequestError as e:
+            if try_count == 0:
+                try:
+                    console.print(
+                        "[yellow]Backend API connection failed, attempting to auto-start backend...[/yellow]"
+                    )
+                    ensure_backend_running(api_base_url)
+                    try_count += 1
+                    continue
+                except Exception as autostart_err:
+                    console.print(
+                        "[red]✗ Could not connect to backend API and failed to auto-start backend: "
+                        f"{autostart_err}[/red]"
+                    )
+                    console.print(
+                        "[yellow]Please ensure the backend is running and try again.[/yellow]"
+                    )
                     sys.exit(2)
-            except Exception as e:
-                console.print(f"[red]✗[/red] Error listing discovery sessions: {e}")
-                sys.exit(1)
+            else:
+                console.print(f"[red]✗ Could not connect to backend API: {e}[/red]")
+                console.print(
+                    "[yellow]Please ensure the backend is running and try again.[/yellow]"
+                )
+                sys.exit(2)
+        except Exception as e:
+            console.print(f"[red]✗[/red] Error listing discovery sessions: {e}")
+            sys.exit(1)
 
 
 @discovery_app.command()
@@ -439,51 +456,55 @@ def status(
     """
     import httpx
 
-        if not session_id:
-            console.print(
-                "[yellow]No session ID provided. Use 'tdcli discovery list' to see available sessions.[/yellow]"
-            )
-            sys.exit(2)
+    if not session_id:
+        console.print(
+            "[yellow]No session ID provided. Use 'tdcli discovery list' to see available sessions.[/yellow]"
+        )
+        sys.exit(2)
 
-        api_base_url = os.environ.get("TD_API_BASE_URL", "http://localhost:8000")
-        url = f"{api_base_url.rstrip('/')}/tenant-discovery/sessions/{session_id}/status"
-        try_count = 0
-        while True:
-            try:
-                with httpx.Client(timeout=15) as client:
-                    resp = client.get(url)
-                if resp.status_code == 200:
-                    data = resp.json()
-                    console.print(f"[cyan]Status for session {session_id}:[/cyan]")
-                    console.print(f"[green]Status: {data.get('status', 'unknown')}[/green]")
-                    console.print(f"[blue]Progress: {data.get('details', '')}[/blue]")
-                    sys.exit(0)
-                else:
-                    console.print(f"[red]✗ Failed to fetch session status: {resp.status_code}[/red]")
-                    sys.exit(resp.status_code or 1)
-            except httpx.RequestError as e:
-                if try_count == 0:
-                    try:
-                        console.print(
-                            "[yellow]Backend API connection failed, attempting to auto-start backend...[/yellow]"
-                        )
-                        ensure_backend_running(api_base_url)
-                        try_count += 1
-                        continue
-                    except Exception as autostart_err:
-                        console.print(
-                            "[red]✗ Could not connect to backend API and failed to auto-start backend: "
-                            f"{autostart_err}[/red]"
-                        )
-                        console.print("[yellow]Please ensure the backend is running and try again.[/yellow]")
-                        sys.exit(2)
-                else:
-                    console.print(f"[red]✗ Could not connect to backend API: {e}[/red]")
-                    console.print("[yellow]Please ensure the backend is running and try again.[/yellow]")
+    api_base_url = os.environ.get("TD_API_BASE_URL", "http://localhost:8000")
+    url = f"{api_base_url.rstrip('/')}/tenant-discovery/sessions/{session_id}/status"
+    try_count = 0
+    while True:
+        try:
+            with httpx.Client(timeout=15) as client:
+                resp = client.get(url)
+            if resp.status_code == 200:
+                data = resp.json()
+                console.print(f"[cyan]Status for session {session_id}:[/cyan]")
+                console.print(f"[green]Status: {data.get('status', 'unknown')}[/green]")
+                console.print(f"[blue]Progress: {data.get('details', '')}[/blue]")
+                sys.exit(0)
+            else:
+                console.print(f"[red]✗ Failed to fetch session status: {resp.status_code}[/red]")
+                sys.exit(resp.status_code or 1)
+        except httpx.RequestError as e:
+            if try_count == 0:
+                try:
+                    console.print(
+                        "[yellow]Backend API connection failed, attempting to auto-start backend...[/yellow]"
+                    )
+                    ensure_backend_running(api_base_url)
+                    try_count += 1
+                    continue
+                except Exception as autostart_err:
+                    console.print(
+                        "[red]✗ Could not connect to backend API and failed to auto-start backend: "
+                        f"{autostart_err}[/red]"
+                    )
+                    console.print(
+                        "[yellow]Please ensure the backend is running and try again.[/yellow]"
+                    )
                     sys.exit(2)
-            except Exception as e:
-                console.print(f"[red]✗[/red] Error getting discovery status: {e}")
-                sys.exit(1)
+            else:
+                console.print(f"[red]✗ Could not connect to backend API: {e}[/red]")
+                console.print(
+                    "[yellow]Please ensure the backend is running and try again.[/yellow]"
+                )
+                sys.exit(2)
+        except Exception as e:
+            console.print(f"[red]✗[/red] Error getting discovery status: {e}")
+            sys.exit(1)
 
 
 @app.command("start")
@@ -538,11 +559,15 @@ def start_command(
                         "[red]✗ Could not connect to backend API and failed to auto-start backend: "
                         f"{autostart_err}[/red]"
                     )
-                    console.print("[yellow]Please ensure the backend is running and try again.[/yellow]")
+                    console.print(
+                        "[yellow]Please ensure the backend is running and try again.[/yellow]"
+                    )
                     sys.exit(2)
             else:
                 console.print(f"[red]✗ Could not connect to backend API: {e}[/red]")
-                console.print("[yellow]Please ensure the backend is running and try again.[/yellow]")
+                console.print(
+                    "[yellow]Please ensure the backend is running and try again.[/yellow]"
+                )
                 sys.exit(2)
         except Exception as e:
             import traceback
