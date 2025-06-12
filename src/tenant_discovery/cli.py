@@ -19,31 +19,73 @@ app = typer.Typer(
 )
 
 
-# Add global --offline option to the main app only
-@app.callback()
-def main_callback(
-    ctx: typer.Context,
-    offline: bool = typer.Option(
-        False,
-        "--offline",
-        help="Run CLI in offline/mock mode (no API calls)",
-        envvar=None,  # Remove autoload so only checked by get_offline_value
-        show_envvar=True,
-    ),
-) -> None:
-    """Set offline mode in global context for all sub-apps/commands."""
-    ctx.obj = {"offline": get_offline_value(offline) or bool(os.getenv("TENANT_DISCOVERY_OFFLINE"))}
+# No offline/global options required for CLI
 
 
-# Global offline mode management
-def get_offline_value(offline_flag: bool) -> bool:
-    env_offline = os.environ.get("TENANT_DISCOVERY_OFFLINE", None)
-    if env_offline is not None:
-        if env_offline.strip() in ("1", "true", "True", "yes", "on", "YES", "TRUE", "ON"):
-            return True
-        if env_offline.strip() in ("0", "false", "False", "no", "off", "NO", "FALSE", "OFF"):
+# --- API Auto-Start Helper ---
+import httpx
+import subprocess
+import shutil
+import time
+from pathlib import Path
+
+def ensure_backend_running(api_base_url="http://localhost:8000") -> None:
+    """Ensure the backend API is running, starting via docker-compose if necessary."""
+    health_url = f"{api_base_url.rstrip('/')}/health"
+    compose_file = Path("docker-compose.yaml")
+
+    def is_backend_up() -> bool:
+        try:
+            with httpx.Client(timeout=3) as client:
+                resp = client.get(health_url)
+            return resp.status_code == 200
+        except Exception:
             return False
-    return offline_flag
+
+    if is_backend_up():
+        return
+    # Try auto-start only if compose file and docker present
+    if not compose_file.exists():
+        raise RuntimeError("Backend is not running and docker-compose.yaml is missing. Please start the backend manually.")
+
+    if shutil.which("docker") is None:
+        raise RuntimeError("Backend is not running and 'docker' command not found in PATH. Please install Docker and retry.")
+
+    compose_services = []
+    try:
+        with open(compose_file) as f:
+            import yaml
+            compose_cfg = yaml.safe_load(f)
+            compose_services = set(compose_cfg.get("services", {}).keys())
+    except Exception:
+        # fallback: try both service names
+        compose_services = []
+
+    service_names = ["api", "simbuilder_api"]
+    tried_services = []
+    for candidate in service_names:
+        if not compose_services or candidate in compose_services:
+            try:
+                subprocess.run(
+                    ["docker", "compose", "up", "-d", candidate],
+                    check=True,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    timeout=20,
+                )
+                tried_services.append(candidate)
+                break
+            except Exception:
+                continue
+    else:
+        raise RuntimeError("Failed to start backend via docker compose. Please check your docker-compose.yaml.")
+
+    # Poll health endpoint up to 30sec
+    for _ in range(15):
+        if is_backend_up():
+            return
+        time.sleep(2)
+    raise RuntimeError("Backend did not become healthy after starting Docker. Please check logs and try again.")
 
 
 # Create subcommands
@@ -280,39 +322,52 @@ def start(
     ),
 ) -> None:
     """Start tenant resource discovery."""
-    offline_mode = ctx.obj.get("offline", False)
+    import httpx
+
     try:
-        if offline_mode:
-            _stub_discovery_start(tenant_id)
-        else:
-            settings = get_td_settings()
-            # Use provided tenant_id or fall back to settings
-            effective_tenant_id = tenant_id or settings.azure_tenant_id
+        settings = get_td_settings()
+        effective_tenant_id = tenant_id or settings.azure_tenant_id
 
-        # Create discovery session via API
-        session_data = {
-            "tenant_id": effective_tenant_id,
-            "description": f"CLI discovery session for tenant {effective_tenant_id}",
-            "config": {},
-        }
-
-        with _get_api_client() as client:
-            response = client.post("/tenant-discovery/sessions", json=session_data)
-
-            if response.status_code != 200:
-                _handle_api_error(response)
-
-            session = response.json()
-            session_id = session["id"]
-
-            console.print("[green]✓[/green] Discovery session started")
-            console.print(f"[cyan]Session ID:[/cyan] {session_id}")
-            console.print(f"[cyan]Tenant ID:[/cyan] {effective_tenant_id}")
-            console.print(f"[cyan]Status:[/cyan] {session['status']}")
-
-    except httpx.RequestError as e:
-        console.print(f"[red]✗[/red] Failed to connect to API: {e}")
-        sys.exit(1)
+        api_base_url = os.environ.get("TD_API_BASE_URL", "http://localhost:8000")
+        url = f"{api_base_url.rstrip('/')}/tenant-discovery/sessions"
+        payload = {"tenant_id": effective_tenant_id}
+        try_count = 0
+        while True:
+            try:
+                with httpx.Client(timeout=15) as client:
+                    resp = client.post(url, json=payload)
+                if resp.status_code in (200, 201):
+                    console.print(f"[green]Discovery started for {effective_tenant_id}[/green]")
+                    sys.exit(0)
+                else:
+                    try:
+                        err = resp.json()
+                    except Exception:
+                        err = resp.text
+                    console.print(f"[red]✗ Failed to start discovery: {resp.status_code}[/red]")
+                    console.print(f"[yellow]Details:[/yellow] {err}")
+                    sys.exit(resp.status_code or 1)
+            except httpx.RequestError as e:
+                # On connection refusal, try backend auto-start then retry only once
+                if try_count == 0:
+                    try:
+                        console.print(
+                            "[yellow]Backend API connection failed, attempting to auto-start backend...[/yellow]"
+                        )
+                        ensure_backend_running(api_base_url)
+                        try_count += 1
+                        continue
+                    except Exception as autostart_err:
+                        console.print(
+                            "[red]✗ Could not connect to backend API and failed to auto-start backend: "
+                            f"{autostart_err}[/red]"
+                        )
+                        console.print("[yellow]Please ensure the backend is running and try again.[/yellow]")
+                        sys.exit(2)
+                else:
+                    console.print(f"[red]✗ Could not connect to backend API: {e}[/red]")
+                    console.print("[yellow]Please ensure the backend is running and try again.[/yellow]")
+                    sys.exit(2)
     except Exception as e:
         console.print(f"[red]✗[/red] Error starting discovery: {e}")
         sys.exit(1)
@@ -320,65 +375,58 @@ def start(
 
 @discovery_app.command()
 def list(ctx: typer.Context) -> None:
-    """List discovery sessions. When offline, returns a single stub/demo session."""
+    """List discovery sessions."""
     import httpx
 
-    offline_mode = ctx.obj.get("offline", False)
-    if offline_mode:
-        _stub_discovery_list()
-    try:
-        with _get_api_client() as client:
-            response = client.get("/tenant-discovery/sessions")
-
-            if response.status_code != 200:
-                _handle_api_error(response)
-
-            data = response.json()
-            sessions = data.get("sessions", [])
-            total = data.get("total", 0)
-
-            if not sessions:
-                console.print("[yellow]No discovery sessions found.[/yellow]")
-                return
-
-            table = Table(title=f"Discovery Sessions ({total} total)", show_header=True)
-            table.add_column("Session ID", style="cyan", no_wrap=True)
-            table.add_column("Tenant ID", style="magenta")
-            table.add_column("Status", style="green")
-            table.add_column("Created", style="blue")
-            table.add_column("Description", style="white")
-
-            for session in sessions:
-                # Truncate session ID for display
-                session_id_short = str(session["id"])[:8] + "..."
-                created_at = session["created_at"].split("T")[0]  # Just the date part
-                description = session.get("description", "")[:50]  # Truncate description
-                if len(session.get("description", "")) > 50:
-                    description += "..."
-
-                # Color code status
-                status = session["status"]
-                if status == "completed":
-                    status_display = f"[green]{status}[/green]"
-                elif status == "failed":
-                    status_display = f"[red]{status}[/red]"
-                elif status == "running":
-                    status_display = f"[yellow]{status}[/yellow]"
+        api_base_url = os.environ.get("TD_API_BASE_URL", "http://localhost:8000")
+        url = f"{api_base_url.rstrip('/')}/tenant-discovery/sessions"
+        try_count = 0
+        while True:
+            try:
+                with httpx.Client(timeout=15) as client:
+                    resp = client.get(url)
+                table = Table(title="Discovery Sessions", show_header=True)
+                table.add_column("Session ID", style="cyan", no_wrap=True)
+                table.add_column("Tenant ID", style="magenta")
+                table.add_column("Status", style="green")
+                table.add_column("Started", style="blue")
+                if resp.status_code == 200:
+                    data = resp.json()
+                    for row in data:
+                        table.add_row(
+                            row.get("id", ""),
+                            row.get("tenant_id", ""),
+                            row.get("status", ""),
+                            row.get("created", ""),
+                        )
+                    console.print(table)
+                    sys.exit(0)
                 else:
-                    status_display = status
-
-                table.add_row(
-                    session_id_short, session["tenant_id"], status_display, created_at, description
-                )
-
-            console.print(table)
-
-    except httpx.RequestError as e:
-        console.print(f"[red]✗[/red] Failed to connect to API: {e}")
-        sys.exit(1)
-    except Exception as e:
-        console.print(f"[red]✗[/red] Error listing discovery sessions: {e}")
-        sys.exit(1)
+                    console.print(f"[red]✗ Failed to list sessions: {resp.status_code}[/red]")
+                    sys.exit(resp.status_code or 1)
+            except httpx.RequestError as e:
+                if try_count == 0:
+                    try:
+                        console.print(
+                            "[yellow]Backend API connection failed, attempting to auto-start backend...[/yellow]"
+                        )
+                        ensure_backend_running(api_base_url)
+                        try_count += 1
+                        continue
+                    except Exception as autostart_err:
+                        console.print(
+                            "[red]✗ Could not connect to backend API and failed to auto-start backend: "
+                            f"{autostart_err}[/red]"
+                        )
+                        console.print("[yellow]Please ensure the backend is running and try again.[/yellow]")
+                        sys.exit(2)
+                else:
+                    console.print(f"[red]✗ Could not connect to backend API: {e}[/red]")
+                    console.print("[yellow]Please ensure the backend is running and try again.[/yellow]")
+                    sys.exit(2)
+            except Exception as e:
+                console.print(f"[red]✗[/red] Error listing discovery sessions: {e}")
+                sys.exit(1)
 
 
 @discovery_app.command()
@@ -388,188 +436,120 @@ def status(
 ) -> None:
     """
     Show status of a discovery session.
-    When offline, always returns 'pending' for demo.
     """
     import httpx
 
-    offline_mode = ctx.obj.get("offline", False)
-    if offline_mode:
-        _stub_discovery_status(session_id)
-    try:
         if not session_id:
             console.print(
                 "[yellow]No session ID provided. Use 'tdcli discovery list' to see available sessions.[/yellow]"
             )
-            return
+            sys.exit(2)
 
-        with _get_api_client() as client:
-            # Try to parse as UUID, if it fails, assume it's a short form
+        api_base_url = os.environ.get("TD_API_BASE_URL", "http://localhost:8000")
+        url = f"{api_base_url.rstrip('/')}/tenant-discovery/sessions/{session_id}/status"
+        try_count = 0
+        while True:
             try:
-                UUID(session_id)
-                status_url = f"/tenant-discovery/sessions/{session_id}/status"
-                detail_url = f"/tenant-discovery/sessions/{session_id}"
-            except ValueError:
-                # Short form ID - need to get full sessions list to find match
-                list_response = client.get("/tenant-discovery/sessions")
-                if list_response.status_code != 200:
-                    _handle_api_error(list_response)
-
-                data = list_response.json()
-                sessions = data.get("sessions", [])
-                matching_session = None
-
-                for session in sessions:
-                    if str(session["id"]).startswith(session_id):
-                        matching_session = session
-                        break
-
-                if not matching_session:
-                    console.print(f"[red]✗[/red] No session found matching ID: {session_id}")
-                    sys.exit(1)
-
-                full_id = matching_session["id"]
-                status_url = f"/tenant-discovery/sessions/{full_id}/status"
-                detail_url = f"/tenant-discovery/sessions/{full_id}"
-
-            # Get status
-            status_response = client.get(status_url)
-            if status_response.status_code != 200:
-                _handle_api_error(status_response)
-
-            # Get full details
-            detail_response = client.get(detail_url)
-            if detail_response.status_code != 200:
-                _handle_api_error(detail_response)
-
-            status_data = status_response.json()
-            detail_data = detail_response.json()
-
-            console.print("[cyan]Discovery Session Status[/cyan]")
-            console.print(f"[bold]Session ID:[/bold] {detail_data['id']}")
-            console.print(f"[bold]Tenant ID:[/bold] {detail_data['tenant_id']}")
-
-            # Color code status
-            status = detail_data["status"]
-            if status == "completed":
-                status_display = f"[green]{status}[/green]"
-            elif status == "failed":
-                status_display = f"[red]{status}[/red]"
-            elif status == "running":
-                status_display = f"[yellow]{status}[/yellow]"
-            else:
-                status_display = status
-
-            console.print(f"[bold]Status:[/bold] {status_display}")
-            console.print(f"[bold]Created:[/bold] {detail_data['created_at']}")
-            console.print(f"[bold]Updated:[/bold] {detail_data['updated_at']}")
-
-            if detail_data.get("completed_at"):
-                console.print(f"[bold]Completed:[/bold] {detail_data['completed_at']}")
-
-            if detail_data.get("error_message"):
-                console.print(f"[bold]Error:[/bold] [red]{detail_data['error_message']}[/red]")
-
-            if detail_data.get("description"):
-                console.print(f"[bold]Description:[/bold] {detail_data['description']}")
-
-            # Show progress if available
-            progress = status_data.get("progress", 0)
-            console.print(f"[bold]Progress:[/bold] {progress}%")
-
-    except httpx.RequestError as e:
-        console.print(f"[red]✗[/red] Failed to connect to API: {e}")
-        sys.exit(1)
-    except Exception as e:
-        console.print(f"[red]✗[/red] Error getting discovery status: {e}")
-        sys.exit(1)
+                with httpx.Client(timeout=15) as client:
+                    resp = client.get(url)
+                if resp.status_code == 200:
+                    data = resp.json()
+                    console.print(f"[cyan]Status for session {session_id}:[/cyan]")
+                    console.print(f"[green]Status: {data.get('status', 'unknown')}[/green]")
+                    console.print(f"[blue]Progress: {data.get('details', '')}[/blue]")
+                    sys.exit(0)
+                else:
+                    console.print(f"[red]✗ Failed to fetch session status: {resp.status_code}[/red]")
+                    sys.exit(resp.status_code or 1)
+            except httpx.RequestError as e:
+                if try_count == 0:
+                    try:
+                        console.print(
+                            "[yellow]Backend API connection failed, attempting to auto-start backend...[/yellow]"
+                        )
+                        ensure_backend_running(api_base_url)
+                        try_count += 1
+                        continue
+                    except Exception as autostart_err:
+                        console.print(
+                            "[red]✗ Could not connect to backend API and failed to auto-start backend: "
+                            f"{autostart_err}[/red]"
+                        )
+                        console.print("[yellow]Please ensure the backend is running and try again.[/yellow]")
+                        sys.exit(2)
+                else:
+                    console.print(f"[red]✗ Could not connect to backend API: {e}[/red]")
+                    console.print("[yellow]Please ensure the backend is running and try again.[/yellow]")
+                    sys.exit(2)
+            except Exception as e:
+                console.print(f"[red]✗[/red] Error getting discovery status: {e}")
+                sys.exit(1)
 
 
 @app.command("start")
 def start_command(
     name: str = typer.Option(..., "--name", help="Session name (required)"),
     description: str = typer.Option(None, "--description", help="Optional session description"),
-    offline: bool = typer.Option(
-        False,
-        "--offline",
-        help="Run CLI in offline/mock mode (no API calls)",
-        envvar="TENANT_DISCOVERY_OFFLINE",
-        show_envvar=True,
-    ),
 ) -> None:
     """Start a new tenant discovery session."""
 
-    # Uses settings from environment (.env or TD_API_BASE_URL) unless --offline or TENANT_DISCOVERY_OFFLINE=1.
-    # POSTs to /tenant-discovery/sessions with name/description, or returns stub when offline.
-
-    # Example:
-    #   tenant-discovery start --name demo-session --description demo
-    #   tenant-discovery start --offline --name smoke
     import httpx
 
-    offline_mode = get_offline_value(offline)
-    if offline_mode:
-        # STUB/OFFLINE mode: generate a fake UUID and minimally stubbed response
-        session_id = str(uuid.uuid4())
-        data = {
-            "id": session_id,
-            "name": name,
-            "description": description or "",
-            "status": "pending",
-            "offline": True,
-        }
-        console.print(
-            "[yellow]Running in offline/mock mode – no network/API call performed[/yellow]"
-        )
-        console.print("[green]✓ Discovery session started (OFFLINE)![/green]")
-        console.print(f"[bold]Session ID:[/bold] {session_id}")
-        table = Table(title="Stubbed Session Details", show_header=True)
-        for k, v in data.items():
-            table.add_row(str(k), str(v))
-        console.print(table)
-        sys.exit(0)
-
-    # Otherwise - real API call
     api_base_url = os.environ.get("TD_API_BASE_URL", "http://localhost:8000")
     url = f"{api_base_url.rstrip('/')}/tenant-discovery/sessions"
     payload = {"name": name}
     if description is not None:
         payload["description"] = description
 
-    try:
-        with httpx.Client(timeout=15) as client:
-            resp = client.post(url, json=payload)
-        if resp.status_code in (200, 201):
-            data = resp.json()
-            session_id = str(data.get("id", "[unknown id]"))
-            console.print("[green]✓ Discovery session started![/green]")
-            console.print(f"[bold]Session ID:[/bold] {session_id}")
-            table = Table(title="Session Details", show_header=True)
-            for k, v in data.items():
-                table.add_row(str(k), str(v))
-            console.print(table)
-            sys.exit(0)
-        else:
-            try:
-                err = resp.json()
-            except Exception:
-                err = resp.text
-            console.print(f"[red]✗ Failed to start session: {resp.status_code}[/red]")
-            console.print(f"[yellow]Details:[/yellow] {err}")
-            sys.exit(resp.status_code or 1)
-    except httpx.RequestError as e:
-        # Connection/network error: print a friendly offline suggestion, exit code 2
-        console.print(f"[red]✗ Could not connect to backend API: {e}[/red]")
-        console.print(
-            "[yellow]You can retry after starting the API service,[/yellow] "
-            "or run with [bold]--offline[/bold] for demo mode (no backend required)."
-        )
-        sys.exit(2)
-    except Exception as e:
-        import traceback
+    try_count = 0
+    while True:
+        try:
+            with httpx.Client(timeout=15) as client:
+                resp = client.post(url, json=payload)
+            if resp.status_code in (200, 201):
+                data = resp.json()
+                session_id = str(data.get("id", "[unknown id]"))
+                console.print("[green]✓ Discovery session started![/green]")
+                console.print(f"[bold]Session ID:[/bold] {session_id}")
+                table = Table(title="Session Details", show_header=True)
+                for k, v in data.items():
+                    table.add_row(str(k), str(v))
+                console.print(table)
+                sys.exit(0)
+            else:
+                try:
+                    err = resp.json()
+                except Exception:
+                    err = resp.text
+                console.print(f"[red]✗ Failed to start session: {resp.status_code}[/red]")
+                console.print(f"[yellow]Details:[/yellow] {err}")
+                sys.exit(resp.status_code or 1)
+        except httpx.RequestError as e:
+            if try_count == 0:
+                try:
+                    console.print(
+                        "[yellow]Backend API connection failed, attempting to auto-start backend...[/yellow]"
+                    )
+                    ensure_backend_running(api_base_url)
+                    try_count += 1
+                    continue
+                except Exception as autostart_err:
+                    console.print(
+                        "[red]✗ Could not connect to backend API and failed to auto-start backend: "
+                        f"{autostart_err}[/red]"
+                    )
+                    console.print("[yellow]Please ensure the backend is running and try again.[/yellow]")
+                    sys.exit(2)
+            else:
+                console.print(f"[red]✗ Could not connect to backend API: {e}[/red]")
+                console.print("[yellow]Please ensure the backend is running and try again.[/yellow]")
+                sys.exit(2)
+        except Exception as e:
+            import traceback
 
-        console.print(f"[red]✗ Network or unexpected error: {e}[/red]")
-        console.print(f"[yellow]TRACEBACK:[/yellow]\n{traceback.format_exc()}")
-        sys.exit(1)
+            console.print(f"[red]✗ Network or unexpected error: {e}[/red]")
+            console.print(f"[yellow]TRACEBACK:[/yellow]\n{traceback.format_exc()}")
+            sys.exit(1)
 
 
 if __name__ == "__main__":
