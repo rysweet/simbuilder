@@ -165,3 +165,7 @@ git fetch origin
 ```bash
 git checkout -B feat/td-remove-offline-clean origin/main
 # Create new clean branch from main to replace PR #40 with rebased/fresh commits as per rebase/PR repair workflow.
+```bash
+git checkout --ours .github/Copilot-History/shell_history_2025-06-13_00-24_code.md
+# Resolve cherry-pick conflict in shell history file during PR #40 rebase/replacement sequence; keep current project session history as canonical.
+```
