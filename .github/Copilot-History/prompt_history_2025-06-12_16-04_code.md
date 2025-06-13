@@ -94,3 +94,44 @@ These instructions supersede any conflicting rules; focus solely on conflict res
 **Response**:
 
 - Located latest prompt history file and prepared to update for PR #40 rebase workflow
+
+## Prompt 4 (2025-06-13 01:10 UTC)
+
+**Prompt**: 
+Context:
+User chose to rebase branch onto main with no merge commits. Current branch feat-tenant-discovery-remove-offline contains merge commits; we need to reset it to a linear history.
+
+Execution plan:
+
+1. `git fetch origin`
+2. Hard rebase branch onto main (interactive squashing if needed):  
+   git checkout feat-tenant-discovery-remove-offline  
+   git rebase --rebase-merges --onto origin/main $(git merge-base origin/main HEAD)
+
+   (If merge conflicts arise, resolve preserving backend auto-start logic and updated tests, then `git rebase --continue`.)
+
+3. Run `ruff format .` then `pytest -q` – must pass.
+
+4. `git push --force-with-lease origin feat-tenant-discovery-remove-offline`
+
+5. Verify CI kicks off: `gh pr checks 40`.
+
+6. If all checks succeed and PR shows mergeable, merge:  
+   gh pr merge 40 --merge --delete-branch --subject "refactor(cli): remove offline mode and auto-start backend"
+
+7. attempt_completion summarising:
+   • Rebase success / conflicts resolved  
+   • pytest result  
+   • Force-push output  
+   • Merge confirmation SHA (or error if merge still blocked)
+
+Stop and attempt_completion with failure details if tests fail or rebase gets stuck.
+
+Perform only the steps above.
+
+**Response**:
+- Reviewed prompt history and determined next prompt number is 4
+- Summarized user execution plan requirements for strict rebase/merge workflow
+- Confirmed explicit record-keeping/commit rules for every shell or file change
+- Inserted new prompt history entry to maintain documentation compliance
+- Ready to execute: proceed with `git fetch origin` as next step, then record in shell history

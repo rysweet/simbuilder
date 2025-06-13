@@ -284,3 +284,21 @@ pytest -q
 ```
 
 # Ran the full test suite after merge, all tests passed except 2 skipped (mocking/complexity); ready to finalize commit and push.
+
+```bash
+git add -A && git commit -m "chore: resolve merge conflicts with main"
+```
+
+# Staged and recorded a merge-resolution commit marking the branch as resolved and tested; new files/insertions are only project shell history.
+
+```bash
+git push --force-with-lease origin feat-tenant-discovery-remove-offline
+```
+
+# Force-pushed resolved branch to origin after clean and tested merge; ready to start CI/checks on PR #40.
+
+```bash
+gh pr checks 40
+```
+
+# Ran PR check status for #40 after force-push; all checks (e.g., security) report successful.
