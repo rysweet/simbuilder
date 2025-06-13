@@ -152,3 +152,7 @@ git rebase --rebase-merges --onto origin/main $(git merge-base origin/main HEAD)
 ruff format .
 # Ran ruff formatter over entire codebase; all files were already compliant (no changes), confirming format standards before PR #40 push/test/merge.
 ```
+```bash
+pytest -q
+# Ran full test suite post-rebase: all tests passed (except 2 skips due to complex import/cached settings mocks). Project is verified healthy for PR #40 force-push.
+```
