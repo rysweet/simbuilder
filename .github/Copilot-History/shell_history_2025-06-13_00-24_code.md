@@ -169,3 +169,17 @@ git checkout -B feat/td-remove-offline-clean origin/main
 git checkout --ours .github/Copilot-History/shell_history_2025-06-13_00-24_code.md
 # Resolve cherry-pick conflict in shell history file during PR #40 rebase/replacement sequence; keep current project session history as canonical.
 ```
+```bash
+# Skipping empty cherry-pick after conflict resolution on shell history file (PR #40 doc patch overlap).
+git cherry-pick --skip
+```
+```bash
+# Cherry-pick conflict: prompt_history_2025-06-12_16-04_code.md deleted in main, modified in patch. Will delete (prefer main repo doc state).
+rm .github/Copilot-History/prompt_history_2025-06-12_16-04_code.md
+# Also: shell_history_2025-06-09_04-43_code.md doc conflict. Keeping "ours" (project doc continuity).
+git checkout --ours .github/Copilot-History/shell_history_2025-06-09_04-43_code.md
+```
+```bash
+# prompt_history_2025-06-12_16-04_code.md still unmerged after stage attempt. Deleting to resolve as per main repo doc state.
+git rm .github/Copilot-History/prompt_history_2025-06-12_16-04_code.md
+```
