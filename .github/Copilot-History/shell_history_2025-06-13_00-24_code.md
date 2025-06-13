@@ -148,3 +148,7 @@ git fetch origin
 git rebase --rebase-merges --onto origin/main $(git merge-base origin/main HEAD)
 # Hard-rebased feat-tenant-discovery-remove-offline onto origin/main with linear history, as required for PR #40. No merge commits. Branch is now up to date.
 ```
+```bash
+ruff format .
+# Ran ruff formatter over entire codebase; all files were already compliant (no changes), confirming format standards before PR #40 push/test/merge.
+```
