@@ -53,9 +53,9 @@ class TestDiscoveryCommands:
     """Test discovery CLI commands."""
 
     @patch("src.tenant_discovery.cli.get_td_settings")
-    @patch("httpx.Client.post")
+    @respx.mock
     def test_discovery_start_success(
-        self, mock_post, mock_get_settings: MagicMock, runner: CliRunner, mock_settings: MagicMock
+        self, mock_get_settings: MagicMock, runner: CliRunner, mock_settings: MagicMock
     ) -> None:
         """Test discovery start command succeeds."""
         mock_get_settings.return_value = mock_settings
@@ -80,21 +80,48 @@ class TestDiscoveryCommands:
             )
         )
 
-        # Fake successful API response
-        class Resp:
-            status_code = 200
-            def json(self): return {"id": "any-id"}
-        mock_post.return_value = Resp()
-
         result = runner.invoke(app, ["discovery", "start"])
 
         assert result.exit_code == 0
-        assert "Discovery started for" in result.stdout
+        assert "Discovery session started" in result.stdout
 
+    @patch("src.tenant_discovery.cli.get_td_settings")
+    @respx.mock
+    def test_discovery_start_with_tenant_id_override(
+        self, mock_get_settings: MagicMock, runner: CliRunner, mock_settings: MagicMock
+    ) -> None:
+        """Test discovery start command with tenant ID override."""
+        mock_get_settings.return_value = mock_settings
+        custom_tenant_id = "99999999-8888-7777-6666-555555555555"
+        session_id = str(uuid4())
 
+        # Mock API response
+        respx.post("http://localhost:8001/tenant-discovery/sessions").mock(
+            return_value=httpx.Response(
+                200,
+                json={
+                    "id": session_id,
+                    "tenant_id": custom_tenant_id,
+                    "status": "pending",
+                    "description": f"CLI discovery session for tenant {custom_tenant_id}",
+                    "config": {},
+                    "results": {},
+                    "created_at": "2025-06-12T14:30:00Z",
+                    "updated_at": "2025-06-12T14:30:00Z",
+                    "completed_at": None,
+                    "error_message": None,
+                },
+            )
+        )
+
+        result = runner.invoke(app, ["discovery", "start", "--tenant-id", custom_tenant_id])
+
+        assert result.exit_code == 0
         assert "Discovery session started" in result.stdout
         assert custom_tenant_id in result.stdout
 
+    @patch("src.tenant_discovery.cli.get_td_settings")
+    @respx.mock
     def test_discovery_run_alias(
         self, mock_get_settings: MagicMock, runner: CliRunner, mock_settings: MagicMock
     ) -> None:
@@ -121,7 +148,9 @@ class TestDiscoveryCommands:
             )
         )
 
-        result = runner.invoke(app, ["discovery", "run", "--tenant-id", "12345678-1234-1234-1234-123456789012"])
+        result = runner.invoke(
+            app, ["discovery", "run", "--tenant-id", "12345678-1234-1234-1234-123456789012"]
+        )
 
         assert result.exit_code == 0
         assert "Discovery session started" in result.stdout
@@ -172,18 +201,6 @@ class TestDiscoveryCommands:
             )
         )
 
-<<<<<<< HEAD
-=======
-    @patch("httpx.Client.get")
-    def test_discovery_list_success(self, mock_get, runner: CliRunner) -> None:
-        """Test discovery list command succeeds."""
-        # Mock API response
-        mock_get.return_value.status_code = 200
-        mock_get.return_value.json.return_value = [
-            {"id": "session-001", "tenant_id": "abc", "status": "Running", "created": "now"},
-            {"id": "session-002", "tenant_id": "xyz", "status": "Pending", "created": "now"},
-        ]
->>>>>>> b96fa63 (refactor(cli): remove offline mode; auto-start backend on connection failure)
         result = runner.invoke(app, ["discovery", "list"])
 
         assert result.exit_code == 0
@@ -232,16 +249,6 @@ class TestDiscoveryCommands:
         )
 
         result = runner.invoke(app, ["discovery", "status", session_id])
-<<<<<<< HEAD
-=======
-    @patch("httpx.Client.get")
-    def test_discovery_status_with_session_id(self, mock_get, runner: CliRunner) -> None:
-        """Test discovery status command with session ID."""
-        # Mock API response
-        mock_get.return_value.status_code = 200
-        mock_get.return_value.json.return_value = {"status": "Running", "details": "45%"}
-        result = runner.invoke(app, ["discovery", "status", "session-001"])
->>>>>>> b96fa63 (refactor(cli): remove offline mode; auto-start backend on connection failure)
 
         assert result.exit_code == 0
         assert "Status for session" in result.stdout
@@ -252,17 +259,9 @@ class TestDiscoveryCommands:
         """Test discovery status command without session ID."""
         result = runner.invoke(app, ["discovery", "status"])
 
-        assert result.exit_code == 0
+        assert result.exit_code == 2
         assert "No session ID provided" in result.stdout
         assert "tdcli discovery list" in result.stdout
-
-
-def test_discovery_status_without_session_id(runner: CliRunner) -> None:
-    """Test discovery status command without session ID."""
-    result = runner.invoke(app, ["discovery", "status"])
-    assert result.exit_code == 2
-    assert "No session ID provided" in result.stdout
-    assert "tdcli discovery list" in result.stdout
 
     @patch("src.tenant_discovery.cli.get_td_settings")
     def test_discovery_start_config_error(
@@ -304,17 +303,6 @@ class TestGraphCommands:
             assert "12" in result.stdout  # stub subscription count
             assert "✓ Connected" in result.stdout
 
-<<<<<<< HEAD
-=======
-        assert result.exit_code == 0
-        assert "Graph Database Information" in result.stdout
-        assert "Tenants" in result.stdout
-        assert "5" in result.stdout  # stub tenant count
-        assert "Subscriptions" in result.stdout
-        assert "12" in result.stdout  # stub subscription count
-        assert "✓ Connected" in result.stdout
-
->>>>>>> b96fa63 (refactor(cli): remove offline mode; auto-start backend on connection failure)
     @patch("src.simbuilder_graph.cli.get_graph_service")
     def test_graph_check_success(self, mock_get_service: MagicMock, runner: CliRunner) -> None:
         """Test graph check command succeeds."""
@@ -336,14 +324,6 @@ class TestGraphCommands:
             assert "All graph database checks passed!" in result.stdout
 
 
-<<<<<<< HEAD
-=======
-        assert result.exit_code == 0
-        assert "✓ Database Connection" in result.stdout
-        assert "✓ Query Execution" in result.stdout
-        assert "✓ Node Count Query" in result.stdout
-        assert "All graph database checks passed!" in result.stdout
->>>>>>> b96fa63 (refactor(cli): remove offline mode; auto-start backend on connection failure)
 def test_start_subcommand_arg_required(runner):
     """Test start subcommand fails if --name argument is missing (Typer parsing)."""
     result = runner.invoke(app, ["start"])
@@ -360,7 +340,6 @@ def test_backend_autostart(monkeypatch, runner):
     counts = {"health": 0, "api": 0}
     orig_get = httpx.Client.get
 
-<<<<<<< HEAD
     def fake_get(self, url, *a, **k):
         if "/health" in url:
             counts["health"] += 1
@@ -374,35 +353,12 @@ def test_backend_autostart(monkeypatch, runner):
                 def json(self):
                     return {}
 
-=======
-# --- Auto-start backend test ---
-
-def test_backend_autostart(monkeypatch, runner):
-    """
-    Test CLI auto-starts backend and retries API upon ConnectError (first fails, then succeeds), using subprocess for docker-compose up.
-    """
-    import httpx
-
-    counts = {"health": 0, "api": 0}
-    orig_get = httpx.Client.get
-
-    def fake_get(self, url, *a, **k):
-        if "/health" in url:
-            counts["health"] += 1
-            if counts["health"] == 1:
-                # fail first /health
-                raise httpx.ConnectError("connection refused", request=None)
-            class Resp:
-                status_code = 200
-                def json(self): return {}
->>>>>>> b96fa63 (refactor(cli): remove offline mode; auto-start backend on connection failure)
             return Resp()
         elif "/tenant-discovery/sessions" in url:
             counts["api"] += 1
             if counts["api"] == 1:
                 # fail API endpoint once to trigger docker
                 raise httpx.ConnectError("connection refused", request=None)
-<<<<<<< HEAD
 
             class Resp:
                 status_code = 200
@@ -410,13 +366,6 @@ def test_backend_autostart(monkeypatch, runner):
                 def json(self):
                     return [{"id": "session1", "tenant_id": "t", "status": "ok", "created": "now"}]
 
-=======
-            class Resp:
-                status_code = 200
-                def json(self): return [
-                    {"id": "session1", "tenant_id": "t", "status": "ok", "created": "now"}
-                ]
->>>>>>> b96fa63 (refactor(cli): remove offline mode; auto-start backend on connection failure)
             return Resp()
         else:
             return orig_get(self, url, *a, **k)
@@ -425,10 +374,7 @@ def test_backend_autostart(monkeypatch, runner):
 
     # Patch subprocess.run to simulate docker-compose up being called between failing/succeeding attempts
     docker_called = {}
-<<<<<<< HEAD
 
-=======
->>>>>>> b96fa63 (refactor(cli): remove offline mode; auto-start backend on connection failure)
     def fake_run(args, check, stdout, stderr, timeout):
         docker_called["called"] = True
         return MagicMock(returncode=0)
@@ -436,14 +382,10 @@ def test_backend_autostart(monkeypatch, runner):
     monkeypatch.setattr("subprocess.run", fake_run)
     monkeypatch.setattr("shutil.which", lambda x: "/usr/bin/docker" if x == "docker" else None)
     monkeypatch.setattr("pathlib.Path.exists", lambda self: True)
-<<<<<<< HEAD
     monkeypatch.setattr(
         "builtins.open",
         lambda *a, **k: MagicMock().__enter__().return_value,
     )
-=======
-    monkeypatch.setattr("builtins.open", lambda *a, **k: mock.mock_open(read_data='services:\n  api:\n    image: test')(*a, **k))
->>>>>>> b96fa63 (refactor(cli): remove offline mode; auto-start backend on connection failure)
     monkeypatch.setattr("yaml.safe_load", lambda f: {"services": {"api": {}}})
 
     result = runner.invoke(app, ["discovery", "list"])

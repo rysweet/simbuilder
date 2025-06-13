@@ -23,6 +23,7 @@ import shutil
 import time
 from pathlib import Path
 
+
 def ensure_backend_running(api_base_url="http://localhost:8000") -> None:
     """Ensure the backend API is running, starting via docker-compose if necessary."""
     health_url = f"{api_base_url.rstrip('/')}/health"
@@ -40,15 +41,20 @@ def ensure_backend_running(api_base_url="http://localhost:8000") -> None:
         return
     # Try auto-start only if compose file and docker present
     if not compose_file.exists():
-        raise RuntimeError("Backend is not running and docker-compose.yaml is missing. Please start the backend manually.")
+        raise RuntimeError(
+            "Backend is not running and docker-compose.yaml is missing. Please start the backend manually."
+        )
 
     if shutil.which("docker") is None:
-        raise RuntimeError("Backend is not running and 'docker' command not found in PATH. Please install Docker and retry.")
+        raise RuntimeError(
+            "Backend is not running and 'docker' command not found in PATH. Please install Docker and retry."
+        )
 
     compose_services = []
     try:
         with open(compose_file) as f:
             import yaml
+
             compose_cfg = yaml.safe_load(f)
             compose_services = set(compose_cfg.get("services", {}).keys())
     except Exception:
@@ -72,14 +78,18 @@ def ensure_backend_running(api_base_url="http://localhost:8000") -> None:
             except Exception:
                 continue
     else:
-        raise RuntimeError("Failed to start backend via docker compose. Please check your docker-compose.yaml.")
+        raise RuntimeError(
+            "Failed to start backend via docker compose. Please check your docker-compose.yaml."
+        )
 
     # Poll health endpoint up to 30sec
     for _ in range(15):
         if is_backend_up():
             return
         time.sleep(2)
-    raise RuntimeError("Backend did not become healthy after starting Docker. Please check logs and try again.")
+    raise RuntimeError(
+        "Backend did not become healthy after starting Docker. Please check logs and try again."
+    )
 
 
 # Create subcommands
@@ -336,11 +346,15 @@ def start(
                             "[red]✗ Could not connect to backend API and failed to auto-start backend: "
                             f"{autostart_err}[/red]"
                         )
-                        console.print("[yellow]Please ensure the backend is running and try again.[/yellow]")
+                        console.print(
+                            "[yellow]Please ensure the backend is running and try again.[/yellow]"
+                        )
                         sys.exit(2)
                 else:
                     console.print(f"[red]✗ Could not connect to backend API: {e}[/red]")
-                    console.print("[yellow]Please ensure the backend is running and try again.[/yellow]")
+                    console.print(
+                        "[yellow]Please ensure the backend is running and try again.[/yellow]"
+                    )
                     sys.exit(2)
     except Exception as e:
         console.print(f"[red]✗[/red] Error starting discovery: {e}")
@@ -390,11 +404,15 @@ def list(ctx: typer.Context) -> None:
                         "[red]✗ Could not connect to backend API and failed to auto-start backend: "
                         f"{autostart_err}[/red]"
                     )
-                    console.print("[yellow]Please ensure the backend is running and try again.[/yellow]")
+                    console.print(
+                        "[yellow]Please ensure the backend is running and try again.[/yellow]"
+                    )
                     sys.exit(2)
             else:
                 console.print(f"[red]✗ Could not connect to backend API: {e}[/red]")
-                console.print("[yellow]Please ensure the backend is running and try again.[/yellow]")
+                console.print(
+                    "[yellow]Please ensure the backend is running and try again.[/yellow]"
+                )
                 sys.exit(2)
         except Exception as e:
             console.print(f"[red]✗[/red] Error listing discovery sessions: {e}")
@@ -403,7 +421,7 @@ def list(ctx: typer.Context) -> None:
 
 @discovery_app.command()
 def status(
-    session_id: str = typer.Argument(None, help="Session ID to check status for (optional)")
+    session_id: str = typer.Argument(None, help="Session ID to check status for (optional)"),
 ) -> None:
     """Show status of a discovery session."""
     if not session_id:
@@ -442,11 +460,15 @@ def status(
                         "[red]✗ Could not connect to backend API and failed to auto-start backend: "
                         f"{autostart_err}[/red]"
                     )
-                    console.print("[yellow]Please ensure the backend is running and try again.[/yellow]")
+                    console.print(
+                        "[yellow]Please ensure the backend is running and try again.[/yellow]"
+                    )
                     sys.exit(2)
             else:
                 console.print(f"[red]✗ Could not connect to backend API: {e}[/red]")
-                console.print("[yellow]Please ensure the backend is running and try again.[/yellow]")
+                console.print(
+                    "[yellow]Please ensure the backend is running and try again.[/yellow]"
+                )
                 sys.exit(2)
         except Exception as e:
             console.print(f"[red]✗[/red] Error getting discovery status: {e}")
@@ -502,11 +524,15 @@ def start_command(
                         "[red]✗ Could not connect to backend API and failed to auto-start backend: "
                         f"{autostart_err}[/red]"
                     )
-                    console.print("[yellow]Please ensure the backend is running and try again.[/yellow]")
+                    console.print(
+                        "[yellow]Please ensure the backend is running and try again.[/yellow]"
+                    )
                     sys.exit(2)
             else:
                 console.print(f"[red]✗ Could not connect to backend API: {e}[/red]")
-                console.print("[yellow]Please ensure the backend is running and try again.[/yellow]")
+                console.print(
+                    "[yellow]Please ensure the backend is running and try again.[/yellow]"
+                )
                 sys.exit(2)
         except Exception as e:
             import traceback
