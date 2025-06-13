@@ -247,3 +247,40 @@ git push origin initial-impl
 ```
 
 # Pushed all committed changes from the initial-impl branch to origin to ensure remote history reflects the 100% test-passing state and specs module fixes
+
+## 2025-06-13
+
+```bash
+gh pr merge 40 --rebase --delete-branch --subject "refactor(cli): remove offline mode and auto-start backend"
+```
+
+# Attempted to merge PR #40 with rebase and delete-branch; failed due to unclean rebase—manual conflict resolution required.
+```bash
+git fetch origin
+```
+
+# Fetched latest changes from origin to ensure all remote branches are up to date before conflict resolution.
+
+```bash
+git checkout feat-tenant-discovery-remove-offline
+```
+
+# Checked out the feature branch to begin resolving merge conflicts with origin/main; branch is ahead and behind remote (diverged).
+
+```bash
+git merge origin/main
+```
+
+# Merged main into feat-tenant-discovery-remove-offline; result: Already up to date (no conflicts).
+
+```bash
+ruff format .
+```
+
+# Checked formatting on all source files with ruff; all files already properly formatted (no changes made).
+
+```bash
+pytest -q
+```
+
+# Ran the full test suite after merge, all tests passed except 2 skipped (mocking/complexity); ready to finalize commit and push.
