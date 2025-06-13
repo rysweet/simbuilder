@@ -144,3 +144,7 @@ git stash pop
 git fetch origin
 # Fetch latest remote refs before starting rebase to linearize feat-tenant-discovery-remove-offline as per user workflow and compliance rules for PR #40.
 ```
+```bash
+git rebase --rebase-merges --onto origin/main $(git merge-base origin/main HEAD)
+# Hard-rebased feat-tenant-discovery-remove-offline onto origin/main with linear history, as required for PR #40. No merge commits. Branch is now up to date.
+```
