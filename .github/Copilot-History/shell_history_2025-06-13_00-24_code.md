@@ -140,3 +140,7 @@ git stash pop
 ```
 # Switch to feature branch for rebase; already checked out, local/remote are divergent pre-rebase (PR #40 workflow).
 ```
+```bash
+git fetch origin
+# Fetch latest remote refs before starting rebase to linearize feat-tenant-discovery-remove-offline as per user workflow and compliance rules for PR #40.
+```
